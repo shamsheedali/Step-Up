@@ -24,7 +24,8 @@ const userSchema = new mongoose.Schema(
     },
     googleID: {
       type: String,
-      unique: true,
+      default: null,
+      // unique: true,
     },
     isVerified: {
       type: Boolean,

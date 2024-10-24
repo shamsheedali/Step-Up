@@ -95,7 +95,7 @@ const Signup = () => {
         profileImage: user.photoURL, 
       }
       await storeGoogleInfo(userDetails);
-      dispatch(setUser({username: user.displayName, email: user.email, isVerified: true}));
+      dispatch(setUser({uid: user.uid, username: user.displayName, email: user.email, isVerified: true}));
 
       // Redirect to homepage
       navigate("/"); 

@@ -3,41 +3,42 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 //USER-- SIGNUP
-const signUp = async(req, res) => {
+const signUp = async (req, res) => {
   try {
-    const {username, email, password} = req.body;
+    const { username, email, password } = req.body;
 
-    const user = await users.findOne({email});
-    if(user){
+    const user = await users.findOne({ email });
+    if (user) {
       return res.status(400).json({ message: "User already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new users({
-        username,
-        email,
-        password : hashedPassword
-    })
+      username,
+      email,
+      password: hashedPassword,
+      googleID: null,
+    });
 
     // Save user to database
     await newUser.save();
 
     //New User Token
     const token = jwt.sign(
-        {
-          id: newUser._id,
-          email: newUser.email,
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: "1h" }
-      );
+      {
+        id: newUser._id,
+        email: newUser.email,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
 
-      res.status(201).json({ message: "Signup Successful", token, newUser })
-      console.log("New User Signed In");
+    res.status(201).json({ message: "Signup Successful", token, newUser });
+    console.log("New User Signed In");
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error SigningUp" });
+    res.status(500).json(error);
   }
 };
 
@@ -66,7 +67,7 @@ const login = async (req, res) => {
     );
 
     //updating isVerified
-    await users.findOneAndUpdate({email}, {$set: {isVerified: true}});
+    await users.findOneAndUpdate({ email }, { $set: { isVerified: true } });
     return res.status(200).json({ message: "Login Successful", token, user });
   } catch (error) {
     console.error(error);
@@ -87,7 +88,7 @@ const storeGoogleUser = async (req, res) => {
         success: true,
         message: "User logged in successfully",
         user: {
-          googleID: user.googleID,
+          googleID: user.googleID || undefined,
           username: user.username,
           email: user.email,
           profileImage: user.profileImage,
@@ -117,9 +118,41 @@ const storeGoogleUser = async (req, res) => {
     }
   } catch (error) {
     console.error("Error storing or logging in Google user:", error);
-    res.status(500).json({ success: false, message: "Failed to store or log in user" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to store or log in user" });
   }
 };
 
+//UPDATE USER--USERNAME AND EMAIL
+const updateUserData = async (req, res) => {
+  const { username, email, _id } = req.body;
+  try {
+    const user = await users.findOne({ _id });
 
-export { signUp, login, storeGoogleUser };
+    if (!user) return res.status(400).json({ message: "User not found!" });
+
+    const updatedUser = await users.findByIdAndUpdate(
+      _id,
+      {
+        $set: {
+          username,
+          email,
+        },
+      },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Your profile has been successfully updated!",
+      user: updatedUser
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
+export { signUp, login, storeGoogleUser, updateUserData };

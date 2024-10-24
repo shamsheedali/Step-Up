@@ -48,7 +48,7 @@ const Login = () => {
       setLoading(true); 
       try {
         const {user} = await login(formData);
-          dispatch(setUser({username: user.username, email: user.email, isVerified: true}));
+          dispatch(setUser({uid:user._id, username: user.username, email: user.email, isVerified: true}));
           navigate("/"); 
       } catch (error) {
         setErrorMessage("Invalid email or password"); 
@@ -74,7 +74,7 @@ const Login = () => {
         profileImage: user.photoURL, 
       }
       await storeGoogleInfo(userDetails);
-      dispatch(setUser({username: user.displayName, email: user.email, isVerified: true}));
+      dispatch(setUser({uid: user.uid, username: user.displayName, email: user.email, isVerified: true}));
 
       navigate('/'); // Redirecting to Home after successful login
     } catch (error) {

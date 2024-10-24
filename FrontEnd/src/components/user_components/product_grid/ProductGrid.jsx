@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { fetchProducts } from "../../../api/product";
 import { useNavigate } from "react-router-dom";
+import { HiOutlineShoppingBag } from "react-icons/hi2";
 
 const ProductGrid = () => {
   const [products, setProducts] = useState([]);
@@ -46,7 +47,7 @@ const ProductGrid = () => {
               .map((product) => (
                 <div
                   key={product._id}
-                  className="group"
+                  className="group cursor-pointer transition duration-500 ease-in-out hover:translate-y-[-10px]"
                   onClick={() => handleCardClick(product._id)}
                 >
                   <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-h-8 xl:aspect-w-7">
@@ -62,6 +63,10 @@ const ProductGrid = () => {
                   <p className="mt-1 text-lg font-medium text-gray-900">
                     ₹{product.price}
                   </p>
+
+                  <div className="w-fit bg-black text-white p-3 text-xl">
+                    <HiOutlineShoppingBag />
+                  </div>
                 </div>
               ))
           )}

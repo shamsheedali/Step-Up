@@ -70,9 +70,9 @@ const OtpPage = () => {
     try {
      const response = await axios.post(`http://localhost:3000/api/otp/verify_otp`, {otpValue, userDetails});
      if(response.status === 200){
-      const {username, email} = response.data.user;
+      const {username, email, _id} = response.data.user;
       toast.success("OTP Verified");
-      dispatch(setUser({username, email, isVerified: true}));
+      dispatch(setUser({uid :_id, username, email, isVerified: true}));
       navigate('/')
      }
     } catch (error) {

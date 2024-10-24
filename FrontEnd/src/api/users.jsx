@@ -45,9 +45,23 @@ const storeGoogleInfo = async(userData) => {
   }
 }
 
+const updateUserData = async(userData) => {
+  const token = localStorage.getItem('userToken');
+  try {
+    const response = await axios.post(`${API_URL}/update-userdata`, userData, {
+      headers:{
+        Authorization: `Bearer ${token}`, 
+      }
+    })
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 const logout = () => {
   localStorage.removeItem('userToken');
   toast.success("You have successfully logged out!");
 }
 
-export { signUp, login, logout, storeGoogleInfo };
+export { signUp, login, logout, storeGoogleInfo, updateUserData };

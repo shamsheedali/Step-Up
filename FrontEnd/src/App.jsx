@@ -14,10 +14,11 @@ import Page404 from "./components/user_components/404/Page404";
 import ProfilePage from "./pages/user/profile_page/ProfilePage";
 import Settings from "./pages/user/settings/Settings";
 import DeliveryAddresses from "./pages/user/delivery_addresses/DeliveryAddresses";
+import Bag from "./pages/user/bag/Bag";
 
 const App = () => {
   return (
-    <div className="bg-white">
+    <div className="bg-white text-black font-clash-display">
         <ToastContainer theme="dark" />
         <Routes>
           {/* USER--ROUTES */}
@@ -27,6 +28,7 @@ const App = () => {
           <Route path="/otp" element={<OtpPage />} />
           <Route path="/products" element={<AllProduct />} />
           <Route path="/products/:id" element={<SingleProductPage />} />
+          <Route path="/bag" element={<Bag />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/profile/settings" element={<Settings />} />
           <Route path="/profile/settings/delivery-addresses" element={<DeliveryAddresses />} />

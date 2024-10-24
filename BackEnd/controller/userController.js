@@ -146,13 +146,51 @@ const updateUserData = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Your profile has been successfully updated!",
-      user: updatedUser
+      user: updatedUser,
     });
-
   } catch (error) {
     console.log(error);
     res.status(500).json(error);
   }
 };
 
-export { signUp, login, storeGoogleUser, updateUserData };
+//CHANGE USER PASSWORD
+const changePassword = async (req, res) => {
+  const { password, newPassword, _id } = req.body;
+  
+  try {
+    const user = await users.findById(_id);
+    
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    
+    if (!isMatch) {
+      return res.status(400).send("Current password is incorrect");
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the user's password in the database
+    const updatedUser = await users.findByIdAndUpdate(
+      _id,
+      { $set: { password: hashedPassword } },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Password changed successfully",
+      user: updatedUser,
+    });
+    
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send('Error saving the new password');
+  }
+};
+
+
+export { signUp, login, storeGoogleUser, updateUserData, changePassword };

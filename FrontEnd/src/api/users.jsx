@@ -45,6 +45,7 @@ const storeGoogleInfo = async(userData) => {
   }
 }
 
+//upadte username and email
 const updateUserData = async(userData) => {
   const token = localStorage.getItem('userToken');
   try {
@@ -59,9 +60,32 @@ const updateUserData = async(userData) => {
   }
 }
 
+//change password;
+const changePassword = async(data) => {
+  const token = localStorage.getItem('userToken');
+  try {
+    console.log("data frontend", data)
+    const response = await axios.post(`${API_URL}/change-password`, data, {
+      headers:{
+        Authorization: `Bearer ${token}`, 
+      }
+    })
+
+    console.log(response);
+    toast.success("Password changed successfully!");
+  } catch (error) {
+    console.log(error);
+    if(error && error.response.status === 400){
+      toast.error("Current password is incorrect!");
+    }else{
+      toast.error("Something went wrong. Please try again later.");
+    }
+  }
+}
+
 const logout = () => {
   localStorage.removeItem('userToken');
   toast.success("You have successfully logged out!");
 }
 
-export { signUp, login, logout, storeGoogleInfo, updateUserData };
+export { signUp, login, logout, storeGoogleInfo, updateUserData, changePassword };

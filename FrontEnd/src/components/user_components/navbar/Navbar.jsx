@@ -12,7 +12,6 @@ import {persistor} from '../../../app/Store'
 
 const Navbar = () => {
   const { username, email } = useSelector((state) => state.user);
-  console.log(username);
   const navRef = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
   const [logout, setLogout] = useState(false);

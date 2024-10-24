@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../../../components/user_components/navbar/Navbar";
 import SettingsSidebar from "../../../components/user_components/settings_sidebar/SettingsSidebar";
 import { useDispatch, useSelector } from "react-redux";
-import { updateUserData } from "../../../api/users";
+import { changePassword, updateUserData } from "../../../api/users";
 import { setUser } from "../../../features/users/UserSlice";
 import { toast } from "react-toastify";
 
 const Settings = () => {
-  const {username, email, uid} = useSelector((state) => state.user);
+  const { username, email, uid } = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -15,22 +15,39 @@ const Settings = () => {
     username: username,
     email: email,
   });
+
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
   const [isFormChanged, setIsFormChanged] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const hasFormChanged =
-    formValues.username !== username ||
-    formValues.email !== email;
-    setIsFormChanged(hasFormChanged);
+      formValues.username !== username || formValues.email !== email;
+      setIsFormChanged(hasFormChanged);
   }, [formValues, username, email]);
 
   const handleInputChange = (e) => {
-    const {name, value} = e.target;
+    const { name, value } = e.target;
+
     setFormValues((prevValues) => ({
       ...prevValues,
-      [name]: value
-    }))
-  }
+      [name]: value,
+    }));
+  };
+
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+
+    setPasswordData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -38,28 +55,70 @@ const Settings = () => {
 
   const closeModal = () => {
     setIsModalOpen(false);
+    setPasswordData({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+    setError('');
   };
 
-  const handleSubmit = async(e) => {
+  //Form submit of username and email
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const userData = {
       _id: uid,
-      username : formValues.username,
-      email : formValues.email,
-    }
+      username: formValues.username,
+      email: formValues.email,
+    };
     try {
-      const {user} = await updateUserData(userData);
-      console.log("success",user);
+      const { user } = await updateUserData(userData);
+      console.log("success", user);
       setFormValues({
         username: user.username,
-        email: user.email
+        email: user.email,
       });
-      dispatch(setUser({username: user.username, email: user.email}));
+      dispatch(setUser({ username: user.username, email: user.email }));
       toast.success("Your profile has been successfully updated!");
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
+  };
+
+  //Password form validation
+  const validate = () => {
+    if (passwordData.currentPassword.length < 6) {
+      setError("Incorrect Password");
+      return false;
+    } else if (passwordData.newPassword.length < 6) {
+      setError("Password must be at least 6 characters");
+      return false;
+    } else if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setError("New password and confirmation do not match");
+      return false;
+    }
+    return true;
+  };
+
+  //Form submit of New password
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    const data = {
+      password: passwordData.currentPassword,
+      newPassword: passwordData.newPassword,
+      _id: uid,
+    };
+    if (validate()) {
+      await changePassword(data);
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+      closeModal();
+    }
+  };
 
   return (
     <div className="text-black font-clash-display h-screen">
@@ -120,7 +179,10 @@ const Settings = () => {
               </div>
 
               <div className="flex justify-end">
-                <button className="btn rounded-full w-[100px] text-white" disabled={!isFormChanged}>
+                <button
+                  className="btn rounded-full w-[100px] text-white"
+                  disabled={!isFormChanged}
+                >
                   Save
                 </button>
               </div>
@@ -174,57 +236,76 @@ const Settings = () => {
               </div>
 
               {/* Modal body */}
-              <div className="p-4 md:p-5 space-y-4 flex flex-col gap-7">
-                <div class="relative">
-                  <label
-                    for="CurrentPassword"
-                    class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
-                  >
-                    Current Password*
-                  </label>
-                  <input
-                    id="CurrentPassword"
-                    type="password"
-                    class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                  />
+              <form onSubmit={handlePasswordSubmit}>
+                <div className="p-4 md:p-5 space-y-4 flex flex-col gap-7">
+                  <div class="relative">
+                    <label
+                      htmlFor="CurrentPassword"
+                      class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
+                    >
+                      Current Password*
+                    </label>
+                    <input
+                      id="CurrentPassword"
+                      type="password"
+                      name="currentPassword"
+                      value={passwordData.currentPassword}
+                      onChange={handlePasswordChange}
+                      class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                      required
+                    />
+                  </div>
+                  <div class="relative">
+                    <label
+                      htmlFor="NewPassword"
+                      class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
+                    >
+                      New Password*
+                    </label>
+                    <input
+                      id="NewPassword"
+                      type="password"
+                      name="newPassword"
+                      value={passwordData.newPassword}
+                      onChange={handlePasswordChange}
+                      class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                      required
+                    />
+                  </div>
+                  <div class="relative">
+                    <label
+                      htmlFor="ConfirmPassword"
+                      class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
+                    >
+                      Confirm New Password*
+                    </label>
+                    <input
+                      id="ConfirmPassword"
+                      type="password"
+                      name="confirmPassword"
+                      value={passwordData.confirmPassword}
+                      onChange={handlePasswordChange}
+                      class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                      required
+                    />
+                  </div>
                 </div>
-                <div class="relative">
-                  <label
-                    for="NewPassword"
-                    class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
-                  >
-                    New Password*
-                  </label>
-                  <input
-                    id="NewPassword"
-                    type="password"
-                    class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                  />
-                </div>
-                <div class="relative">
-                  <label
-                    for="ConfirmPassword"
-                    class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
-                  >
-                    Confirm New Password*
-                  </label>
-                  <input
-                    id="ConfirmPassword"
-                    type="password"
-                    class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                  />
-                </div>
-              </div>
 
-              {/* Modal footer */}
-              <div className="flex items-center p-4 md:p-5 justify-end">
-                <button
-                  onClick={closeModal}
-                  className="btn rounded-full text-white bg-black hover:bg-gray focus:ring-4 focus:outline-none focus:ring-black font-medium text-sm px-5 py-2.5 text-center"
-                >
-                  Save
-                </button>
-              </div>
+                {error ? (
+                  <p className="text-red-500 text-center">{error}</p>
+                ) : (
+                  ""
+                )}
+                {/* Modal footer */}
+                <div className="flex items-center p-4 md:p-5 justify-end">
+                  <button
+                    type="submit"
+                    className="btn rounded-full text-white bg-black hover:bg-gray focus:ring-4 focus:outline-none focus:ring-black font-medium text-sm px-5 py-2.5 text-center"
+                  >
+                    Save
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </>

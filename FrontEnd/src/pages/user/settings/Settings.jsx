@@ -173,8 +173,8 @@ const Settings = () => {
                   value={"123456789"}
                   className="border-none focus:border-none active:border-none disabled"
                 />
-                <h3 className="underline cursor-pointer" onClick={openModal}>
-                  edit
+                <h3 className="underline font-bold cursor-pointer" onClick={openModal}>
+                  Edit
                 </h3>
               </div>
 

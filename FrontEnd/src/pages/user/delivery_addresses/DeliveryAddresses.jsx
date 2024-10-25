@@ -1,10 +1,71 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../../../components/user_components/navbar/Navbar";
 import SettingsSidebar from "../../../components/user_components/settings_sidebar/SettingsSidebar";
+import {
+  addAddress,
+  delAddress,
+  editAddress,
+  getAddress,
+} from "../../../api/address";
 
 const DeliveryAddresses = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
+  const [address, setAddress] = useState([]);
+  const [disableButton, setDisableButton] = useState(true);
+  const [addressId, setAddressId] = useState("");
+
+  useEffect(() => {
+    const getAllAddress = async () => {
+      const { allAddress } = await getAddress();
+      setAddress(allAddress);
+    };
+    getAllAddress();
+  }, [address]);
+
+  const [formValues, setFormValues] = useState({
+    username: "",
+    street: "",
+    village: "",
+    town: "",
+    postcode: "",
+    state: "",
+    country: "",
+    phonenumber: "",
+  });
+
+  const [editFormValues, setEditFormValues] = useState({
+    username: "",
+    street: "",
+    village: "",
+    town: "",
+    postcode: "",
+    state: "",
+    country: "",
+    phonenumber: "",
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+
+    setFormValues((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+
+    setEditFormValues((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    setDisableButton(false);
+  };
+
+  //add address moda
   const openModal = () => {
     setIsModalOpen(true);
   };
@@ -13,8 +74,86 @@ const DeliveryAddresses = () => {
     setIsModalOpen(false);
   };
 
+  //edit address modal
+  const openEditModal = (id) => {
+    setIsEditModalOpen(true);
+    setAddressId(id);
+    const addressToEdit = address.find((addres) => addres._id === id);
+    setEditFormValues(addressToEdit);
+  };
+
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
+    setDisableButton(true);
+  };
+
+  //ADDING ADDRESS FORM SUBMIT
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    const data = {
+      username: formValues.username,
+      street: formValues.street,
+      village: formValues.village,
+      town: formValues.town,
+      postcode: formValues.postcode,
+      state: formValues.state,
+      country: formValues.country,
+      phonenumber: formValues.phonenumber,
+    };
+    try {
+      await addAddress(data);
+      setFormValues({
+        username: "",
+        street: "",
+        village: "",
+        town: "",
+        postcode: "",
+        state: "",
+        country: "",
+        phonenumber: "",
+      });
+      closeModal();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  //EDITING ADDRESS FORM SUBMIT
+  const handleEditFormSubmit = async (e) => {
+    e.preventDefault();
+    const data = {
+      username: editFormValues.username,
+      street: editFormValues.street,
+      village: editFormValues.village,
+      town: editFormValues.town,
+      postcode: editFormValues.postcode,
+      state: editFormValues.state,
+      country: editFormValues.country,
+      phonenumber: editFormValues.phonenumber,
+    };
+    try {
+      await editAddress(data, addressId);
+      closeEditModal();
+    } catch (error) {
+      console.log(error);
+      closeEditModal();
+    }
+  };
+
+  //Delete Address
+  const handleDeleteAddress = async (e) => {
+    e.preventDefault();
+    try {
+      await delAddress(addressId);
+      closeEditModal();
+    } catch (error) {
+      console.log(error);
+      closeEditModal();
+    }
+  };
+
   return (
-    <div className="text-black font-clash-display h-screen">
+    <div className="text-black font-clash-display min-h-screen h-fit">
       <Navbar />
 
       <div className="pt-14 px-36">
@@ -24,16 +163,44 @@ const DeliveryAddresses = () => {
           <div>
             <h1 className="text-2xl">Saved Delivery Addresses</h1>
 
-            <p className="text-md">
-              You currently don't have any saved delivery addresses.Add an
-              address here to be pre-filled for quicker checkout
-            </p>
-            <button
-              className="btn rounded-full w-[200px] text-white"
-              onClick={openModal}
-            >
-              Add Address
-            </button>
+            {address.length === 0 ? (
+              <p className="text-md">
+                You currently don't have any saved delivery addresses.Add an
+                address here to be pre-filled for quicker checkout
+              </p>
+            ) : (
+              address.map((addres) => (
+                <div
+                  className="flex justify-between mt-8 border-b pb-2"
+                  key={addres._id}
+                >
+                  <div>
+                    <h1 className="text-gray-500">{addres.username}</h1>
+                    <h1 className="text-gray-500">{addres.street}</h1>
+                    <h1 className="text-gray-500">{addres.village}</h1>
+                    <h1 className="text-gray-500">
+                      {addres.town}, <span>{addres.postcode}</span>
+                    </h1>
+                    <h1 className="text-gray-500">{addres.phonenumber}</h1>
+                  </div>
+                  <h3
+                    className="underline font-bold cursor-pointer"
+                    onClick={() => openEditModal(addres._id)}
+                  >
+                    Edit
+                  </h3>
+                </div>
+              ))
+            )}
+
+            <div className="flex justify-end mt-3">
+              <button
+                className="btn rounded-full w-[150px] bg-black text-white"
+                onClick={openModal}
+              >
+                Add Address
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -83,126 +250,366 @@ const DeliveryAddresses = () => {
               </div>
 
               {/* Modal body */}
-              <div className="p-4 md:p-5 space-y-4 flex flex-col gap-7">
-                <div class="relative">
-                  <label
-                    for="username"
-                    class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
-                  >
-                    Username*
-                  </label>
-                  <input
-                    id="username"
-                    type="text"
-                    class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                  />
-                </div>
-                <div class="relative">
-                  <label
-                    for="streetaddress"
-                    class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
-                  >
-                    Street Address*
-                  </label>
-                  <input
-                    id="streetaddress"
-                    type="text"
-                    class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                  />
-                </div>
-                <div class="relative">
-                  <label
-                    for="townorvillage"
-                    class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
-                  >
-                    Town/Village*
-                  </label>
-                  <input
-                    id="townorvillage"
-                    type="text"
-                    class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                  />
-                </div>
-                <div class="relative flex justify-between">
-                  <div>
+              <form action="" onSubmit={handleFormSubmit}>
+                <div className="p-4 md:p-5 space-y-4 flex flex-col gap-7">
+                  <div class="relative">
                     <label
-                      for="townorcity"
+                      htmlFor="username"
                       class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
                     >
-                      Town/City*
+                      Username*
                     </label>
                     <input
-                      id="townorcity"
+                      id="username"
+                      name="username"
+                      value={formValues.username}
+                      onChange={handleInputChange}
                       type="text"
-                      class="block w-[200px] rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                      class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                      required
                     />
                   </div>
-                  <div>
+                  <div class="relative">
                     <label
-                      for="postcode"
-                      class="absolute -top-2 left-[232px] bg-white px-1 text-sm text-gray-500"
-                    >
-                      Postcode*
-                    </label>
-                    <input
-                      id="postcode"
-                      type="number"
-                      class="block w-[200px] rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                    />
-                  </div>
-                </div>
-                <div class="relative flex justify-between">
-                  <div>
-                    <label
-                      for="state"
+                      htmlFor="streetaddress"
                       class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
                     >
-                      State*
+                      Street Address*
                     </label>
                     <input
-                      id="state"
+                      id="streetaddress"
+                      name="street"
+                      value={formValues.street}
+                      onChange={handleInputChange}
                       type="text"
-                      class="block w-[200px] rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                      class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                      required
                     />
                   </div>
-                  <div>
+                  <div class="relative">
                     <label
-                      for="countryorregion"
-                      class="absolute -top-2 left-[232px] bg-white px-1 text-sm text-gray-500"
+                      htmlFor="townorvillage"
+                      class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
                     >
-                      Country/Region*
+                      Town/Village*
                     </label>
                     <input
-                      id="countryorregion"
+                      id="townorvillage"
+                      name="village"
+                      value={formValues.village}
+                      onChange={handleInputChange}
                       type="text"
-                      class="block w-[200px] rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                      class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                    />
+                  </div>
+                  <div class="relative flex justify-between">
+                    <div>
+                      <label
+                        htmlFor="townorcity"
+                        class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
+                      >
+                        Town/City*
+                      </label>
+                      <input
+                        id="townorcity"
+                        name="town"
+                        value={formValues.town}
+                        onChange={handleInputChange}
+                        type="text"
+                        class="block w-[200px] rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="postcode"
+                        class="absolute -top-2 left-[232px] bg-white px-1 text-sm text-gray-500"
+                      >
+                        Postcode*
+                      </label>
+                      <input
+                        id="postcode"
+                        name="postcode"
+                        value={formValues.postcode}
+                        onChange={handleInputChange}
+                        type="number"
+                        class="block w-[200px] rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div class="relative flex justify-between">
+                    <div>
+                      <label
+                        htmlFor="state"
+                        class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
+                      >
+                        State*
+                      </label>
+                      <input
+                        id="state"
+                        name="state"
+                        value={formValues.state}
+                        onChange={handleInputChange}
+                        type="text"
+                        class="block w-[200px] rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="countryorregion"
+                        class="absolute -top-2 left-[232px] bg-white px-1 text-sm text-gray-500"
+                      >
+                        Country/Region*
+                      </label>
+                      <input
+                        id="countryorregion"
+                        name="country"
+                        value={formValues.country}
+                        onChange={handleInputChange}
+                        type="text"
+                        class="block w-[200px] rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                      />
+                    </div>
+                  </div>
+                  <div class="relative">
+                    <label
+                      htmlFor="phonenumber"
+                      class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
+                    >
+                      Phone Number*
+                    </label>
+                    <input
+                      id="phonenumber"
+                      name="phonenumber"
+                      value={formValues.phonenumber}
+                      onChange={handleInputChange}
+                      type="text"
+                      class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                      required
                     />
                   </div>
                 </div>
-                <div class="relative">
-                  <label
-                    for="phonenumber"
-                    class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
-                  >
-                    Phone Number*
-                  </label>
-                  <input
-                    id="phonenumber"
-                    type="text"
-                    class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                  />
-                </div>
-              </div>
 
-              {/* Modal footer */}
-              <div className="flex items-center p-4 md:p-5 justify-end">
+                {/* Modal footer */}
+                <div className="flex items-center p-4 md:p-5 justify-end">
+                  <button
+                    // onClick={handleFormSubmit}
+                    type="submit"
+                    className="btn rounded-full text-white bg-black hover:bg-gray focus:ring-4 focus:outline-none focus:ring-black font-medium text-sm px-5 py-2.5 text-center"
+                  >
+                    Save
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Edit Modal structure */}
+      {isEditModalOpen && (
+        <>
+          {/* Overlay to dim background */}
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-40"></div>
+          <div
+            id="medium-modal"
+            tabIndex="-1"
+            className="fixed top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full flex justify-center items-center"
+            onClick={closeEditModal}
+          >
+            <div
+              className="relative w-full h-[80vh] overflow-y-auto max-w-lg max-h-full bg-white rounded-3xl shadow p-6"
+              onClick={(e) => e.stopPropagation()} // Prevents closing when clicking inside modal content
+            >
+              {/* Modal content */}
+              <div className="flex items-center justify-between p-4 md:p-5">
+                <h3 className="text-xl font-medium text-black dark:text-black">
+                  Edit Address
+                </h3>
                 <button
-                  onClick={closeModal}
-                  className="btn rounded-full text-white bg-black hover:bg-gray focus:ring-4 focus:outline-none focus:ring-black font-medium text-sm px-5 py-2.5 text-center"
+                  type="button"
+                  onClick={closeEditModal}
+                  className="text-black bg-transparent hover:bg-gray-200 hover:text-black rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-black dark:hover:text-white"
                 >
-                  Save
+                  <svg
+                    className="w-3 h-3"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 14 14"
+                  >
+                    <path
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M1 1l6 6m0 0l6 6M7 7l6-6M7 7l-6 6"
+                    />
+                  </svg>
+                  <span className="sr-only">Close modal</span>
                 </button>
               </div>
+
+              {/* Modal body */}
+              <form action="">
+                <div className="p-4 md:p-5 space-y-4 flex flex-col gap-7">
+                  <div class="relative">
+                    <label
+                      htmlFor="username"
+                      class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
+                    >
+                      Username*
+                    </label>
+                    <input
+                      id="username"
+                      name="username"
+                      value={editFormValues.username}
+                      onChange={handleEditInputChange}
+                      type="text"
+                      class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                      required
+                    />
+                  </div>
+                  <div class="relative">
+                    <label
+                      htmlFor="streetaddress"
+                      class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
+                    >
+                      Street Address*
+                    </label>
+                    <input
+                      id="streetaddress"
+                      name="street"
+                      value={editFormValues.street}
+                      onChange={handleEditInputChange}
+                      type="text"
+                      class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                      required
+                    />
+                  </div>
+                  <div class="relative">
+                    <label
+                      htmlFor="townorvillage"
+                      class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
+                    >
+                      Town/Village*
+                    </label>
+                    <input
+                      id="townorvillage"
+                      name="village"
+                      value={editFormValues.village}
+                      onChange={handleEditInputChange}
+                      type="text"
+                      class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                    />
+                  </div>
+                  <div class="relative flex justify-between">
+                    <div>
+                      <label
+                        htmlFor="townorcity"
+                        class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
+                      >
+                        Town/City*
+                      </label>
+                      <input
+                        id="townorcity"
+                        name="town"
+                        value={editFormValues.town}
+                        onChange={handleEditInputChange}
+                        type="text"
+                        class="block w-[200px] rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="postcode"
+                        class="absolute -top-2 left-[232px] bg-white px-1 text-sm text-gray-500"
+                      >
+                        Postcode*
+                      </label>
+                      <input
+                        id="postcode"
+                        name="postcode"
+                        value={editFormValues.postcode}
+                        onChange={handleEditInputChange}
+                        type="number"
+                        class="block w-[200px] rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div class="relative flex justify-between">
+                    <div>
+                      <label
+                        htmlFor="state"
+                        class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
+                      >
+                        State*
+                      </label>
+                      <input
+                        id="state"
+                        name="state"
+                        value={editFormValues.state}
+                        onChange={handleEditInputChange}
+                        type="text"
+                        class="block w-[200px] rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="countryorregion"
+                        class="absolute -top-2 left-[232px] bg-white px-1 text-sm text-gray-500"
+                      >
+                        Country/Region*
+                      </label>
+                      <input
+                        id="countryorregion"
+                        name="country"
+                        value={editFormValues.country}
+                        onChange={handleEditInputChange}
+                        type="text"
+                        class="block w-[200px] rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                      />
+                    </div>
+                  </div>
+                  <div class="relative">
+                    <label
+                      htmlFor="phonenumber"
+                      class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
+                    >
+                      Phone Number*
+                    </label>
+                    <input
+                      id="phonenumber"
+                      name="phonenumber"
+                      value={editFormValues.phonenumber}
+                      onChange={handleEditInputChange}
+                      type="text"
+                      class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Modal footer */}
+                <div className="flex items-center p-4 md:p-5 justify-end">
+                  <button
+                    onClick={handleDeleteAddress}
+                    className="btn mr-2 rounded-full text-white bg-black hover:bg-gray focus:ring-4 focus:outline-none focus:ring-black font-medium text-sm px-5 py-2.5 text-center"
+                  >
+                    Delete
+                  </button>
+                  <button
+                    onClick={handleEditFormSubmit}
+                    className="btn rounded-full text-white bg-black hover:bg-gray focus:ring-4 focus:outline-none focus:ring-black font-medium text-sm px-5 py-2.5 text-center"
+                    disabled={disableButton}
+                  >
+                    Update
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </>

@@ -5,6 +5,7 @@ import userRouter from './router/userRouter.js';
 import adminRouter from './router/adminRouter.js';
 import categoryRouter from './router/categoryRoutes.js';
 import productRouter from './router/productRouter.js';
+import addressRouter from './router/addressRouter.js';
 import otpRouter from './router/otpRouter.js';
 import connectDB from './db/connection.js';
 
@@ -27,6 +28,8 @@ app.use('/admin', adminRouter);
 app.use('/category', categoryRouter);
 //PRODUCT-ROUTE
 app.use('/product', productRouter);
+//ADDRESS-ROUTE
+app.use('/address', addressRouter);
 
 
 

@@ -7,8 +7,10 @@ import { Radio, RadioGroup } from "@headlessui/react";
 import ReviewSection from "../../../components/user_components/review_section/ReviewSection";
 import { useParams } from "react-router-dom";
 import { getProduct } from "../../../api/product";
-import Zoom from 'react-medium-image-zoom';
-import 'react-medium-image-zoom/dist/styles.css';
+import Zoom from "react-medium-image-zoom";
+import "react-medium-image-zoom/dist/styles.css";
+import { useSelector } from "react-redux";
+import { addToBag } from "../../../api/bag";
 
 // const product = {
 //   name: "Basic Tee 6-Pack",
@@ -71,6 +73,8 @@ function classNames(...classes) {
 const SingleProductPage = () => {
   const { id } = useParams();
 
+  const {uid} = useSelector((state) => state.user);
+
   const [product, setProduct] = useState({});
   const [selectedSize, setSelectedSize] = useState(null);
 
@@ -78,10 +82,23 @@ const SingleProductPage = () => {
     const fetchProduct = async () => {
       const { singleProduct } = await getProduct(id);
       setProduct(singleProduct);
-      console.log(product.price);
     };
     fetchProduct();
   }, []);
+
+  //add to bag
+  const handleAddToBag = async(e, productId) => {
+    e.preventDefault();
+    const data = {
+      userId : uid,
+      productId,
+    }
+    try {
+      await addToBag(data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   // useEffect(() => {
   //   if (product.sizes && product.sizes.length > 2) {
@@ -101,11 +118,11 @@ const SingleProductPage = () => {
             {product.images?.[3] && (
               <div className="aspect-h-4 aspect-w-3 hidden overflow-hidden rounded-lg lg:block">
                 <Zoom>
-                <img
-                  alt={product.productName}
-                  src={`data:image/jpeg;base64,${product.images[3]}`}
-                  className="h-full w-full object-cover object-center"
-                />
+                  <img
+                    alt={product.productName}
+                    src={`data:image/jpeg;base64,${product.images[3]}`}
+                    className="h-full w-full object-cover object-center"
+                  />
                 </Zoom>
               </div>
             )}
@@ -113,22 +130,22 @@ const SingleProductPage = () => {
               {product.images?.[2] && (
                 <div className="aspect-h-2 aspect-w-3 overflow-hidden rounded-lg">
                   <Zoom>
-                  <img
-                    alt={product.productName}
-                    src={`data:image/jpeg;base64,${product.images[2]}`}
-                    className="h-full w-full object-cover object-center"
-                  />
+                    <img
+                      alt={product.productName}
+                      src={`data:image/jpeg;base64,${product.images[2]}`}
+                      className="h-full w-full object-cover object-center"
+                    />
                   </Zoom>
                 </div>
               )}
               {product.images?.[1] && (
                 <div className="aspect-h-2 aspect-w-3 overflow-hidden rounded-lg">
                   <Zoom>
-                  <img
-                    alt={product.productName}
-                    src={`data:image/jpeg;base64,${product.images[1]}`}
-                    className="h-full w-full object-cover object-center"
-                  />
+                    <img
+                      alt={product.productName}
+                      src={`data:image/jpeg;base64,${product.images[1]}`}
+                      className="h-full w-full object-cover object-center"
+                    />
                   </Zoom>
                 </div>
               )}
@@ -136,11 +153,11 @@ const SingleProductPage = () => {
             {product.images?.[0] && (
               <div className="aspect-h-5 aspect-w-4 lg:aspect-h-4 lg:aspect-w-3 sm:overflow-hidden sm:rounded-lg">
                 <Zoom>
-                <img
-                  alt={product.productName}
-                  src={`data:image/jpeg;base64,${product.images[0]}`}
-                  className="h-full w-full object-cover object-center"
-                />
+                  <img
+                    alt={product.productName}
+                    src={`data:image/jpeg;base64,${product.images[0]}`}
+                    className="h-full w-full object-cover object-center"
+                  />
                 </Zoom>
               </div>
             )}
@@ -240,58 +257,65 @@ const SingleProductPage = () => {
                   </div>
 
                   <fieldset aria-label="Choose a size" className="mt-4">
-                    {/* <RadioGroup
+                    <RadioGroup
                       value={selectedSize}
                       onChange={setSelectedSize}
                       className="grid grid-cols-4 gap-4 sm:grid-cols-8 lg:grid-cols-4"
                     >
-                      {product.map((size) => (
-                        <Radio
-                          key={size.name}
-                          value={size}
-                          disabled={!size.inStock}
-                          className={classNames(
-                            size.inStock
-                              ? "cursor-pointer bg-white text-gray-900 shadow-sm"
-                              : "cursor-not-allowed bg-gray-50 text-gray-200",
-                            "group relative flex items-center justify-center rounded-md border px-4 py-3 text-sm font-medium uppercase hover:bg-gray-50 focus:outline-none data-[focus]:ring-2 data-[focus]:ring-indigo-500 sm:flex-1 sm:py-6"
-                          )}
-                        >
-                          <span>{size.name}</span>
-                          {size.inStock ? (
-                            <span
-                              aria-hidden="true"
-                              className="pointer-events-none absolute -inset-px rounded-md border-2 border-transparent group-data-[focus]:border group-data-[checked]:border-indigo-500"
-                            />
-                          ) : (
-                            <span
-                              aria-hidden="true"
-                              className="pointer-events-none absolute -inset-px rounded-md border-2 border-gray-200"
-                            >
-                              <svg
-                                stroke="currentColor"
-                                viewBox="0 0 100 100"
-                                preserveAspectRatio="none"
-                                className="absolute inset-0 h-full w-full stroke-2 text-gray-200"
+                      {product?.sizes?.length > 0 ? (
+                        product.sizes.map((size) => (
+                          <Radio
+                            key={size.name}
+                            value={size.name}
+                            disabled={!size.inStock}
+                            className={classNames(
+                              size.inStock
+                                ? "cursor-pointer bg-white text-gray-900 shadow-sm"
+                                : "cursor-not-allowed bg-gray-50 text-gray-200",
+                              "group relative flex items-center justify-center rounded-md border px-4 py-3 text-sm font-medium uppercase hover:bg-gray-50 focus:outline-none"
+                            )}
+                          >
+                            <span>{size.name}</span>
+                            {size.inStock ? (
+                              <span
+                                aria-hidden="true"
+                                className="pointer-events-none absolute -inset-px rounded-md border-2 border-transparent group-focus:border group-checked:border-indigo-500"
+                              />
+                            ) : (
+                              <span
+                                aria-hidden="true"
+                                className="pointer-events-none absolute -inset-px rounded-md border-2 border-gray-200"
                               >
-                                <line
-                                  x1={0}
-                                  x2={100}
-                                  y1={100}
-                                  y2={0}
-                                  vectorEffect="non-scaling-stroke"
-                                />
-                              </svg>
-                            </span>
-                          )}
-                        </Radio>
-                      ))}
-                    </RadioGroup> */}
+                                <svg
+                                  stroke="currentColor"
+                                  viewBox="0 0 100 100"
+                                  preserveAspectRatio="none"
+                                  className="absolute inset-0 h-full w-full stroke-2 text-gray-200"
+                                >
+                                  <line
+                                    x1={0}
+                                    x2={100}
+                                    y1={100}
+                                    y2={0}
+                                    vectorEffect="non-scaling-stroke"
+                                  />
+                                </svg>
+                              </span>
+                            )}
+                          </Radio>
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-500">
+                          No sizes available
+                        </p>
+                      )}
+                    </RadioGroup>
                   </fieldset>
                 </div>
 
                 <button
                   type="submit"
+                  onClick={(e) => handleAddToBag(e, product._id)}
                   className="mt-10 flex w-full items-center justify-center rounded-md border border-transparent bg-black px-8 py-3 text-base font-medium text-white hover:bg-[#000000d6] focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
                 >
                   Add to bag
@@ -347,7 +371,7 @@ const SingleProductPage = () => {
       <h1 className="text-xl text-black font-clash-display px-10 font-bold">
         Related Products
       </h1>
-      
+
       <Footer />
     </div>
   );

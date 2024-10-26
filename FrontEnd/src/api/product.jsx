@@ -25,7 +25,6 @@ const addProduct = async (formData) => {
 const fetchProducts = async () => {
   try {
     const response = await axios.get(`${API_URL}/fetchProducts`);
-    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching categories:", error);
@@ -33,10 +32,8 @@ const fetchProducts = async () => {
 };
 
 const getProduct = async (id) => {
-  console.log(id);
   try {
     const response = await axios.get(`${API_URL}/${id}`);
-    console.log(response);
     return response.data;
   } catch (error) {
     console.log("Error while getting product", error);

@@ -3,7 +3,15 @@ import address from "../modal/addressModal.js";
 //ADD NEW ADDRESS
 const addAddress = async (req, res) => {
   try {
-    const newAddress = new address(req.body);
+    const userId = req.params.id;
+    console.log(userId);
+    const newAddress = new address({
+      ...req.body,  
+      userId: userId 
+    });
+    if(req.body.defaultAddress === true){
+      await address.updateMany({ userId }, { $set: { defaultAddress: false } });
+    }
     await newAddress.save();
     res.status(201).json({ message: "New Address Added", newAddress });
   } catch (error) {
@@ -14,7 +22,8 @@ const addAddress = async (req, res) => {
 //FETCH ADDRESS
 const fetchAddress = async (req, res) => {
   try {
-    const allAddress = await address.find();
+    const userId = req.params.id;
+    const allAddress = await address.find({userId});
     res.status(200).json({ allAddress });
   } catch (error) {
     console.log(error);
@@ -52,6 +61,18 @@ const deleteAddress = async (req, res) => {
     } catch (error) {
         console.log(error);
     }
+};
+
+//fetch only default address
+const getDefault = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const defaultAddress = await address.find({userId, defaultAddress : true});
+    res.status(200).json({defaultAddress})
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({message: "Server error"})
+  }
 }
 
-export { addAddress, fetchAddress, editAddress, deleteAddress };
+export { addAddress, fetchAddress, editAddress, deleteAddress, getDefault };

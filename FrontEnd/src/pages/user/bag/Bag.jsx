@@ -3,10 +3,17 @@ import Navbar from "../../../components/user_components/navbar/Navbar";
 import BagSection from "../../../components/user_components/bag_item_section/BagSection";
 import Footer from "../../../components/user_components/footer/Footer";
 import { delFromBag, fetchBag } from "../../../api/bag";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { removeProduct, storeSubtotal } from "../../../features/bag/BagSlice";
+import { Link } from "react-router-dom";
+
+const DELIVERY_FEE = 100;
 
 const Bag = () => {
   const { uid } = useSelector((state) => state.user);
+  const { calculatedSubtotal } = useSelector((state) => state.bag);
+
+  const dispatch = useDispatch();
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -16,7 +23,7 @@ const Bag = () => {
       setLoading(true);
       try {
         const { bagItems } = await fetchBag(uid);
-        setProducts(bagItems);
+        setProducts(bagItems.reverse());
       } catch (error) {
         console.error("Error fetching bag items:", error);
       } finally {
@@ -28,6 +35,39 @@ const Bag = () => {
     }
   }, [uid]);
 
+  // Calculate subtotal whenever products change
+  useEffect(() => {
+    // const calculatedSubtotal = products.reduce(
+    //   (acc, product) => acc + product.price * product.quantity,
+    //   0
+    // );
+    dispatch(storeSubtotal({ subtotal: calculatedSubtotal }));
+  }, [products]);
+
+  // Function to update product quantity and trigger subtotal calculation
+  const updateSubtotal = (productId, newQuantity) => {
+    setProducts((prevProducts) => {
+      const updatedProducts = prevProducts.map((product) =>
+        product.productId === productId
+          ? { ...product, quantity: newQuantity }
+          : product
+      );
+
+      // Calculate the subtotal based on the updated products array
+      const newSubtotal = updatedProducts.reduce(
+        (acc, product) => acc + product.price * product.quantity,
+        0
+      );
+
+      // Dispatch the new subtotal immediately after calculation
+      dispatch(storeSubtotal({ subtotal: newSubtotal }));
+
+      return updatedProducts;
+    });
+  };
+
+  const total = calculatedSubtotal + DELIVERY_FEE;
+
   //handle bag product deletation from child component with calback function
   const handleDeleteProduct = async (productId) => {
     try {
@@ -35,6 +75,8 @@ const Bag = () => {
       setProducts((prevProducts) =>
         prevProducts.filter((product) => product.productId !== productId)
       );
+      dispatch(removeProduct({ productId }));
+      dispatch(storeSubtotal({ calculatedSubtotal }));
     } catch (error) {
       console.error("Error deleting product:", error);
     }
@@ -43,7 +85,7 @@ const Bag = () => {
   return (
     <div className="min-h-screen h-auto">
       <Navbar />
-      <div className="pt-11 px-32 ">
+      <div className="pt-11 px-32">
         {loading ? (
           <div className="w-full h-[75vh] flex justify-center items-center">
             <span className="loading loading-spinner loading-lg text-black"></span>
@@ -64,10 +106,12 @@ const Bag = () => {
                     img={product.productImage}
                     name={product.productName}
                     category={product.category}
-                    price={product.price}
+                    managePrice={product.price}
                     qty={product.quantity}
+                    stock={product.stock}
                     productId={product.productId}
                     removeProduct={handleDeleteProduct}
+                    onQuantityChange={updateSubtotal}
                   />
                 ))}
             </div>
@@ -77,20 +121,24 @@ const Bag = () => {
 
               <div className="flex justify-between">
                 <h1>Subtotal</h1>
-                <h1>₹56 285.00</h1>
+                <h1>₹{calculatedSubtotal.toFixed(2)}</h1>
               </div>
               <div className="flex justify-between">
                 <h1>Estimated Delivery & Handling</h1>
-                <h1>₹1 250.00</h1>
+                <h1>₹{DELIVERY_FEE.toFixed(2)}</h1>
               </div>
               <hr />
               <div className="flex justify-between">
                 <h1>Total</h1>
-                <h1>₹57 535.00</h1>
+                <h1>₹{total.toFixed(2)}</h1>
               </div>
               <hr />
 
-              <button className="btn rounded-full mt-3">Checkout</button>
+              <Link to={"/bag/checkout"}>
+                <button className="btn rounded-full mt-3 w-full bg-black text-white tracking-[1px]">
+                  Checkout
+                </button>
+              </Link>
             </div>
           </div>
         )}

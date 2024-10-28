@@ -1,25 +1,64 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FiHeart } from "react-icons/fi";
 import { RiDeleteBinLine } from "react-icons/ri";
-import { delFromBag } from "../../../api/bag";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { updateQuantity } from "../../../features/bag/BagSlice";
 
 const BagSection = ({
   img,
   name,
   category,
-  price,
+  managePrice,
   qty,
+  stock,
   productId,
   removeProduct,
+  onQuantityChange,
 }) => {
-  const { uid } = useSelector((state) => state.user);
+  const quantities = useSelector((state) => state.bag.quantities[productId]);
 
-  const [quantity, setQuantity] = useState(qty);
+  const dispatch = useDispatch();
+
+  const [quantity, setQuantity] = useState(quantities || qty);
+  const [maxStock, setMaxStock] = useState(10);
+  const [price, setPrice] = useState(managePrice * quantity);
+
+  useEffect(() => {
+    if (stock >= 10) {
+      setMaxStock(10);
+    } else if (stock > 5 && stock <= 9) {
+      setMaxStock(3);
+    } else {
+      setMaxStock(1);
+    }
+  }, [stock]);
+
+  //use effect for dispaching and storing quantity info in redux
+  useEffect(() => {
+    dispatch(updateQuantity({productId, quantity}))
+
+    setPrice(quantity * managePrice);
+  }, [dispatch, productId, quantity])
+
+  const handleQuantityInc = () => {
+    setQuantity(quantity + 1);
+    if (qty < stock) {
+      onQuantityChange(productId, qty + 1); 
+    }
+  };
+  
+  const handleQuantityDec = () => {
+    setQuantity(quantity - 1);
+    if (qty > 1) {
+      onQuantityChange(productId, qty - 1); 
+    }
+  }
+  
 
   const handleDeleteFromBag = async () => {
     removeProduct(productId);
   };
+
   return (
     <div>
       <div className=" w-[720px] flex justify-between items-start py-3 border-b border-gray-400">
@@ -35,7 +74,8 @@ const BagSection = ({
                 <button
                   type="button"
                   class="px-4 py-2 text-sm font-medium text-black bg-white border border-black border-r-0 rounded-s-full hover:bg-gray-300 hover:rounded-e-full"
-                  onClick={() => setQuantity((pre) => pre - 1)}
+                  disabled={quantity === 1}
+                  onClick={handleQuantityDec}
                 >
                   -
                 </button>
@@ -48,7 +88,8 @@ const BagSection = ({
                 <button
                   type="button"
                   class="px-4 py-2 text-sm font-medium text-black bg-white border border-black border-l-0 rounded-e-full hover:bg-gray-300 hover:rounded-s-full"
-                  onClick={() => setQuantity((pre) => pre + 1)}
+                  disabled={quantity >= maxStock}
+                  onClick={handleQuantityInc}
                 >
                   +
                 </button>
@@ -66,12 +107,12 @@ const BagSection = ({
           <h2 className="text-gray-500">{category}</h2>
           <h2 className="text-gray-500">Normal Variant</h2>
           <h2>
-            Size <span className="underline">7</span>
+            Size<span className="underline ml-2">7</span>
           </h2>
         </div>
         <div className="flex">
           <h1>
-            MRP:₹<span>{price}</span>
+            MRP : ₹ <span>{price}</span>
           </h1>
           <button className="ml-3 mb-3 px-3 py-3 text-sm font-medium text-black bg-white border border-black rounded-full hover:bg-gray-300" onClick={handleDeleteFromBag}>
             <RiDeleteBinLine />

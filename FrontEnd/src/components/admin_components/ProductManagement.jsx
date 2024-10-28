@@ -351,7 +351,7 @@ const ProductManagement = () => {
                         </div>
                       </div>
                     </th>
-                    <td className="px-6 py-4">{product.category}</td>
+                    <td className="px-6 py-4">{categories.name}</td>
                     <td className="px-6 py-4">{product.brand}</td>
                     <td className="px-6 py-4">{product.price}</td>
                     <td className="px-6 py-4">{product.stock}</td>
@@ -567,17 +567,17 @@ const ProductManagement = () => {
                         </label>
                         <div className="grid grid-cols-3 gap-4">
                           {[
-                            "IND 6",
-                            "IND 6.5",
-                            "IND 7",
-                            "IND 7.5",
-                            "IND 8",
-                            "IND 8.5",
-                            "IND 9",
-                            "IND 9.5",
-                            "IND 10",
-                            "IND 11",
-                            "IND 12",
+                            "UK 6",
+                            "UK 6.5",
+                            "UK 7",
+                            "UK 7.5",
+                            "UK 8",
+                            "UK 8.5",
+                            "UK 9",
+                            "UK 9.5",
+                            "UK 10",
+                            "UK 11",
+                            "UK 12",
                           ].map((size, index) => (
                             <div key={index} className="flex items-center">
                               <input

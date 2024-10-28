@@ -11,6 +11,7 @@ import Zoom from "react-medium-image-zoom";
 import "react-medium-image-zoom/dist/styles.css";
 import { useSelector } from "react-redux";
 import { addToBag } from "../../../api/bag";
+import { toast } from "react-toastify";
 
 // const product = {
 //   name: "Basic Tee 6-Pack",
@@ -89,6 +90,10 @@ const SingleProductPage = () => {
   //add to bag
   const handleAddToBag = async(e, productId) => {
     e.preventDefault();
+    console.log(product)
+    if(product.stock < 2){
+      return toast.warning("Product Out Of Stock");
+    }
     const data = {
       userId : uid,
       productId,
@@ -100,11 +105,11 @@ const SingleProductPage = () => {
     }
   }
 
-  // useEffect(() => {
-  //   if (product.sizes && product.sizes.length > 2) {
-  //     setSelectedSize(product.sizes[2]);
-  //   }
-  // }, []);
+  useEffect(() => {
+    if (product.sizes && product.sizes.length > 2) {
+      setSelectedSize(product.sizes[2]);
+    }
+  }, []);
 
   // const [selectedColor, setSelectedColor] = useState(product.colors[0]);
   return (
@@ -177,9 +182,22 @@ const SingleProductPage = () => {
               <p className="text-3xl tracking-tight text-gray-900">
                 ₹{product.price}
               </p>
-              <h1>Stock</h1>
+
+              {/* Stock */}
               <p className="text-xl tracking-tight text-gray-900">
-                {product.stock}
+                {product.stock > 10 ? (
+                  <h1 className="bg-green-400 w-fit px-2 rounded-md text-[14px] font-bold">In Stock</h1>
+                ) : (
+                  product.stock > 2 && product.stock <= 10 ? (
+                    <h1 className="bg-yellow-400 w-fit px-2 rounded-md text-[14px] font-bold">Few Left</h1>
+                  ) : (
+                    product.stock < 2 ? (
+                      <h1 className="bg-red-400 w-fit px-2 rounded-md text-[14px] font-bold">Out of Stock</h1>
+                    ) : (
+                      <h1 className="bg-orange-400 w-fit px-2 rounded-md text-[14px] font-bold">Low Stock</h1>
+                    )
+                  )
+                )}
               </p>
 
               {/* Reviews */}

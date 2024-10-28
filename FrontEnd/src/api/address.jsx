@@ -4,12 +4,12 @@ import { toast } from "react-toastify";
 const API_URL = "http://localhost:3000/address";
 
 //add new address
-const addAddress = async (data) => {
+const addAddress = async (data, userId) => {
   const token = localStorage.getItem("userToken");
 
   console.log("data form frontend", data);
   try {
-    const response = await axios.post(`${API_URL}/add-address`, data, {
+    const response = await axios.post(`${API_URL}/add-address/${userId}`, data, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -24,10 +24,25 @@ const addAddress = async (data) => {
 };
 
 //fetching all address;
-const getAddress = async() => {
+const getAddress = async(userId) => {
   const token = localStorage.getItem('userToken');
   try {
-    const response = await axios.get(`${API_URL}/get-alladdress`, {
+    const response = await axios.get(`${API_URL}/get-alladdress/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+//fetching default address;
+const getDefaultAddress = async(userId) => {
+  const token = localStorage.getItem('userToken');
+  try {
+    const response = await axios.get(`${API_URL}/get-default/${userId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -80,4 +95,4 @@ const delAddress = async(id) => {
   }
 }
 
-export { addAddress, getAddress, editAddress, delAddress };
+export { addAddress, getAddress, editAddress, delAddress, getDefaultAddress };

@@ -3,6 +3,7 @@ import { persistStore, persistReducer} from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import { combineReducers} from 'redux'
 import userReducer from '../features/users/UserSlice';
+import bagReducer from '../features/bag/BagSlice'
 
 //persist Config
 const persistConfig = {
@@ -12,6 +13,7 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
     user: userReducer,
+    bag: bagReducer,
 })
 
 //persist reducer

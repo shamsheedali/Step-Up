@@ -7,22 +7,30 @@ import {
   editAddress,
   getAddress,
 } from "../../../api/address";
+import { useSelector } from "react-redux";
 
 const DeliveryAddresses = () => {
+  const { uid } = useSelector((state) => state.user);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const [address, setAddress] = useState([]);
   const [disableButton, setDisableButton] = useState(true);
   const [addressId, setAddressId] = useState("");
+  const [addressChanged, setAddressChanged] = useState(false);
 
   useEffect(() => {
     const getAllAddress = async () => {
-      const { allAddress } = await getAddress();
+      const { allAddress } = await getAddress(uid);
       setAddress(allAddress);
+      setAddressChanged(false);
     };
-    getAllAddress();
-  }, [address]);
+
+    if (uid) {
+      getAllAddress();
+    }
+  }, [uid, addressChanged]);
 
   const [formValues, setFormValues] = useState({
     username: "",
@@ -33,6 +41,7 @@ const DeliveryAddresses = () => {
     state: "",
     country: "",
     phonenumber: "",
+    defaultAddress: "",
   });
 
   const [editFormValues, setEditFormValues] = useState({
@@ -47,11 +56,11 @@ const DeliveryAddresses = () => {
   });
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, type, checked, value } = e.target;
 
     setFormValues((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
@@ -99,9 +108,11 @@ const DeliveryAddresses = () => {
       state: formValues.state,
       country: formValues.country,
       phonenumber: formValues.phonenumber,
+      defaultAddress: formValues.defaultAddress,
     };
     try {
-      await addAddress(data);
+      await addAddress(data, uid);
+      setAddressChanged(true);
       setFormValues({
         username: "",
         street: "",
@@ -133,6 +144,7 @@ const DeliveryAddresses = () => {
     };
     try {
       await editAddress(data, addressId);
+      setAddressChanged(true);
       closeEditModal();
     } catch (error) {
       console.log(error);
@@ -145,6 +157,8 @@ const DeliveryAddresses = () => {
     e.preventDefault();
     try {
       await delAddress(addressId);
+      setAddressChanged(true);
+
       closeEditModal();
     } catch (error) {
       console.log(error);
@@ -388,6 +402,22 @@ const DeliveryAddresses = () => {
                       class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
                       required
                     />
+                  </div>
+                  <div className="relative flex items-center gap-2">
+                    <input
+                      id="defaultAddress"
+                      name="defaultAddress"
+                      type="checkbox"
+                      checked={formValues.defaultAddress}
+                      onChange={handleInputChange}
+                      className="h-5 w-5 rounded border border-black text-black bg-white checked:bg-black checked:border-black focus:ring-black focus:ring-2"
+                    />
+                    <label
+                      htmlFor="defaultAddress"
+                      className="text-black text-sm font-medium"
+                    >
+                      Set this as default address
+                    </label>
                   </div>
                 </div>
 

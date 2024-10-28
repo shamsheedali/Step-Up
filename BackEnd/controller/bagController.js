@@ -53,7 +53,7 @@ const fetchBag = async (req, res) => {
 
     const bag = await Bag.findOne({ userId }).populate(
       "products.productId",
-      "productName category price images"
+      "productName category price stock images"
     );
 
     if (!bag) {
@@ -66,6 +66,7 @@ const fetchBag = async (req, res) => {
       productName: item.productId.productName,
       category: item.productId.category,
       price: item.productId.price,
+      stock: item.productId.stock,
       quantity: item.quantity,
       subtotal: item.productId.price * item.quantity,
     }));
@@ -124,6 +125,5 @@ const deleteProductFromBag = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
 
 export { addToBag, fetchBag, deleteProductFromBag };

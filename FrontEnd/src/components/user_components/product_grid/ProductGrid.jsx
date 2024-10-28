@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { HiOutlineShoppingBag } from "react-icons/hi2";
 import { addToBag } from "../../../api/bag";
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
 const ProductGrid = () => {
 
@@ -38,6 +39,10 @@ const ProductGrid = () => {
 
   //add to bag
   const handleAddToBag = async (productId) => {
+    const product = products.find((product) => product._id === productId);
+    if(product.stock < 2){
+      return toast.warning("Product Out Of Stock");
+    }
     const data = {
       userId: uid,
       productId,

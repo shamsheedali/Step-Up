@@ -126,4 +126,18 @@ const deleteProductFromBag = async (req, res) => {
   }
 };
 
-export { addToBag, fetchBag, deleteProductFromBag };
+//CLEAR BAG
+const clearBag = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const cleared = await Bag.findOneAndDelete({userId});
+
+    console.log("bag cleared",cleared);
+
+  } catch (error) {
+    console.log(error);
+  } 
+}
+
+export { addToBag, fetchBag, deleteProductFromBag, clearBag };

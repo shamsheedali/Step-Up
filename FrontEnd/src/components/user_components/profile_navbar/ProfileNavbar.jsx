@@ -7,7 +7,7 @@ const ProfileNavbar = () => {
       <nav className='flex items-center justify-center w-full text-base'>
         <ul className='flex gap-8'>
             <Link to={'/profile'}>Profile</Link>
-            <li>Orders</li>
+            <Link to={'/profile/orders'}>Orders</Link>
             <li>Favourites</li>
             <Link to={'/profile/settings'}>Settings</Link>
         </ul>

@@ -7,6 +7,7 @@ import { signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '../../../../firebase/firebase';
 import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../../../features/users/UserSlice";
+import { initializeBag } from "../../../features/bag/BagSlice";
 
 const Login = () => {
 
@@ -49,8 +50,10 @@ const Login = () => {
       try {
         const {user} = await login(formData);
           dispatch(setUser({uid:user._id, username: user.username, email: user.email, isVerified: true}));
+          dispatch(initializeBag({ userId: user._id }))
           navigate("/"); 
       } catch (error) {
+        console.log(error)
         setErrorMessage("Invalid email or password"); 
       } finally {
         setLoading(false);
@@ -75,6 +78,7 @@ const Login = () => {
       }
       await storeGoogleInfo(userDetails);
       dispatch(setUser({uid: user.uid, username: user.displayName, email: user.email, isVerified: true}));
+      dispatch(initializeBag({ userId: user.uid }))
 
       navigate('/'); // Redirecting to Home after successful login
     } catch (error) {

@@ -73,6 +73,7 @@ const OtpPage = () => {
       const {username, email, _id} = response.data.user;
       toast.success("OTP Verified");
       dispatch(setUser({uid :_id, username, email, isVerified: true}));
+      dispatch(initializeBag({ userId: _id }))
       navigate('/')
      }
     } catch (error) {

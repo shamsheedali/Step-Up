@@ -8,6 +8,7 @@ import productRouter from './router/productRouter.js';
 import otpRouter from './router/otpRouter.js';
 import addressRouter from './router/addressRouter.js';
 import bagRouter from './router/bagRouter.js';
+import orderRouter from './router/orderRouter.js';
 import connectDB from './db/connection.js';
 
 dotenv.config();
@@ -33,6 +34,8 @@ app.use('/product', productRouter);
 app.use('/address', addressRouter);
 //BAG-ROUTE
 app.use('/bag', bagRouter);
+//ORDER-ROUTE
+app.use('/order', orderRouter);
 
 
 

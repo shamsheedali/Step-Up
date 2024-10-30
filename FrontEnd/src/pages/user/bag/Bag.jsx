@@ -11,7 +11,8 @@ const DELIVERY_FEE = 100;
 
 const Bag = () => {
   const { uid } = useSelector((state) => state.user);
-  const { calculatedSubtotal } = useSelector((state) => state.bag);
+  const { calculatedSubtotal } = useSelector((state) => state.bag.bags[uid] || { calculatedSubtotal: 0 });
+  const quantities = useSelector((state) => state.bag.bags[uid]?.quantities || {});
 
   const dispatch = useDispatch();
 
@@ -37,12 +38,19 @@ const Bag = () => {
 
   // Calculate subtotal whenever products change
   useEffect(() => {
-    // const calculatedSubtotal = products.reduce(
-    //   (acc, product) => acc + product.price * product.quantity,
-    //   0
-    // );
-    dispatch(storeSubtotal({ subtotal: calculatedSubtotal }));
-  }, [products]);
+    console.log("Quantities:", quantities); // Check quantities from Redux
+    console.log("Products:", products);     // Check products array
+
+    const calculatedSubtotal = products.reduce((acc, product) => {
+      const quantity = quantities[product.productId] || 0; // Default to 0 if not found
+      const itemTotal = product.price * quantity;
+      console.log(`Product ID: ${product.productId}, Price: ${product.price}, Quantity: ${quantity}, Item Total: ${itemTotal}`);
+      return acc + itemTotal;
+    }, 0);
+
+    console.log("Subtotal:", calculatedSubtotal); // Check the calculated subtotal
+    dispatch(storeSubtotal({ userId: uid, subtotal: calculatedSubtotal }));
+  }, [products, quantities, dispatch, uid]);
 
   // Function to update product quantity and trigger subtotal calculation
   const updateSubtotal = (productId, newQuantity) => {
@@ -60,7 +68,7 @@ const Bag = () => {
       );
 
       // Dispatch the new subtotal immediately after calculation
-      dispatch(storeSubtotal({ subtotal: newSubtotal }));
+      dispatch(storeSubtotal({ userId: uid , subtotal: newSubtotal }));
 
       return updatedProducts;
     });
@@ -75,8 +83,8 @@ const Bag = () => {
       setProducts((prevProducts) =>
         prevProducts.filter((product) => product.productId !== productId)
       );
-      dispatch(removeProduct({ productId }));
-      dispatch(storeSubtotal({ calculatedSubtotal }));
+      dispatch(removeProduct({ userId: uid, productId }));
+      dispatch(storeSubtotal({ userId: uid , subtotal: calculatedSubtotal }));
     } catch (error) {
       console.error("Error deleting product:", error);
     }
@@ -121,7 +129,7 @@ const Bag = () => {
 
               <div className="flex justify-between">
                 <h1>Subtotal</h1>
-                <h1>₹{calculatedSubtotal.toFixed(2)}</h1>
+                <h1>₹{(calculatedSubtotal || 0).toFixed(2)}</h1>
               </div>
               <div className="flex justify-between">
                 <h1>Estimated Delivery & Handling</h1>

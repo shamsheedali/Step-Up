@@ -15,7 +15,8 @@ const BagSection = ({
   removeProduct,
   onQuantityChange,
 }) => {
-  const quantities = useSelector((state) => state.bag.quantities[productId]);
+  const userId = useSelector((state) => state.user.uid);
+  const quantities = useSelector((state) => state.bag.bags[userId]?.quantities[productId]);
 
   const dispatch = useDispatch();
 
@@ -35,7 +36,7 @@ const BagSection = ({
 
   //use effect for dispaching and storing quantity info in redux
   useEffect(() => {
-    dispatch(updateQuantity({productId, quantity}))
+    dispatch(updateQuantity({userId, productId, quantity}))
 
     setPrice(quantity * managePrice);
   }, [dispatch, productId, quantity])

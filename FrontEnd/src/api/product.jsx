@@ -50,7 +50,7 @@ const editProduct = async (id, data) => {
     toast.success("Product Updated");
   } catch ({ error }) {
     console.log(error);
-    toast.error("Error Updating Product")
+    toast.error("Error Updating Product");
   }
 };
 
@@ -79,4 +79,32 @@ const toggleProductState = async (id) => {
   }
 };
 
-export { addProduct, fetchProducts, getProduct, toggleProductState, editProduct };
+const productCheckout = async (productIds) => {
+  try {
+    const token = localStorage.getItem("userToken");
+
+    const response = await axios.post(
+      `${API_URL}/product-checkout`,
+      productIds,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log("prodcts response", response);
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export {
+  addProduct,
+  fetchProducts,
+  getProduct,
+  toggleProductState,
+  editProduct,
+  productCheckout,
+};

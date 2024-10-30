@@ -9,6 +9,7 @@ import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from '../../../../firebase/firebase';
 import { toast } from "react-toastify";
 import { sendOtp } from "../otp/OtpPage";
+import { initializeBag } from "../../../features/bag/BagSlice";
 
 const Signup = () => {
   
@@ -96,6 +97,7 @@ const Signup = () => {
       }
       await storeGoogleInfo(userDetails);
       dispatch(setUser({uid: user.uid, username: user.displayName, email: user.email, isVerified: true}));
+      dispatch(initializeBag({ userId: user.uid }))
 
       // Redirect to homepage
       navigate("/"); 

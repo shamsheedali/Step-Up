@@ -45,4 +45,20 @@ const delFromBag = async (userId, productId) => {
   }
 };
 
-export { addToBag, fetchBag, delFromBag };
+const clearBag =  async (userId) => {
+  try {
+    const token = localStorage.getItem('userToken');
+
+    const response = await axios.delete(`${API_URL}/clear-bag/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    });
+
+    console.log(response)
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export { addToBag, fetchBag, delFromBag, clearBag };

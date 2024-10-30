@@ -1,6 +1,6 @@
 import express from 'express';
 import multer from 'multer'
-import { addProduct, fetchProducts, getProduct, toggleProductStatus, editProduct } from '../controller/productController.js';
+import { addProduct, fetchProducts, getProduct, toggleProductStatus, editProduct, productCheckout } from '../controller/productController.js';
 import verifyToken from '../middleware/middleware.js';
 
 const router = express.Router();
@@ -14,5 +14,6 @@ router.get('/fetchProducts', fetchProducts);
 router.get('/:id', getProduct);
 router.patch('/toggle/:id', verifyToken, toggleProductStatus);
 router.put('/:id', verifyToken, editProduct);
+router.post('/product-checkout', verifyToken, productCheckout);
 
 export default router;

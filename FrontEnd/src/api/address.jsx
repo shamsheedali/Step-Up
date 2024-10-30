@@ -15,7 +15,8 @@ const addAddress = async (data, userId) => {
       },
     });
     if(response.status === 201){
-      toast.success("New Address Added")
+      toast.success("New Address Added");
+      return response.data;
     }
   } catch (error) {
     console.log(error)

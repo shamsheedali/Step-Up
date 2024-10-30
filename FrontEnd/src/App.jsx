@@ -16,6 +16,7 @@ import Settings from "./pages/user/settings/Settings";
 import DeliveryAddresses from "./pages/user/delivery_addresses/DeliveryAddresses";
 import Bag from "./pages/user/bag/Bag";
 import Checkout from "./pages/user/checkout/Checkout";
+import ListOrders from "./pages/user/orders/ListOrders";
 
 const App = () => {
   return (
@@ -33,6 +34,7 @@ const App = () => {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/profile/settings" element={<Settings />} />
           <Route path="/profile/settings/delivery-addresses" element={<DeliveryAddresses />} />
+          <Route path="/profile/orders" element={<ListOrders />} />
           <Route path="/bag/checkout" element={<Checkout />} />
 
           {/* ADMIN--ROUTES */}

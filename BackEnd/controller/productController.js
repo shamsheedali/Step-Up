@@ -116,4 +116,30 @@ const toggleProductStatus = async(req, res) => {
   }
 }
 
-export { addProduct, fetchProducts, getProduct, toggleProductStatus, editProduct };
+
+//Get Product for checkout
+const productCheckout = async(req, res) => {
+  try {
+    const productIds  = req.body;
+
+    if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
+      return res.status(400).json({ message: "Invalid product IDs" });
+    }
+
+    // Find products with the specified IDs
+    const products = await Product.find({ _id: { $in: productIds } });
+
+    if (!products || products.length === 0) {
+      return res.status(404).json({ message: "Products not found" });
+    }
+
+    // Send back the products with necessary details
+    res.status(200).json({ products });
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+
+}
+
+export { addProduct, fetchProducts, getProduct, toggleProductStatus, editProduct, productCheckout };

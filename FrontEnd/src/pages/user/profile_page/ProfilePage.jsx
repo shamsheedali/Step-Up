@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 const ProfilePage = () => {
   const {username, email} = useSelector((state) => state.user);
   return (
-    <div className="text-black h-screen">
+    <div className="text-black min-h-screen h-fit">
       <Navbar />
       <ProfileNavbar />
 

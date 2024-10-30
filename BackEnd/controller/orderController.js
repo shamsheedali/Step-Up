@@ -1,4 +1,5 @@
 import Orders from "../modal/orderModal.js";
+import Product from "../modal/productModal.js";
 
 const createOrder = async (req, res) => {
   try {
@@ -47,31 +48,19 @@ const getUserOrders = async (req, res) => {
 const getOrderProducts = async (req, res) => {
   try {
     const { orderId } = req.params;
-
     const order = await Orders.findById(orderId)
-      .populate({
-        path: "items.product", // populate the 'product' field in each item
-        model: "Product", // reference to the Product model
-        select: "productName price category images" // specify which fields to include from Product
-      })
-      .exec();
-
+    .populate({
+      path: "items.product", // Populate the product field in items
+      model: "Product",
+      select: "productName price category images"
+    })
+    .exec();
+    
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    const orderWithFirstImage = {
-        ...order._doc,
-        items: order.items.map((item) => ({
-          ...item._doc,
-          product: {
-            ...item.product._doc,
-            image: item.product.images ? item.product.images[0] : null,
-          },
-        })),
-      };
-  
-      res.status(200).json({ items: orderWithFirstImage });
+    res.status(200).json(order); 
   } catch (error) {
     console.error("Error fetching order products:", error);
     res.status(500).json({ message: "Failed to fetch order products" });
@@ -91,4 +80,16 @@ const cancelOrder = async (req, res) => {
   }
 }
 
-export { createOrder, getUserOrders, getOrderProducts,cancelOrder };
+
+const getAllOrders = async (req, res) => {
+  try {
+    const allOrders = await Orders.find();
+
+    res.status(200).json({allOrders})
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({message: "Error while fetching orders"});
+  }
+}
+
+export { createOrder, getUserOrders, getOrderProducts,cancelOrder, getAllOrders };

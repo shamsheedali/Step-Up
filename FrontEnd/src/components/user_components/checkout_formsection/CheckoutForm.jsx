@@ -186,10 +186,11 @@ const CheckoutForm = () => {
     const {products} = await productCheckout(productIds);
     setCheckoutProducts(products);
 
-    console.log("check",products)
+    console.log("before",products)
+
     const orderDetails = {
       user: uid,
-      items: checkoutProducts.map((product, index) => ({
+      items: products.map((product, index) => ({
         product: product._id, 
         quantity: quantities[index] 
       })),

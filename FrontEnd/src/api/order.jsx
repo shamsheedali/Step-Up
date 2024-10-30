@@ -47,7 +47,6 @@ const getOrderProducts = async (orderId) => {
       },
     });
 
-    console.log("response", response)
     return response;
   } catch (error) {
     console.log(error);
@@ -71,4 +70,16 @@ const cancelOrder = async(orderId) => {
   }
 }
 
-export { createOrder, getUserOrders, getOrderProducts, cancelOrder };
+//get all orders for admin
+const getOrders = async() => {
+  try {
+    const response = await axios.get(`${API_URL}/getallorders`);
+
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+export { createOrder, getUserOrders, getOrderProducts, cancelOrder, getOrders };

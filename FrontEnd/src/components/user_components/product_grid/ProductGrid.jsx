@@ -6,32 +6,14 @@ import { addToBag } from "../../../api/bag";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
-const ProductGrid = () => {
+const ProductGrid = ({ products }) => {
 
   const {uid} = useSelector((state) => state.user);
 
-  const [products, setProducts] = useState([]);
+  // const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-
-  useEffect(() => {
-    setLoading(true);
-    const getProducts = async () => {
-      try {
-        const { allProducts } = await fetchProducts();
-        setLoading(false);
-        if (allProducts) {
-          setProducts(allProducts);
-        } else {
-          console.log("No data found");
-        }
-      } catch (error) {
-        console.error("Error fetching Products", error);
-      }
-    };
-    getProducts();
-  }, []);
 
   const handleCardClick = (productID) => {
     navigate(`/products/${productID}`);

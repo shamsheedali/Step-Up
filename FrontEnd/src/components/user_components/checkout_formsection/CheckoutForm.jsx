@@ -14,8 +14,10 @@ import { createOrder } from "../../../api/order";
 import { clearBag } from "../../../api/bag";
 import { emptyBag } from "../../../features/bag/BagSlice";
 
+import { handlePayment } from "../../../api/payment";
+
 const CheckoutForm = () => {
-  const uid = useSelector((state) => state.user.uid);
+  const {uid, username, email} = useSelector((state) => state.user);
   const itemsIds = useSelector((state) => state.bag.bags[uid]?.quantities || {});
   const { calculatedSubtotal } = useSelector((state) => state.bag.bags[uid] || { calculatedSubtotal: 0 });
 
@@ -181,28 +183,33 @@ const CheckoutForm = () => {
 
   //SUBMITTING PLACE ORDER
   const handlePlaceOrder = async() => {
+
     const productIds = Object.keys(itemsIds)
     const quantities = Object.values(itemsIds)
     const {products} = await productCheckout(productIds);
     setCheckoutProducts(products);
-
-    console.log("before",products)
-
-    const orderDetails = {
-      user: uid,
-      items: products.map((product, index) => ({
-        product: product._id, 
-        quantity: quantities[index] 
-      })),
-      totalAmount: calculatedSubtotal,
-      paymentMethod: selectedPaymentMethod,
-      shippingAddress: selectedAddress,
-    };
-
-    const response = await createOrder(orderDetails);
-    if(response){
-      dispatch(emptyBag({userId : uid}))
-      await clearBag(uid);
+    
+    if(selectedPaymentMethod === "razorPay"){
+      await handlePayment(username, email, calculatedSubtotal, selectedAddress.phonenumber)
+      console.log("RazorPay ")
+      
+    }else {
+      const orderDetails = {
+        user: uid,
+        items: products.map((product, index) => ({
+          product: product._id, 
+          quantity: quantities[index] 
+        })),
+        totalAmount: calculatedSubtotal,
+        paymentMethod: selectedPaymentMethod,
+        shippingAddress: selectedAddress,
+      };
+  
+      const response = await createOrder(orderDetails);
+      if(response){
+        dispatch(emptyBag({userId : uid}))
+        await clearBag(uid);
+      }
     }
   }
 

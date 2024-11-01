@@ -9,6 +9,7 @@ import otpRouter from './router/otpRouter.js';
 import addressRouter from './router/addressRouter.js';
 import bagRouter from './router/bagRouter.js';
 import orderRouter from './router/orderRouter.js';
+import paymentRouter from './router/paymentRouter.js';
 import connectDB from './db/connection.js';
 
 dotenv.config();
@@ -36,6 +37,8 @@ app.use('/address', addressRouter);
 app.use('/bag', bagRouter);
 //ORDER-ROUTE
 app.use('/order', orderRouter);
+//PAYMENT-ROUTE
+app.use('/payment', paymentRouter);
 
 
 

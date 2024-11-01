@@ -6,12 +6,12 @@ import { addToBag } from "../../../api/bag";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
-const ProductGrid = ({ products }) => {
+const ProductGrid = ({ products, loading }) => {
 
   const {uid} = useSelector((state) => state.user);
 
   // const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 

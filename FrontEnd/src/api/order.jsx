@@ -74,12 +74,26 @@ const cancelOrder = async(orderId) => {
 const getOrders = async() => {
   try {
     const response = await axios.get(`${API_URL}/getallorders`);
-
-    console.log(response);
+    // console.log(response);
     return response.data;
   } catch (error) {
     console.log(error)
   }
 }
 
-export { createOrder, getUserOrders, getOrderProducts, cancelOrder, getOrders };
+
+//change status
+const changeStatus = async(orderId, status) => {
+  try {
+    const response = await axios.get(`${API_URL}/change_status?status=${status}&orderId=${orderId}`);
+
+    if(response.status === 200){
+      toast.success(response.data.message);
+    }
+  } catch (error) {
+    console.log(error)
+    toast.error(response.data.message);
+  }
+}
+
+export { createOrder, getUserOrders, getOrderProducts, cancelOrder, getOrders, changeStatus };

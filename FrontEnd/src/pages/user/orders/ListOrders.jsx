@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../../../components/user_components/navbar/Navbar";
 import ProfileNavbar from "../../../components/user_components/profile_navbar/ProfileNavbar";
-import { cancelOrder, getOrderProducts, getUserOrders } from "../../../api/order";
+import {
+  cancelOrder,
+  getOrderProducts,
+  getUserOrders,
+} from "../../../api/order";
 import { useSelector } from "react-redux";
 
 const ListOrders = () => {
@@ -16,24 +20,26 @@ const ListOrders = () => {
 
         const ordersWithProducts = await Promise.all(
           allOrders.map(async (order) => {
-            const {data} = await getOrderProducts(order._id);
+            const { data } = await getOrderProducts(order._id);
             return {
               ...order,
-              items: data.items || [], // Ensure items are correctly set
+              items: data.items || [], 
             };
           })
         );
 
         setOrders(ordersWithProducts);
-      } catch (error) {
-        console.error("Error fetching orders:", error);
+    setReRender(false);
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    setReRender(false);
       }
     };
 
     getOrders();
   }, [uid, reRender]);
 
-  const handleCancelOrder = async(orderId) => {
+  const handleCancelOrder = async (orderId) => {
     await cancelOrder(orderId);
     setReRender(true);
   };
@@ -49,24 +55,53 @@ const ListOrders = () => {
 
         {orders.length === 0 && <p>No orders available.</p>}
         {orders.map((order) => (
-          <div key={order._id} className="w-full flex flex-col py-3 border-b border-gray-400">
+          <div
+            key={order._id}
+            className="w-full flex flex-col py-3 border-b border-gray-400"
+          >
             <p>Placed At: {new Date(order.placedAt).toLocaleDateString()}</p>
             <p>Total Amount: ₹{order.totalAmount}</p>
+            <div className="flex items-center">
+              <div
+                className={`h-2.5 w-2.5 rounded-full ${
+                  order.status === "Delivered"
+                    ? "bg-green-500"
+                    : order.status === "Cancelled"
+                    ? "bg-red-500"
+                    : order.status === "Shipped"
+                    ? "bg-yellow-500"
+                    : order.status === "Processing"
+                    ? "bg-blue-500"
+                    : ""
+                } me-2`}
+              ></div>
+              <p>{order.status}</p>
+            </div>
             <hr className="my-4" />
 
             {/* Check if items exist and map through them */}
             {Array.isArray(order.items) && order.items.length > 0 ? (
               order.items.map((item) => (
-                <div key={item._id} className="flex justify-between items-center border-b border-gray-200 py-4">
+                <div
+                  key={item._id}
+                  className="flex justify-between items-center border-b border-gray-200 py-4"
+                >
                   <div className="flex items-center gap-4">
                     <img
-                      src={`data:image/jpeg;base64,${item.product?.images[0]}` || "https://via.placeholder.com/150"}
+                      src={
+                        `data:image/jpeg;base64,${item.product?.images[0]}` ||
+                        "https://via.placeholder.com/150"
+                      }
                       alt={item.product?.productName || "Product Image"}
                       className="w-20 h-20 object-cover rounded-lg"
                     />
                     <div>
-                      <h3 className="text-md font-medium">{item.product?.productName || "No product name"}</h3>
-                      <p className="text-sm text-gray-500">{item.product?.category || "No category"}</p>
+                      <h3 className="text-md w-[190px] font-medium">
+                        {item.product?.productName || "No product name"}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        {item.product?.category || "No category"}
+                      </p>
                     </div>
                   </div>
                   <div>
@@ -82,7 +117,10 @@ const ListOrders = () => {
               <p className="text-gray-500">No items found in this order.</p>
             )}
 
-            <button className="btn mt-4 px-4 py-2 text-white bg-black rounded-lg transition" onClick={() => handleCancelOrder(order._id)}>
+            <button
+              className="btn mt-4 px-4 py-2 text-white bg-black rounded-lg transition"
+              onClick={() => handleCancelOrder(order._id)}
+            >
               Cancel Order
             </button>
           </div>

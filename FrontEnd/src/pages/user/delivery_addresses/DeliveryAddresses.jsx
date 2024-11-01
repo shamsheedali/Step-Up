@@ -99,6 +99,7 @@ const DeliveryAddresses = () => {
   //ADDING ADDRESS FORM SUBMIT
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    console.log(uid);
     const data = {
       username: formValues.username,
       street: formValues.street,

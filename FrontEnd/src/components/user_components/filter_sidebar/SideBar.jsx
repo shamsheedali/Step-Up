@@ -84,19 +84,25 @@ const SideBar = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [sortOrder, setSortOrder] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const getProducts = async () => {
       try {
+        setLoading(true);
         const { allProducts } = await fetchProducts();
+        setLoading(false);
         if (allProducts) {
           setProducts(allProducts);
           setFilteredProducts(allProducts); // Initialize filtered products
         } else {
           console.log("No data found");
+          setLoading(false);
         }
       } catch (error) {
         console.error("Error fetching Products", error);
+      } finally {
+        setLoading(false);
       }
     };
     getProducts();
@@ -122,7 +128,7 @@ const SideBar = () => {
       );
       setFilteredProducts(filtered);
     } else {
-      setFilteredProducts(products); 
+      setFilteredProducts(products);
     }
   }, [searchQuery, products]);
 
@@ -229,32 +235,26 @@ const SideBar = () => {
               Products
             </h1>
 
-            
-<div
-  class="p-5 overflow-hidden w-[60px] h-[60px] hover:w-[270px] bg-black shadow-[2px_2px_20px_rgba(0,0,0,0.08)] rounded-full flex group items-center hover:duration-300 duration-300"
->
-  <div class="flex items-center justify-center fill-white">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      id="Isolation_Mode"
-      data-name="Isolation Mode"
-      viewBox="0 0 24 24"
-      width="22"
-      height="22"
-    >
-      <path
-        d="M18.9,16.776A10.539,10.539,0,1,0,16.776,18.9l5.1,5.1L24,21.88ZM10.5,18A7.5,7.5,0,1,1,18,10.5,7.507,7.507,0,0,1,10.5,18Z"
-      ></path>
-    </svg>
-  </div>
-  <input
-    type="text"
-    value={searchQuery}
-    onChange={(e) => setSearchQuery(e.target.value)}
-    class="outline-none border-none border-black text-[20px] bg-transparent w-full text-white font-normal px-4"
-  />
-</div>
-
+            <div class="p-5 overflow-hidden w-[60px] h-[60px] hover:w-[270px] bg-black shadow-[2px_2px_20px_rgba(0,0,0,0.08)] rounded-full flex group items-center hover:duration-300 duration-300">
+              <div class="flex items-center justify-center fill-white">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  id="Isolation_Mode"
+                  data-name="Isolation Mode"
+                  viewBox="0 0 24 24"
+                  width="22"
+                  height="22"
+                >
+                  <path d="M18.9,16.776A10.539,10.539,0,1,0,16.776,18.9l5.1,5.1L24,21.88ZM10.5,18A7.5,7.5,0,1,1,18,10.5,7.507,7.507,0,0,1,10.5,18Z"></path>
+                </svg>
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                class="outline-none border-none border-black text-[20px] bg-transparent w-full text-white font-normal px-4"
+              />
+            </div>
 
             <div className="flex items-center">
               <Menu as="div" className="relative inline-block text-left">
@@ -382,7 +382,7 @@ const SideBar = () => {
               {/* Product grid */}
               <div className="lg:col-span-3">
                 {/* Your content */}
-                <ProductGrid products={filteredProducts} />
+                <ProductGrid products={filteredProducts} loading={loading} />
               </div>
             </div>
           </section>

@@ -6,6 +6,7 @@ import {
   toggleProductState,
 } from "../../api/product";
 import { fetchCategories } from "../../api/category";
+import { toast } from "react-toastify";
 
 const ProductManagement = () => {
   const wordLength = 3;
@@ -43,7 +44,7 @@ const ProductManagement = () => {
       newArrival: false,
       images: [],
     });
-    setSelectedImages([])
+    setSelectedImages([]);
   };
 
   const getProducts = async () => {
@@ -70,12 +71,12 @@ const ProductManagement = () => {
 
   //fetcing categories
   useEffect(() => {
-    const getCategories = async() => {
+    const getCategories = async () => {
       const { data } = await fetchCategories();
       setCategories(data);
-    }
+    };
     getCategories();
-  }, [])
+  }, []);
 
   // Function to toggle add Product the modal
   const toggleModal = () => {
@@ -102,7 +103,7 @@ const ProductManagement = () => {
         brand: productToEdit.brand,
         size: productToEdit.size === true ? true : false,
         newArrival: productToEdit.newArrival === true ? true : false,
-        images: productToEdit.images
+        images: productToEdit.images,
       });
     } else {
       setAddProductData({
@@ -156,7 +157,7 @@ const ProductManagement = () => {
     const files = Array.from(event.target.files); // Convert file list to an array
 
     if (selectedImages.length + files.length > 5) {
-      alert("You can only select up to 5 images.");
+      toast.error("You can only select up to 5 images.");
       return;
     }
 
@@ -197,7 +198,7 @@ const ProductManagement = () => {
     formData.append("stock", addProductData.stock);
     formData.append("category", addProductData.category);
     formData.append("brand", addProductData.brand);
-    formData.append('sizes', JSON.stringify(addProductData.sizes));
+    formData.append("sizes", JSON.stringify(addProductData.sizes));
     formData.append("newArrival", addProductData.newArrival);
 
     selectedImages.forEach((image) => {
@@ -220,7 +221,7 @@ const ProductManagement = () => {
   const handleEditProductSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log(addProductData)
+      console.log(addProductData);
       await editProduct(productID, addProductData);
       resetForm();
       toggleEditModal();
@@ -236,6 +237,8 @@ const ProductManagement = () => {
     setProducts((prev) => [...prev, updatedProduct]);
     setIsChanged(!isChanged);
   };
+
+  console.log("this",addProductData);
 
   return (
     <div>
@@ -524,20 +527,20 @@ const ProductManagement = () => {
                           Category
                         </label>
                         <select
-  name="category"
-  value={addProductData.category}
-  onChange={handleChange}
-  id="category"
-  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-  required
->
-  <option value="">Select a category</option>
-  {categories.map((category) => (
-    <option key={category._id} value={category._id}>
-      {category.name}
-    </option>
-  ))}
-</select>
+                          name="category"
+                          value={addProductData.category}
+                          onChange={handleChange}
+                          id="category"
+                          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                          required
+                        >
+                          <option value="">Select a category</option>
+                          {categories.map((category) => (
+                            <option key={category._id} value={category._id}>
+                              {category.isDeleted ? "" : category.name}
+                            </option>
+                          ))}
+                        </select>
                       </div>
 
                       <div className="col-span-2">
@@ -632,8 +635,10 @@ const ProductManagement = () => {
                         />
                         {/* Preview images */}
                         {selectedImages.length >= 5 ? (
-                          <h1 className="text-red-300">Only 5 Images Are Allowed</h1>
-                        ) :  (
+                          <h1 className="text-red-300">
+                            Only 5 Images Are Allowed
+                          </h1>
+                        ) : (
                           <div className="mt-4 flex flex-wrap gap-2">
                             {selectedImages.map((image, index) => (
                               <div key={index} className="relative">

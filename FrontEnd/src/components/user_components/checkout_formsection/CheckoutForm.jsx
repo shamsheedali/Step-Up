@@ -396,7 +396,7 @@ const CheckoutForm = () => {
                       htmlFor="streetaddress"
                       class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
                     >
-                      Street allAddresses*
+                      Street Address*
                     </label>
                     <input
                       id="streetaddress"

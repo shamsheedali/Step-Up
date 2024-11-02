@@ -10,6 +10,7 @@ import addressRouter from './router/addressRouter.js';
 import bagRouter from './router/bagRouter.js';
 import orderRouter from './router/orderRouter.js';
 import paymentRouter from './router/paymentRouter.js';
+import wishlistRouter from './router/wishlistRouter.js';
 import connectDB from './db/connection.js';
 
 dotenv.config();
@@ -35,6 +36,8 @@ app.use('/product', productRouter);
 app.use('/address', addressRouter);
 //BAG-ROUTE
 app.use('/bag', bagRouter);
+//WISHLIST-ROUTE
+app.use('/wishlist', wishlistRouter);
 //ORDER-ROUTE
 app.use('/order', orderRouter);
 //PAYMENT-ROUTE

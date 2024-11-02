@@ -3,6 +3,7 @@ import { FiHeart } from "react-icons/fi";
 import { RiDeleteBinLine } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
 import { updateQuantity } from "../../../features/bag/BagSlice";
+import { addToWishlist } from "../../../api/wishlist";
 
 const BagSection = ({
   img,
@@ -55,10 +56,19 @@ const BagSection = ({
     }
   }
   
-
+  //remove product from bag
   const handleDeleteFromBag = async () => {
     removeProduct(productId);
   };
+
+  //Adding product to wishlist from bag
+  const handleAddToWishlist = async () => {
+    const data = {
+      userId,
+      productId
+    }
+    await addToWishlist(data)
+  }
 
   return (
     <div>
@@ -97,7 +107,8 @@ const BagSection = ({
               </div>
             </div>
             <div>
-              <button className="ml-3 px-3 py-3 text-sm font-medium text-black bg-white border border-black rounded-full hover:bg-gray-300">
+              <button className="btn ml-3 text-sm font-medium text-black bg-white border border-black rounded-full hover:bg-gray-300"
+              onClick={handleAddToWishlist}>
                 <FiHeart />
               </button>
             </div>

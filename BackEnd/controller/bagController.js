@@ -14,7 +14,6 @@ const addToBag = async (req, res) => {
 
     //finding bag of user
     let bag = await Bag.findOne({ userId });
-    console.log("bag", bag)
 
     if (!bag) {
       bag = new Bag({ userId, products: [] });

@@ -8,7 +8,7 @@ import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { logout as logoutFunction } from "../../../api/users";
 import { logoutUser } from "../../../features/users/UserSlice";
-import {persistor} from '../../../app/Store'
+import { persistor } from "../../../app/Store";
 
 const Navbar = () => {
   const { username, email } = useSelector((state) => state.user);
@@ -42,9 +42,9 @@ const Navbar = () => {
   const handleLogout = async (e) => {
     e.preventDefault();
     await logoutFunction();
-    console.log('Logging out...'); // Debugging log
+    console.log("Logging out..."); // Debugging log
     dispatch(logoutUser());
-    console.log('User logged out.'); // Debugging log
+    console.log("User logged out."); // Debugging log
     persistor.purge();
   };
 
@@ -64,7 +64,7 @@ const Navbar = () => {
         <ul className="flex gap-10">
           <Link to={"/"}>Home</Link>
           <Link to={"/products"}>Products</Link>
-          <li>Wishlist</li>
+          <Link to={"/wishlist"}>Wishlist</Link>
           <Link to={"/bag"}>Bag</Link>
           {/* <li>About Us</li> */}
         </ul>
@@ -74,12 +74,16 @@ const Navbar = () => {
 
       <Menu as="div" className="relative inline-block text-left">
         <div>
-          <MenuButton className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-          disabled={!username}>
+          <MenuButton
+            className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+            disabled={!username}
+          >
             {username ? username : <Link to={"/login"}>Sign In</Link>}
             <ChevronDownIcon
               aria-hidden="true"
-              className={`-mr-1 h-5 w-5 text-gray-400 ${username ? "" : "hidden"}`}
+              className={`-mr-1 h-5 w-5 text-gray-400 ${
+                username ? "" : "hidden"
+              }`}
             />
           </MenuButton>
         </div>
@@ -101,7 +105,7 @@ const Navbar = () => {
             <hr />
             <MenuItem>
               <Link
-                to={'/profile'}
+                to={"/profile"}
                 className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900"
               >
                 Profile
@@ -109,7 +113,7 @@ const Navbar = () => {
             </MenuItem>
             <MenuItem>
               <Link
-                to={'/profile/orders'}
+                to={"/profile/orders"}
                 className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900"
               >
                 Orders
@@ -117,7 +121,7 @@ const Navbar = () => {
             </MenuItem>
             <MenuItem>
               <Link
-                to={'/profile/settings'}
+                to={"/profile/settings"}
                 className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900"
               >
                 Account settings
@@ -153,11 +157,10 @@ const Navbar = () => {
         <div className="absolute top-16 left-0 right-0 bg-white shadow-lg py-5 z-20 md:hidden">
           <nav>
             <ul className="flex flex-col items-center gap-5">
-              <li>Home</li>
-              <li>Products</li>
-              <li>Wishlist</li>
-              <li>Bag</li>
-              <li>About Us</li>
+              <Link to={"/"}>Home</Link>
+              <Link to={"/products"}>Products</Link>
+              <Link to={"/wishlist"}>Wishlist</Link>
+              <Link to={"/bag"}>Bag</Link>
             </ul>
           </nav>
         </div>

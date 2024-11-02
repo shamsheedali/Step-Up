@@ -17,6 +17,7 @@ import DeliveryAddresses from "./pages/user/delivery_addresses/DeliveryAddresses
 import Bag from "./pages/user/bag/Bag";
 import Checkout from "./pages/user/checkout/Checkout";
 import ListOrders from "./pages/user/orders/ListOrders";
+import Wishlist from "./pages/user/wishlist/Wishlist";
 
 const App = () => {
   return (
@@ -31,6 +32,8 @@ const App = () => {
           <Route path="/products" element={<AllProduct />} />
           <Route path="/products/:id" element={<SingleProductPage />} />
           <Route path="/bag" element={<Bag />} />
+          <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/wishlist/:id" element={<SingleProductPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/profile/settings" element={<Settings />} />
           <Route path="/profile/settings/delivery-addresses" element={<DeliveryAddresses />} />

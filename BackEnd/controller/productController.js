@@ -62,7 +62,9 @@ const getProduct = async (req, res) => {
       return res.status(400).json({message: "Product Not Found!"});
     }
 
-    res.status(201).json({message: "Product Found", singleProduct});
+    const relatedProductsData = await Product.find({category: singleProduct.category}).limit(4)
+
+    res.status(201).json({message: "Product Found", singleProduct, relatedProductsData});
   } catch (error) {
     console.log(error)
     res.status(500).json({message: "Error While Fecthing Product"});

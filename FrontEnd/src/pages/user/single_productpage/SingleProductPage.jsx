@@ -5,15 +5,16 @@ import Footer from "../../../components/user_components/footer/Footer";
 import { StarIcon } from "@heroicons/react/20/solid";
 import { Radio, RadioGroup } from "@headlessui/react";
 import ReviewSection from "../../../components/user_components/review_section/ReviewSection";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getProduct } from "../../../api/product";
 import Zoom from "react-medium-image-zoom";
 import "react-medium-image-zoom/dist/styles.css";
 import { useSelector } from "react-redux";
 import { addToBag } from "../../../api/bag";
 import { toast } from "react-toastify";
-import { GoHeart } from "react-icons/go";
+import { GoHeart, GoHeartFill } from "react-icons/go";
 import { addToWishlist } from "../../../api/wishlist";
+import { HiOutlineShoppingBag } from "react-icons/hi";
 
 // const product = {
 //   name: "Basic Tee 6-Pack",
@@ -78,16 +79,31 @@ const SingleProductPage = () => {
 
   const { uid } = useSelector((state) => state.user);
 
+  const navigate = useNavigate();
+
   const [product, setProduct] = useState({});
+  const [relatedProducts, setRelatedProduct] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [selectedSize, setSelectedSize] = useState(null);
 
   useEffect(() => {
     const fetchProduct = async () => {
-      const { singleProduct } = await getProduct(id);
-      setProduct(singleProduct);
+      try {
+        setLoading(true);
+        const { singleProduct, relatedProductsData } = await getProduct(id);
+        setProduct(singleProduct);
+        setRelatedProduct(
+          relatedProductsData.filter((item) => item._id !== id)
+        );
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
     };
+
     fetchProduct();
-  }, []);
+  }, [id]);
 
   //add to bag
   const handleAddToBag = async (e, productId) => {
@@ -124,6 +140,12 @@ const SingleProductPage = () => {
     };
     await addToWishlist(data);
   };
+
+
+  const handleCardClick = (productID) => {
+    navigate(`/products/${productID}`);
+  };
+
   return (
     <div>
       <Navbar />
@@ -131,54 +153,60 @@ const SingleProductPage = () => {
       <div className="bg-white">
         <div className="pt-6">
           {/* Image gallery */}
-          <div className="mx-auto mt-6 max-w-2xl sm:px-6 lg:grid lg:max-w-7xl lg:grid-cols-3 lg:gap-x-8 lg:px-8">
-            {product.images?.[3] && (
-              <div className="aspect-h-4 aspect-w-3 hidden overflow-hidden rounded-lg lg:block">
-                <Zoom>
-                  <img
-                    alt={product.productName}
-                    src={`data:image/jpeg;base64,${product.images[3]}`}
-                    className="h-full w-full object-cover object-center"
-                  />
-                </Zoom>
-              </div>
-            )}
-            <div className="hidden lg:grid lg:grid-cols-1 lg:gap-y-8">
-              {product.images?.[2] && (
-                <div className="aspect-h-2 aspect-w-3 overflow-hidden rounded-lg">
+          {loading ? (
+            <div className="w-full h-[50vh] flex justify-center items-center">
+              <span className="loading loading-spinner loading-lg text-black"></span>
+            </div>
+          ) : (
+            <div className="mx-auto mt-6 max-w-2xl sm:px-6 lg:grid lg:max-w-7xl lg:grid-cols-3 lg:gap-x-8 lg:px-8">
+              {product.images?.[3] && (
+                <div className="aspect-h-4 aspect-w-3 hidden overflow-hidden rounded-lg lg:block">
                   <Zoom>
                     <img
                       alt={product.productName}
-                      src={`data:image/jpeg;base64,${product.images[2]}`}
+                      src={`data:image/jpeg;base64,${product.images[3]}`}
                       className="h-full w-full object-cover object-center"
                     />
                   </Zoom>
                 </div>
               )}
-              {product.images?.[1] && (
-                <div className="aspect-h-2 aspect-w-3 overflow-hidden rounded-lg">
+              <div className="hidden lg:grid lg:grid-cols-1 lg:gap-y-8">
+                {product.images?.[2] && (
+                  <div className="aspect-h-2 aspect-w-3 overflow-hidden rounded-lg">
+                    <Zoom>
+                      <img
+                        alt={product.productName}
+                        src={`data:image/jpeg;base64,${product.images[2]}`}
+                        className="h-full w-full object-cover object-center"
+                      />
+                    </Zoom>
+                  </div>
+                )}
+                {product.images?.[1] && (
+                  <div className="aspect-h-2 aspect-w-3 overflow-hidden rounded-lg">
+                    <Zoom>
+                      <img
+                        alt={product.productName}
+                        src={`data:image/jpeg;base64,${product.images[1]}`}
+                        className="h-full w-full object-cover object-center"
+                      />
+                    </Zoom>
+                  </div>
+                )}
+              </div>
+              {product.images?.[0] && (
+                <div className="aspect-h-5 aspect-w-4 lg:aspect-h-4 lg:aspect-w-3 sm:overflow-hidden sm:rounded-lg">
                   <Zoom>
                     <img
                       alt={product.productName}
-                      src={`data:image/jpeg;base64,${product.images[1]}`}
+                      src={`data:image/jpeg;base64,${product.images[0]}`}
                       className="h-full w-full object-cover object-center"
                     />
                   </Zoom>
                 </div>
               )}
             </div>
-            {product.images?.[0] && (
-              <div className="aspect-h-5 aspect-w-4 lg:aspect-h-4 lg:aspect-w-3 sm:overflow-hidden sm:rounded-lg">
-                <Zoom>
-                  <img
-                    alt={product.productName}
-                    src={`data:image/jpeg;base64,${product.images[0]}`}
-                    className="h-full w-full object-cover object-center"
-                  />
-                </Zoom>
-              </div>
-            )}
-          </div>
+          )}
 
           {/* Product info */}
           <div className="mx-auto max-w-2xl px-4 pb-16 pt-10 sm:px-6 lg:grid lg:max-w-7xl lg:grid-cols-3 lg:grid-rows-[auto,auto,1fr] lg:gap-x-8 lg:px-8 lg:pb-24 lg:pt-16">
@@ -411,9 +439,65 @@ const SingleProductPage = () => {
       </h1>
       <ReviewSection />
       <ReviewSection />
-      <h1 className="text-xl text-black font-clash-display px-10 font-bold">
-        Related Products
-      </h1>
+
+      {/* Related Products */}
+      <div className="relative mx-auto max-w-2xl px-8 py-14 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-20">
+        <h2 className="absolute top-[40px] font-bold text-2xl">
+          Related Products
+        </h2>
+
+        <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
+          {loading ? (
+            <div className="w-[80vw] h-[50vh] flex justify-center items-center">
+              <span className="loading loading-spinner loading-lg text-black"></span>
+            </div>
+          ) : relatedProducts && relatedProducts.length === 0 ? (
+            <div className="w-[80vw] h-[50vh] font-bold flex justify-center items-center">
+              <h1 className="text-2xl">No Related Products!</h1>
+            </div>
+          ) : (
+            relatedProducts.map((relatedProduct) => (
+              <div
+                key={relatedProduct._id}
+                className="group cursor-pointer transition duration-500 ease-in-out hover:translate-y-[-10px] relative"
+              >
+                <div
+                 onClick={() => handleCardClick(relatedProduct._id)}
+                >
+                  <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-h-8 xl:aspect-w-7">
+                    <img
+                      src={`data:image/jpeg;base64,${relatedProduct.images[0]}`} // Display the first image
+                      alt={relatedProduct.productName}
+                      className="h-full w-full object-cover object-center group-hover:opacity-75"
+                    />
+                  </div>
+                  <h3 className="mt-4 text-sm text-gray-700">
+                    {relatedProduct.productName}
+                  </h3>
+                  <p className="mt-1 text-lg font-medium text-gray-900">
+                    ₹{relatedProduct.price}
+                  </p>
+                </div>
+
+                {/* wishlist add button */}
+                <div
+                  className="btn w-fit bg-black text-white p-3 text-xl absolute right-12 cursor-pointer transition duration-500 ease-in-out opacity-0 group-hover:opacity-100 group-hover:translate-y-[-20px] hover:scale-90 rounded-md"
+                  onClick={(e) => handleAddToWishlist(e, relatedProduct._id)}
+                >
+                  <GoHeart />
+                </div>
+                {/* Add to bag button */}
+                <div
+                  className="btn w-fit bg-black text-white p-3 text-xl absolute right-0 cursor-pointer transition duration-500 delay-150 ease-in-out opacity-0 group-hover:opacity-100 group-hover:translate-y-[-20px] hover:scale-90 rounded-md"
+                  onClick={(e) => handleAddToBag(e, relatedProduct._id)}
+                >
+                  <HiOutlineShoppingBag />
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
 
       <Footer />
     </div>

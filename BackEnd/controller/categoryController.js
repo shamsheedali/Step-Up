@@ -21,7 +21,6 @@ const getCategories = async (req, res) => {
   }
 };
 
-
 // EDIT CATEGORY
 const editCategory = async (req, res) => {
   try {

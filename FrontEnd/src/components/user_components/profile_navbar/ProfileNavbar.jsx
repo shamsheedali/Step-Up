@@ -8,7 +8,7 @@ const ProfileNavbar = () => {
         <ul className='flex gap-8'>
             <Link to={'/profile'}>Profile</Link>
             <Link to={'/profile/orders'}>Orders</Link>
-            <li>Favourites</li>
+            <Link to={'/profile/coupons'}>Coupons</Link>
             <Link to={'/profile/settings'}>Settings</Link>
         </ul>
       </nav>

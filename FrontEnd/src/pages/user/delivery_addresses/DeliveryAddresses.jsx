@@ -33,7 +33,6 @@ const DeliveryAddresses = () => {
   }, [uid, addressChanged]);
 
   const [formValues, setFormValues] = useState({
-    username: "",
     street: "",
     village: "",
     town: "",
@@ -44,8 +43,9 @@ const DeliveryAddresses = () => {
     defaultAddress: "",
   });
 
+  const [error, setError] = useState({});
+
   const [editFormValues, setEditFormValues] = useState({
-    username: "",
     street: "",
     village: "",
     town: "",
@@ -80,6 +80,7 @@ const DeliveryAddresses = () => {
   };
 
   const closeModal = () => {
+    setError("");
     setIsModalOpen(false);
   };
 
@@ -96,37 +97,50 @@ const DeliveryAddresses = () => {
     setDisableButton(true);
   };
 
+  //Validate Address Form
+  const validate = () => {
+    let tempErrors = {};
+    if (!formValues.street) tempErrors.street = "street is required";
+    if (!formValues.postcode) tempErrors.postcode = "postcode is required";
+    if (!formValues.state) tempErrors.state = "state is required";
+    if (!formValues.country) tempErrors.country = "country is required";
+    if (!formValues.phonenumber)
+      tempErrors.phonenumber = "phonenumber is required";
+    setError(tempErrors);
+    return Object.keys(tempErrors).length === 0;
+  };
+
   //ADDING ADDRESS FORM SUBMIT
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    console.log(uid);
-    const data = {
-      username: formValues.username,
-      street: formValues.street,
-      village: formValues.village,
-      town: formValues.town,
-      postcode: formValues.postcode,
-      state: formValues.state,
-      country: formValues.country,
-      phonenumber: formValues.phonenumber,
-      defaultAddress: formValues.defaultAddress,
-    };
-    try {
-      await addAddress(data, uid);
-      setAddressChanged(true);
-      setFormValues({
-        username: "",
-        street: "",
-        village: "",
-        town: "",
-        postcode: "",
-        state: "",
-        country: "",
-        phonenumber: "",
-      });
-      closeModal();
-    } catch (error) {
-      console.log(error);
+    setError("");
+    if (validate()) {
+      const data = {
+        street: formValues.street,
+        village: formValues.village,
+        town: formValues.town,
+        postcode: formValues.postcode,
+        state: formValues.state,
+        country: formValues.country,
+        phonenumber: formValues.phonenumber,
+        defaultAddress: formValues.defaultAddress,
+      };
+      try {
+        await addAddress(data, uid);
+        setAddressChanged(true);
+        setFormValues({
+          street: "",
+          village: "",
+          town: "",
+          postcode: "",
+          state: "",
+          country: "",
+          phonenumber: "",
+        });
+        closeModal();
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 
@@ -134,7 +148,6 @@ const DeliveryAddresses = () => {
   const handleEditFormSubmit = async (e) => {
     e.preventDefault();
     const data = {
-      username: editFormValues.username,
       street: editFormValues.street,
       village: editFormValues.village,
       town: editFormValues.town,
@@ -190,7 +203,6 @@ const DeliveryAddresses = () => {
                   key={addres._id}
                 >
                   <div>
-                    <h1 className="text-gray-500">{addres.username}</h1>
                     <h1 className="text-gray-500">{addres.street}</h1>
                     <h1 className="text-gray-500">{addres.village}</h1>
                     <h1 className="text-gray-500">
@@ -267,7 +279,7 @@ const DeliveryAddresses = () => {
               {/* Modal body */}
               <form action="" onSubmit={handleFormSubmit}>
                 <div className="p-4 md:p-5 space-y-4 flex flex-col gap-7">
-                  <div class="relative">
+                  {/* <div class="relative">
                     <label
                       htmlFor="username"
                       class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
@@ -281,13 +293,14 @@ const DeliveryAddresses = () => {
                       onChange={handleInputChange}
                       type="text"
                       class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                      required
                     />
-                  </div>
+                  </div> */}
                   <div class="relative">
                     <label
                       htmlFor="streetaddress"
-                      class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
+                      className={`absolute -top-2 left-2 bg-white px-1 text-sm ${
+                        error.street ? "text-red-500" : "text-gray-500"
+                      } `}
                     >
                       Street Address*
                     </label>
@@ -297,9 +310,11 @@ const DeliveryAddresses = () => {
                       value={formValues.street}
                       onChange={handleInputChange}
                       type="text"
-                      class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                      required
+                      className={`block w-full rounded-md border ${
+                        error.street ? "border-red-500" : "border-black"
+                      }  px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm`}
                     />
+                    <p className="text-sm text-red-500">{error.street}</p>
                   </div>
                   <div class="relative">
                     <label
@@ -337,7 +352,9 @@ const DeliveryAddresses = () => {
                     <div>
                       <label
                         htmlFor="postcode"
-                        class="absolute -top-2 left-[232px] bg-white px-1 text-sm text-gray-500"
+                        className={`absolute -top-2 left-[232px] bg-white px-1 text-sm ${
+                          error.postcode ? "text-red-500" : "text-gray-500"
+                        } `}
                       >
                         Postcode*
                       </label>
@@ -347,16 +364,20 @@ const DeliveryAddresses = () => {
                         value={formValues.postcode}
                         onChange={handleInputChange}
                         type="number"
-                        class="block w-[200px] rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                        required
+                        className={`block w-[200px] rounded-md border ${
+                          error.postcode ? "border-red-500" : "border-black"
+                        }  px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm`}
                       />
+                      <p className="text-sm text-red-500">{error.postcode}</p>
                     </div>
                   </div>
                   <div class="relative flex justify-between">
                     <div>
                       <label
                         htmlFor="state"
-                        class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
+                        className={`absolute -top-2 left-2 bg-white px-1 text-sm ${
+                          error.state ? "text-red-500" : "text-gray-500"
+                        } `}
                       >
                         State*
                       </label>
@@ -366,14 +387,18 @@ const DeliveryAddresses = () => {
                         value={formValues.state}
                         onChange={handleInputChange}
                         type="text"
-                        class="block w-[200px] rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                        required
+                        className={`block w-[200px] rounded-md border ${
+                          error.state ? "border-red-500" : "border-black"
+                        }  px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm`}
                       />
+                      <p className="text-sm text-red-500">{error.state}</p>
                     </div>
                     <div>
                       <label
                         htmlFor="countryorregion"
-                        class="absolute -top-2 left-[232px] bg-white px-1 text-sm text-gray-500"
+                        className={`absolute -top-2 left-[232px] bg-white px-1 text-sm ${
+                          error.country ? "text-red-500" : "text-gray-500"
+                        } `}
                       >
                         Country/Region*
                       </label>
@@ -383,14 +408,19 @@ const DeliveryAddresses = () => {
                         value={formValues.country}
                         onChange={handleInputChange}
                         type="text"
-                        class="block w-[200px] rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                        className={`block w-[200px] rounded-md border ${
+                          error.country ? "border-red-500" : "border-black"
+                        }  px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm`}
                       />
+                      <p className="text-sm text-red-500">{error.country}</p>
                     </div>
                   </div>
                   <div class="relative">
                     <label
                       htmlFor="phonenumber"
-                      class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
+                      className={`absolute -top-2 left-2 bg-white px-1 text-sm ${
+                        error.phonenumber ? "text-red-500" : "text-gray-500"
+                      } `}
                     >
                       Phone Number*
                     </label>
@@ -400,9 +430,11 @@ const DeliveryAddresses = () => {
                       value={formValues.phonenumber}
                       onChange={handleInputChange}
                       type="text"
-                      class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                      required
+                      className={`block w-full rounded-md border ${
+                        error.phonenumber ? "border-red-500" : "border-black"
+                      }  px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm`}
                     />
+                    <p className="text-sm text-red-500">{error.phonenumber}</p>
                   </div>
                   <div className="relative flex items-center gap-2">
                     <input
@@ -485,7 +517,7 @@ const DeliveryAddresses = () => {
               {/* Modal body */}
               <form action="">
                 <div className="p-4 md:p-5 space-y-4 flex flex-col gap-7">
-                  <div class="relative">
+                  {/* <div class="relative">
                     <label
                       htmlFor="username"
                       class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
@@ -501,7 +533,7 @@ const DeliveryAddresses = () => {
                       class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
                       required
                     />
-                  </div>
+                  </div> */}
                   <div class="relative">
                     <label
                       htmlFor="streetaddress"

@@ -12,14 +12,20 @@ import { useDispatch, useSelector } from "react-redux";
 import { productCheckout } from "../../../api/product";
 import { createOrder } from "../../../api/order";
 import { clearBag } from "../../../api/bag";
-import { emptyBag } from "../../../features/bag/BagSlice";
+import { emptyBag, storeSubtotal } from "../../../features/bag/BagSlice";
 
 import { handlePayment } from "../../../api/payment";
+import { fetchCoupons, verifyCouponCode } from "../../../api/coupons";
+import { toast } from "react-toastify";
 
 const CheckoutForm = () => {
-  const {uid, username, email} = useSelector((state) => state.user);
-  const itemsIds = useSelector((state) => state.bag.bags[uid]?.quantities || {});
-  const { calculatedSubtotal } = useSelector((state) => state.bag.bags[uid] || { calculatedSubtotal: 0 });
+  const { uid, username, email } = useSelector((state) => state.user);
+  const itemsIds = useSelector(
+    (state) => state.bag.bags[uid]?.quantities || {}
+  );
+  const { calculatedSubtotal } = useSelector(
+    (state) => state.bag.bags[uid] || { calculatedSubtotal: 0 }
+  );
 
   const dispatch = useDispatch();
 
@@ -30,6 +36,9 @@ const CheckoutForm = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [addressChanged, setAddressChanged] = useState(false);
+
+  const [promo, setPromo] = useState("");
+  const [disableVerify, setDisableVerify] = useState(false);
 
   const [disableButton, setDisableButton] = useState(true);
   const [addressId, setAddressId] = useState("");
@@ -182,36 +191,65 @@ const CheckoutForm = () => {
   }, [uid, addressChanged]);
 
   //SUBMITTING PLACE ORDER
-  const handlePlaceOrder = async() => {
-
-    const productIds = Object.keys(itemsIds)
-    const quantities = Object.values(itemsIds)
-    const {products} = await productCheckout(productIds);
+  const handlePlaceOrder = async () => {
+    const productIds = Object.keys(itemsIds);
+    const quantities = Object.values(itemsIds);
+    const { products } = await productCheckout(productIds);
     setCheckoutProducts(products);
-    
-    if(selectedPaymentMethod === "razorPay"){
-      await handlePayment(username, email, calculatedSubtotal, selectedAddress.phonenumber)
-      console.log("RazorPay ")
-      
-    }else {
+
+    if (selectedPaymentMethod === "razorPay") {
+      await handlePayment(
+        username,
+        email,
+        calculatedSubtotal,
+        selectedAddress.phonenumber
+      );
+      console.log("RazorPay ");
+    } else {
       const orderDetails = {
         user: uid,
         items: products.map((product, index) => ({
-          product: product._id, 
-          quantity: quantities[index] 
+          product: product._id,
+          quantity: quantities[index],
         })),
         totalAmount: calculatedSubtotal,
         paymentMethod: selectedPaymentMethod,
         shippingAddress: selectedAddress,
       };
-  
+
       const response = await createOrder(orderDetails);
-      if(response){
-        dispatch(emptyBag({userId : uid}))
+      if (response) {
+        dispatch(emptyBag({ userId: uid }));
         await clearBag(uid);
       }
     }
-  }
+  };
+
+  //verify code function
+  const handlePromoVerify = async () => {
+    const { coupon } = await verifyCouponCode(promo);
+
+    let newSubtotal;
+
+    if (calculatedSubtotal >= coupon.minimumPurchase) {
+      if (coupon.discountType === "percentage") {
+        const percentageDiscount =
+          (calculatedSubtotal * coupon.discountValue) / 100;
+        const discountAmount = Math.min(percentageDiscount, coupon.maxDiscount);
+
+        newSubtotal = calculatedSubtotal - discountAmount;
+      } else {
+        newSubtotal = calculatedSubtotal - coupon.discountValue;
+      }
+
+      dispatch(storeSubtotal({ userId: uid, subtotal: newSubtotal }));
+      setDisableVerify(true);
+      toast.success("Coupon Applied");
+    } else {
+      toast.info(`Minimum Subtotal Should be ${coupon.minimumPurchase}`);
+      setDisableVerify(false);
+    }
+  };
 
   return (
     <div className="w-[720px] mt-5">
@@ -271,19 +309,31 @@ const CheckoutForm = () => {
       {/* Code Section */}
       <h1 className="text-xl">Have a promo code?</h1>
       <div class="relative">
-        <label
-          htmlFor="promoCode"
-          class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
-        >
-          Promo
-        </label>
-        <input
-          id="promoCode"
-          name="promoCode"
-          type="text"
-          class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-          required
-        />
+        <div className="flex gap-5">
+          <label
+            htmlFor="promoCode"
+            class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
+          >
+            Promo
+          </label>
+          <input
+            id="promoCode"
+            name="promoCode"
+            value={promo}
+            onChange={(e) => setPromo(e.target.value)}
+            type="text"
+            class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+            required
+          />
+
+          <button
+            className="btn bg-black text-white"
+            onClick={handlePromoVerify}
+            disabled={disableVerify}
+          >
+            Verify
+          </button>
+        </div>
 
         {/* Select payment type */}
         <h1 className="text-xl">How would you like to pay?</h1>
@@ -328,8 +378,10 @@ const CheckoutForm = () => {
           </div>
         </div>
 
-        <button className="btn rounded-full mt-3 mb-6 w-full bg-black text-white tracking-[1px]"
-        onClick={handlePlaceOrder}>
+        <button
+          className="btn rounded-full mt-3 mb-6 w-full bg-black text-white tracking-[1px]"
+          onClick={handlePlaceOrder}
+        >
           Place Order
         </button>
       </div>

@@ -78,7 +78,7 @@ const Settings = () => {
         username: user.username,
         email: user.email,
       });
-      dispatch(setUser({ username: user.username, email: user.email }));
+      dispatch(setUser({ uid, username: user.username, email: user.email, isVerified: true }));
       toast.success("Your profile has been successfully updated!");
     } catch (error) {
       console.log(error);

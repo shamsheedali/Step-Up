@@ -39,7 +39,6 @@
       required: true,
     },
     shippingAddress: {
-      username: String,
       street: String,
       village: String,
       town: String,

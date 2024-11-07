@@ -37,7 +37,7 @@ const handlePayment = async (username, email, totalAmount, phonenumber) => {
           contact: phonenumber,
         },
         theme: {
-          color: "#3399cc",
+          color: "#000",
         },
       };
 

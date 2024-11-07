@@ -8,6 +8,7 @@ import CategoryManagement from "../../../components/admin_components/CategoryMan
 import OrderManagement from "../../../components/admin_components/OrderManagement";
 import CouponManagement from "../../../components/admin_components/CouponManagement";
 import SalesReport from "../../../components/admin_components/SalesReport";
+import OfferManagement from "../../../components/admin_components/OfferManagement";
 
 const Dashboard = () => {
   return (
@@ -23,6 +24,7 @@ const Dashboard = () => {
           <Route path="category_management" element={<CategoryManagement />} />
           <Route path="order_management" element={<OrderManagement />} />
           <Route path="coupon_management" element={<CouponManagement />} />
+          <Route path="offer_management" element={<OfferManagement />} />
           <Route path="sales_report" element={<SalesReport />} />
         </Routes>
       </div>

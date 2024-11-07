@@ -12,6 +12,7 @@ import orderRouter from './router/orderRouter.js';
 import paymentRouter from './router/paymentRouter.js';
 import wishlistRouter from './router/wishlistRouter.js';
 import couponRouter from './router/couponRouter.js';
+import offerRouter from './router/offerRouter.js';
 import connectDB from './db/connection.js';
 
 dotenv.config();
@@ -45,6 +46,8 @@ app.use('/order', orderRouter);
 app.use('/payment', paymentRouter);
 //COUPON-ROUTE
 app.use('/coupon', couponRouter);
+//OFFER-ROUTE
+app.use('/offer', offerRouter);
 
 
 

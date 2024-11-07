@@ -19,7 +19,7 @@ const ListOrders = () => {
         const allOrders = await getUserOrders(uid);
 
         const ordersWithProducts = await Promise.all(
-          allOrders.map(async (order) => {
+          allOrders.reverse().map(async (order) => {
             const { data } = await getOrderProducts(order._id);
             return {
               ...order,
@@ -105,11 +105,11 @@ const ListOrders = () => {
                     </div>
                   </div>
                   <div>
-                    <p className="font-semibold">₹{item.product?.price}</p>
+                    <p className="font-semibold">₹{item.price}</p>
                     <p className="text-gray-500">Quantity: {item.quantity}</p>
                   </div>
                   <div>
-                    <p>Subtotal: ₹{item.product?.price * item.quantity}</p>
+                    <p>Subtotal: ₹{item.price * item.quantity}</p>
                   </div>
                 </div>
               ))

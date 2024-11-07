@@ -7,6 +7,7 @@ import ProductManagement from "../../../components/admin_components/ProductManag
 import CategoryManagement from "../../../components/admin_components/CategoryManagement";
 import OrderManagement from "../../../components/admin_components/OrderManagement";
 import CouponManagement from "../../../components/admin_components/CouponManagement";
+import SalesReport from "../../../components/admin_components/SalesReport";
 
 const Dashboard = () => {
   return (
@@ -22,6 +23,7 @@ const Dashboard = () => {
           <Route path="category_management" element={<CategoryManagement />} />
           <Route path="order_management" element={<OrderManagement />} />
           <Route path="coupon_management" element={<CouponManagement />} />
+          <Route path="sales_report" element={<SalesReport />} />
         </Routes>
       </div>
     </div>

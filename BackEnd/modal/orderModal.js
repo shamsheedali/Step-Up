@@ -13,6 +13,10 @@
           ref: "Product",
           required: true,
         },
+        price : {
+          type: Number,
+          required: true,
+        },
         quantity: {
           type: Number,
           required: true,
@@ -31,7 +35,7 @@
     },
     paymentMethod: {
       type: String,
-      enum: ["cashOnDelivery", "Razorpay", "Wallet"],
+      enum: ["cashOnDelivery", "razorPay", "Wallet"],
       required: true,
     },
     shippingAddress: {
@@ -51,6 +55,7 @@
       type: Date,
       default: Date.now,
     },
+    discountApplied: { type: Number, default: 0 },
   }, {
       timestamps: true,
   });

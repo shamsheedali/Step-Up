@@ -1,4 +1,5 @@
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const API_URL = "http://localhost:3000/payment";
 
@@ -14,40 +15,47 @@ const handlePayment = async (username, email, totalAmount, phonenumber) => {
 
     console.log(data);
 
-    const options = {
-      key: razorpayKey,
-      amount: data.amount,
-      currency: data.currency,
-      order_id: data.id,
-      name: "StepUp",
-      description: "Payment for Product",
-      handler: function (response) {
-        alert(`Payment Successful: ${response.razorpay_payment_id}`);
-        console.log(response.razorpay_payment_id);
-        console.log(response.razorpay_order_id);
-        console.log(response.razorpay_signature);
-        // Handle post-payment actions (e.g., updating your backend, showing confirmation, etc.)
-      },
-      prefill: {
-        name: username,
-        email: email,
-        contact: phonenumber,
-      },
-      theme: {
-        color: "#3399cc",
-      },
-    };
+    // Return a Promise to handle the payment result
+    return new Promise((resolve, reject) => {
+      const options = {
+        key: razorpayKey,
+        amount: data.amount,
+        currency: data.currency,
+        order_id: data.id,
+        name: "StepUp",
+        description: "Payment for Product",
+        handler: function (response) {
+          toast.success(`Payment Successful`);
+          console.log(response.razorpay_payment_id);
+          console.log(response.razorpay_order_id);
+          console.log(response.razorpay_signature);
+          resolve(true);
+        },
+        prefill: {
+          name: username,
+          email: email,
+          contact: phonenumber,
+        },
+        theme: {
+          color: "#3399cc",
+        },
+      };
 
-    //Open Razorpay payment form
-    const razorpay = new window.Razorpay(options);
-    razorpay.open();
+      // Open Razorpay payment form
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
 
-    razorpay.on("payment.failed", function (response) {
-      alert(response.error.description);
+      // Handle payment failure
+      razorpay.on("payment.failed", function (response) {
+        toast.error(response.error.description);
+        reject(false);
+      });
     });
   } catch (error) {
     console.error("Payment Error: ", error);
+    return false; 
   }
 };
+
 
 export { handlePayment };

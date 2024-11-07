@@ -19,6 +19,7 @@ import Checkout from "./pages/user/checkout/Checkout";
 import ListOrders from "./pages/user/orders/ListOrders";
 import Wishlist from "./pages/user/wishlist/Wishlist";
 import Coupons from "./pages/user/coupons/Coupons";
+import OrderSuccessPage from "./pages/user/order_success/OrderSuccessPage";
 
 const App = () => {
   return (
@@ -41,6 +42,7 @@ const App = () => {
           <Route path="/profile/orders" element={<ListOrders />} />
           <Route path="/profile/coupons" element={<Coupons />} />
           <Route path="/bag/checkout" element={<Checkout />} />
+          <Route path="/bag/checkout/order-success" element={<OrderSuccessPage />} />
 
           {/* ADMIN--ROUTES */}
           <Route path="/dashboard/*" element={<Dashboard />} />

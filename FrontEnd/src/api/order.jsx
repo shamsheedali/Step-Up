@@ -5,7 +5,6 @@ const API_URL = "http://localhost:3000/order";
 
 const createOrder = async (orderDetails) => {
   try {
-    console.log("frontEnd", orderDetails);
     const token = localStorage.getItem("userToken");
 
     const response = await axios.post(`${API_URL}/createOrder`, orderDetails, {
@@ -47,6 +46,7 @@ const getOrderProducts = async (orderId) => {
       },
     });
 
+    console.log("this", response);
     return response;
   } catch (error) {
     console.log(error);
@@ -81,7 +81,6 @@ const getOrders = async() => {
   }
 }
 
-
 //change status
 const changeStatus = async(orderId, status) => {
   try {
@@ -96,4 +95,20 @@ const changeStatus = async(orderId, status) => {
   }
 }
 
-export { createOrder, getUserOrders, getOrderProducts, cancelOrder, getOrders, changeStatus };
+//Sales-report
+const salesReport = async(date) => {
+  const token = localStorage.getItem('adminToken');
+  try {
+    const response = await axios.post(`${API_URL}/sales-report`, date, {
+      headers: {
+        Authorization: `Bearer, ${token}`,
+      }
+    })
+    console.log(response.data);
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export { createOrder, getUserOrders, getOrderProducts, cancelOrder, getOrders, changeStatus, salesReport };

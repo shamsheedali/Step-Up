@@ -17,6 +17,7 @@ import { emptyBag, storeSubtotal } from "../../../features/bag/BagSlice";
 import { handlePayment } from "../../../api/payment";
 import { fetchCoupons, verifyCouponCode } from "../../../api/coupons";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const CheckoutForm = () => {
   const { uid, username, email } = useSelector((state) => state.user);
@@ -27,7 +28,10 @@ const CheckoutForm = () => {
     (state) => state.bag.bags[uid] || { calculatedSubtotal: 0 }
   );
 
+  const [oldSubtotal, setOldSubtotal] = useState(calculatedSubtotal);
+
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const [allAddresses, setAllAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
@@ -39,6 +43,8 @@ const CheckoutForm = () => {
 
   const [promo, setPromo] = useState("");
   const [disableVerify, setDisableVerify] = useState(false);
+  const [disableRemove, setDisableRemove] = useState(false);
+  const [discountApplied, setDiscountApplied] = useState(0);
 
   const [disableButton, setDisableButton] = useState(true);
   const [addressId, setAddressId] = useState("");
@@ -107,45 +113,60 @@ const CheckoutForm = () => {
     setDisableButton(true);
   };
 
-  //ADDING Address FORM SUBMIT
+  const [error, setError] = useState({});
+  const [mainError, setMainError] = useState({});
+
+  //Validate Address Form
+  const validate = () => {
+    let tempErrors = {};
+    if (!formValues.street) tempErrors.street = "street is required";
+    if (!formValues.postcode) tempErrors.postcode = "postcode is required";
+    if (!formValues.state) tempErrors.state = "state is required";
+    if (!formValues.country) tempErrors.country = "country is required";
+    if (!formValues.phonenumber)
+      tempErrors.phonenumber = "phonenumber is required";
+    setError(tempErrors);
+    return Object.keys(tempErrors).length === 0;
+  };
+
+  //ADDING ADDRESS FORM SUBMIT
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    const data = {
-      username: formValues.username,
-      street: formValues.street,
-      village: formValues.village,
-      town: formValues.town,
-      postcode: formValues.postcode,
-      state: formValues.state,
-      country: formValues.country,
-      phonenumber: formValues.phonenumber,
-      defaultAddress: formValues.defaultAddress,
-    };
-    try {
-      const { newAddress } = await addAddress(data, uid);
-      setSelectedAddress(newAddress);
-      setAddressChanged(true);
-      setFormValues({
-        username: "",
-        street: "",
-        village: "",
-        town: "",
-        postcode: "",
-        state: "",
-        country: "",
-        phonenumber: "",
-      });
-      closeModal();
-    } catch (error) {
-      console.log(error);
+    setError("");
+    if (validate()) {
+      const data = {
+        street: formValues.street,
+        village: formValues.village,
+        town: formValues.town,
+        postcode: formValues.postcode,
+        state: formValues.state,
+        country: formValues.country,
+        phonenumber: formValues.phonenumber,
+        defaultAddress: formValues.defaultAddress,
+      };
+      try {
+        await addAddress(data, uid);
+        setAddressChanged(true);
+        setFormValues({
+          street: "",
+          village: "",
+          town: "",
+          postcode: "",
+          state: "",
+          country: "",
+          phonenumber: "",
+        });
+        closeModal();
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 
-  //EDITING allAddresses FORM SUBMIT
+  //EDITING Address FORM SUBMIT
   const handleEditFormSubmit = async (e) => {
     e.preventDefault();
     const data = {
-      username: editFormValues.username,
       street: editFormValues.street,
       village: editFormValues.village,
       town: editFormValues.town,
@@ -172,9 +193,9 @@ const CheckoutForm = () => {
   useEffect(() => {
     const fetchAddresses = async () => {
       try {
-        if (addressChanged) {
-          return;
-        }
+        // if (addressChanged) {
+        //   return;
+        // }
         const { allAddress } = await getAddress(uid);
         const defaultAddress = await getDefaultAddress(uid);
         setAllAddresses(allAddress);
@@ -197,32 +218,63 @@ const CheckoutForm = () => {
     const { products } = await productCheckout(productIds);
     setCheckoutProducts(products);
 
-    if (selectedPaymentMethod === "razorPay") {
-      await handlePayment(
-        username,
-        email,
-        calculatedSubtotal,
-        selectedAddress.phonenumber
-      );
-      console.log("RazorPay ");
-    } else {
-      const orderDetails = {
-        user: uid,
-        items: products.map((product, index) => ({
-          product: product._id,
-          quantity: quantities[index],
-        })),
-        totalAmount: calculatedSubtotal,
-        paymentMethod: selectedPaymentMethod,
-        shippingAddress: selectedAddress,
-      };
+    
 
-      const response = await createOrder(orderDetails);
-      if (response) {
-        dispatch(emptyBag({ userId: uid }));
-        await clearBag(uid);
+    const orderDetails = {
+      user: uid,
+      items: products.map((product, index) => ({
+        product: product._id,
+        price: product.price,
+        quantity: quantities[index],
+      })),
+      totalAmount: calculatedSubtotal,
+      paymentMethod: selectedPaymentMethod,
+      shippingAddress: selectedAddress,
+      discountApplied,
+    };
+
+    console.log("OrderDetails", Object.keys(orderDetails.shippingAddress).length);
+
+    //Main validation like select address and payment method
+  const mainValidate = () => {
+    let tempErrors = {};
+    if (Object.keys(orderDetails.shippingAddress).length === 1) tempErrors.selectAddress = "address is required";
+    if (orderDetails.paymentMethod.trim() === "") tempErrors.paymentMethod = "choose payment method";
+    setMainError(tempErrors);
+    return Object.keys(tempErrors).length === 0;
+  };
+
+    if(mainValidate()){
+      console.log("validated")
+
+      if (selectedPaymentMethod === "razorPay") {
+        const paymentResponse = await handlePayment(
+          username,
+          email,
+          calculatedSubtotal,
+          selectedAddress.phonenumber
+        );
+      
+        console.log("Payment Success:", paymentResponse);
+      
+        if (paymentResponse) {
+          const response = await createOrder(orderDetails);
+          if (response) {
+            navigate("/bag/checkout/order-success");
+            dispatch(emptyBag({ userId: uid }));
+            await clearBag(uid);
+          }
+        }
+      } else {
+        const response = await createOrder(orderDetails);
+        if (response) {
+          navigate("/bag/checkout/order-success");
+          dispatch(emptyBag({ userId: uid }));
+          await clearBag(uid);
+        }
       }
     }
+    
   };
 
   //verify code function
@@ -243,12 +295,24 @@ const CheckoutForm = () => {
       }
 
       dispatch(storeSubtotal({ userId: uid, subtotal: newSubtotal }));
+      setDiscountApplied(oldSubtotal - newSubtotal);
       setDisableVerify(true);
+      setDisableRemove(false);
       toast.success("Coupon Applied");
     } else {
       toast.info(`Minimum Subtotal Should be ${coupon.minimumPurchase}`);
       setDisableVerify(false);
+      setDisableRemove(true);
     }
+  };
+
+  //remove coupon
+  const handleRemoveCoupon = () => {
+    toast.success("Coupon Removed!");
+    dispatch(storeSubtotal({ userId: uid, subtotal: oldSubtotal }));
+    setPromo("");
+    setDisableRemove(true);
+    setDisableVerify(false);
   };
 
   return (
@@ -262,7 +326,7 @@ const CheckoutForm = () => {
             allAddresses.find((addr) => addr._id === e.target.value)
           )
         }
-        className="block w-full mt-2 border border-black rounded-md"
+        className={`block w-full mt-2 border ${mainError.selectAddress ? "border-red-500" : "border-black"}  rounded-md`}
       >
         <option value="" disabled>
           Select a delivery Address
@@ -274,6 +338,9 @@ const CheckoutForm = () => {
           </option>
         ))}
       </select>
+      {/* error */}
+      <p className="text-sm text-red-500">{mainError.selectAddress}</p>
+
       <div className="flex">
         {!allAddresses ? (
           <p className="text-md">
@@ -331,13 +398,20 @@ const CheckoutForm = () => {
             onClick={handlePromoVerify}
             disabled={disableVerify}
           >
-            Verify
+            Apply
+          </button>
+          <button
+            className="btn bg-black text-white"
+            onClick={handleRemoveCoupon}
+            disabled={disableRemove}
+          >
+            Remove
           </button>
         </div>
 
         {/* Select payment type */}
         <h1 className="text-xl">How would you like to pay?</h1>
-        <div className="flex gap-4 mt-4">
+        <div className={`flex justify-around border ${mainError.paymentMethod ? "border-red-500" : ""} mt-4`}>
           {/* Cash on Delivery */}
           <div
             onClick={() => handlePaymentSelect("cashOnDelivery")}
@@ -376,7 +450,9 @@ const CheckoutForm = () => {
             <LuWallet />
             <h1>Wallet</h1>
           </div>
+
         </div>
+      <p className="text-sm text-red-500">{mainError.paymentMethod}</p>
 
         <button
           className="btn rounded-full mt-3 mb-6 w-full bg-black text-white tracking-[1px]"
@@ -404,7 +480,7 @@ const CheckoutForm = () => {
               {/* Modal content */}
               <div className="flex items-center justify-between p-4 md:p-5">
                 <h3 className="text-xl font-medium text-black dark:text-black">
-                  Add allAddresses
+                  Add Address
                 </h3>
                 <button
                   type="button"
@@ -433,7 +509,7 @@ const CheckoutForm = () => {
               {/* Modal body */}
               <form action="" onSubmit={handleFormSubmit}>
                 <div className="p-4 md:p-5 space-y-4 flex flex-col gap-7">
-                  <div class="relative">
+                  {/* <div class="relative">
                     <label
                       htmlFor="username"
                       class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
@@ -447,13 +523,14 @@ const CheckoutForm = () => {
                       onChange={handleInputChange}
                       type="text"
                       class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                      required
                     />
-                  </div>
+                  </div> */}
                   <div class="relative">
                     <label
                       htmlFor="streetaddress"
-                      class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
+                      className={`absolute -top-2 left-2 bg-white px-1 text-sm ${
+                        error.street ? "text-red-500" : "text-gray-500"
+                      } `}
                     >
                       Street Address*
                     </label>
@@ -463,9 +540,11 @@ const CheckoutForm = () => {
                       value={formValues.street}
                       onChange={handleInputChange}
                       type="text"
-                      class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                      required
+                      className={`block w-full rounded-md border ${
+                        error.street ? "border-red-500" : "border-black"
+                      }  px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm`}
                     />
+                    <p className="text-sm text-red-500">{error.street}</p>
                   </div>
                   <div class="relative">
                     <label
@@ -503,7 +582,9 @@ const CheckoutForm = () => {
                     <div>
                       <label
                         htmlFor="postcode"
-                        class="absolute -top-2 left-[232px] bg-white px-1 text-sm text-gray-500"
+                        className={`absolute -top-2 left-[232px] bg-white px-1 text-sm ${
+                          error.postcode ? "text-red-500" : "text-gray-500"
+                        } `}
                       >
                         Postcode*
                       </label>
@@ -513,16 +594,20 @@ const CheckoutForm = () => {
                         value={formValues.postcode}
                         onChange={handleInputChange}
                         type="number"
-                        class="block w-[200px] rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                        required
+                        className={`block w-[200px] rounded-md border ${
+                          error.postcode ? "border-red-500" : "border-black"
+                        }  px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm`}
                       />
+                      <p className="text-sm text-red-500">{error.postcode}</p>
                     </div>
                   </div>
                   <div class="relative flex justify-between">
                     <div>
                       <label
                         htmlFor="state"
-                        class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
+                        className={`absolute -top-2 left-2 bg-white px-1 text-sm ${
+                          error.state ? "text-red-500" : "text-gray-500"
+                        } `}
                       >
                         State*
                       </label>
@@ -532,14 +617,18 @@ const CheckoutForm = () => {
                         value={formValues.state}
                         onChange={handleInputChange}
                         type="text"
-                        class="block w-[200px] rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                        required
+                        className={`block w-[200px] rounded-md border ${
+                          error.state ? "border-red-500" : "border-black"
+                        }  px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm`}
                       />
+                      <p className="text-sm text-red-500">{error.state}</p>
                     </div>
                     <div>
                       <label
                         htmlFor="countryorregion"
-                        class="absolute -top-2 left-[232px] bg-white px-1 text-sm text-gray-500"
+                        className={`absolute -top-2 left-[232px] bg-white px-1 text-sm ${
+                          error.country ? "text-red-500" : "text-gray-500"
+                        } `}
                       >
                         Country/Region*
                       </label>
@@ -549,14 +638,19 @@ const CheckoutForm = () => {
                         value={formValues.country}
                         onChange={handleInputChange}
                         type="text"
-                        class="block w-[200px] rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                        className={`block w-[200px] rounded-md border ${
+                          error.country ? "border-red-500" : "border-black"
+                        }  px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm`}
                       />
+                      <p className="text-sm text-red-500">{error.country}</p>
                     </div>
                   </div>
                   <div class="relative">
                     <label
                       htmlFor="phonenumber"
-                      class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
+                      className={`absolute -top-2 left-2 bg-white px-1 text-sm ${
+                        error.phonenumber ? "text-red-500" : "text-gray-500"
+                      } `}
                     >
                       Phone Number*
                     </label>
@@ -566,9 +660,27 @@ const CheckoutForm = () => {
                       value={formValues.phonenumber}
                       onChange={handleInputChange}
                       type="text"
-                      class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                      required
+                      className={`block w-full rounded-md border ${
+                        error.phonenumber ? "border-red-500" : "border-black"
+                      }  px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm`}
                     />
+                    <p className="text-sm text-red-500">{error.phonenumber}</p>
+                  </div>
+                  <div className="relative flex items-center gap-2">
+                    <input
+                      id="defaultAddress"
+                      name="defaultAddress"
+                      type="checkbox"
+                      checked={formValues.defaultAddress}
+                      onChange={handleInputChange}
+                      className="h-5 w-5 rounded border border-black text-black bg-white checked:bg-black checked:border-black focus:ring-black focus:ring-2"
+                    />
+                    <label
+                      htmlFor="defaultAddress"
+                      className="text-black text-sm font-medium"
+                    >
+                      Set this as default address
+                    </label>
                   </div>
                 </div>
 
@@ -635,23 +747,6 @@ const CheckoutForm = () => {
               {/* Modal body */}
               <form action="">
                 <div className="p-4 md:p-5 space-y-4 flex flex-col gap-7">
-                  <div class="relative">
-                    <label
-                      htmlFor="username"
-                      class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
-                    >
-                      Username*
-                    </label>
-                    <input
-                      id="username"
-                      name="username"
-                      value={editFormValues.username}
-                      onChange={handleEditInputChange}
-                      type="text"
-                      class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                      required
-                    />
-                  </div>
                   <div class="relative">
                     <label
                       htmlFor="streetaddress"

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import {setUser} from '../../../features/users/UserSlice';
+import { initializeBag } from "../../../features/bag/BagSlice";
 
 let userDetails;
 //THIS IS FUNCTION
@@ -71,9 +72,9 @@ const OtpPage = () => {
      const response = await axios.post(`http://localhost:3000/api/otp/verify_otp`, {otpValue, userDetails});
      if(response.status === 200){
       const {username, email, _id} = response.data.user;
-      toast.success("OTP Verified");
       dispatch(setUser({uid :_id, username, email, isVerified: true}));
       dispatch(initializeBag({ userId: _id }))
+      toast.success("OTP Verified");
       navigate('/')
      }
     } catch (error) {

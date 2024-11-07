@@ -1,15 +1,25 @@
 import express from "express";
-import { createOrder, getUserOrders, getOrderProducts, cancelOrder, getAllOrders, changeStatus } from "../controller/orderController.js";
+import {
+  createOrder,
+  getUserOrders,
+  getOrderProducts,
+  cancelOrder,
+  getAllOrders,
+  changeStatus,
+  salesReport,
+} from "../controller/orderController.js";
 import verifyToken from "../middleware/middleware.js";
 
 const router = express.Router();
 
-
 router.post("/createOrder", verifyToken, createOrder);
 router.get("/orders/:id", verifyToken, getUserOrders);
 router.get("/orders/:orderId/products", getOrderProducts);
-router.delete('/order-delete/:id', verifyToken, cancelOrder);
-router.get('/getallorders', getAllOrders);
-router.get('/change_status', changeStatus);
+router.delete("/order-delete/:id", verifyToken, cancelOrder);
+router.get("/getallorders", getAllOrders);
+router.get("/change_status", changeStatus);
+
+//api for sales-report
+router.post("/sales-report", salesReport);
 
 export default router;

@@ -9,6 +9,7 @@ const ProfileNavbar = () => {
             <Link to={'/profile'}>Profile</Link>
             <Link to={'/profile/orders'}>Orders</Link>
             <Link to={'/profile/coupons'}>Coupons</Link>
+            <Link to={'/profile/wallet'}>Wallet</Link>
             <Link to={'/profile/settings'}>Settings</Link>
         </ul>
       </nav>

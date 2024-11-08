@@ -29,7 +29,10 @@ const handlePayment = async (username, email, totalAmount, phonenumber) => {
           console.log(response.razorpay_payment_id);
           console.log(response.razorpay_order_id);
           console.log(response.razorpay_signature);
-          resolve(true);
+          resolve({
+            success: true,
+            paymentId: response.razorpay_payment_id, 
+          });
         },
         prefill: {
           name: username,

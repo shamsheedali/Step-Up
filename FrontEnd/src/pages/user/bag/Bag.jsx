@@ -11,9 +11,13 @@ const DELIVERY_FEE = 100;
 
 const Bag = () => {
   const { uid } = useSelector((state) => state.user);
-  
-  const { calculatedSubtotal } = useSelector((state) => state.bag.bags[uid] || { calculatedSubtotal: 0 });
-  const quantities = useSelector((state) => state.bag.bags[uid]?.quantities || {});
+
+  const { calculatedSubtotal } = useSelector(
+    (state) => state.bag.bags[uid] || { calculatedSubtotal: 0 }
+  );
+  const quantities = useSelector(
+    (state) => state.bag.bags[uid]?.quantities || {}
+  );
 
   const dispatch = useDispatch();
 
@@ -38,38 +42,65 @@ const Bag = () => {
   }, [uid]);
 
   // Calculate subtotal whenever products change
-  useEffect(() => {
-    console.log("Quantities:", quantities); // Check quantities from Redux
-    console.log("Products:", products);     // Check products array
+  const offers = useSelector((state) => state.offers);
 
+  useEffect(() => {
+    console.log("Quantities:", quantities);
+    console.log("Products:", products); 
+
+    // Calculate subtotal based on products and quantities
     const calculatedSubtotal = products.reduce((acc, product) => {
-      const quantity = quantities[product.productId] || 0; // Default to 0 if not found
-      const itemTotal = product.price * quantity;
-      console.log(`Product ID: ${product.productId}, Price: ${product.price}, Quantity: ${quantity}, Item Total: ${itemTotal}`);
+      const quantity = quantities[product.productId] || 0; 
+
+      // Get the discount from offers (if available)
+      const productOffer = offers[product.productId];
+      const discount = productOffer ? productOffer.discount : 0;
+
+      // Calculate item total with discount applied, if any
+      const priceAfterDiscount =
+        discount > 0 ? product.price * (1 - discount / 100) : product.price;
+
+      const itemTotal = priceAfterDiscount * quantity;
+
+      console.log(
+        `Product ID: ${product.productId}, Original Price: ${product.price}, Discount: ${discount}, Quantity: ${quantity}, Item Total: ${itemTotal}`
+      );
       return acc + itemTotal;
     }, 0);
 
-    console.log("Subtotal:", calculatedSubtotal); // Check the calculated subtotal
+    console.log("Subtotal:", calculatedSubtotal);
     dispatch(storeSubtotal({ userId: uid, subtotal: calculatedSubtotal }));
-  }, [products, quantities, dispatch, uid]);
+  }, [products, quantities, dispatch, uid, offers]);
 
-  // Function to update product quantity and trigger subtotal calculation
+  // Function to update product quantity and recalculate subtotal
   const updateSubtotal = (productId, newQuantity) => {
     setProducts((prevProducts) => {
-      const updatedProducts = prevProducts.map((product) =>
-        product.productId === productId
-          ? { ...product, quantity: newQuantity }
-          : product
-      );
+      const updatedProducts = prevProducts.map((product) => {
+        if (product.productId === productId) {
+          // Get the discount from offers (if available)
+          const productOffer = offers[product.productId];
+          const discount = productOffer ? productOffer.discount : 0;
 
-      // Calculate the subtotal based on the updated products array
+          // Calculate price with discount, if any
+          const priceAfterDiscount =
+            discount > 0 ? product.price * (1 - discount / 100) : product.price;
+
+          return { ...product, quantity: newQuantity, priceAfterDiscount };
+        }
+        return product;
+      });
+
+      // Recalculate the subtotal with the updated product list
       const newSubtotal = updatedProducts.reduce(
-        (acc, product) => acc + product.price * product.quantity,
+        (acc, product) =>
+          acc +
+          (product.priceAfterDiscount || product.price) *
+            (product.quantity || 0),
         0
       );
 
-      // Dispatch the new subtotal immediately after calculation
-      dispatch(storeSubtotal({ userId: uid , subtotal: newSubtotal }));
+      // Dispatch the new subtotal to Redux
+      dispatch(storeSubtotal({ userId: uid, subtotal: newSubtotal }));
 
       return updatedProducts;
     });
@@ -85,7 +116,7 @@ const Bag = () => {
         prevProducts.filter((product) => product.productId !== productId)
       );
       dispatch(removeProduct({ userId: uid, productId }));
-      dispatch(storeSubtotal({ userId: uid , subtotal: calculatedSubtotal }));
+      dispatch(storeSubtotal({ userId: uid, subtotal: calculatedSubtotal }));
     } catch (error) {
       console.error("Error deleting product:", error);
     }

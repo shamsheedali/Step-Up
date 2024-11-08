@@ -50,6 +50,9 @@
       enum: ["Processing", "Shipped", "Delivered", "Cancelled"],
       default: "Processing",
     },
+    razorpayPaymentId: {
+      type : String,
+    },
     placedAt: {
       type: Date,
       default: Date.now,

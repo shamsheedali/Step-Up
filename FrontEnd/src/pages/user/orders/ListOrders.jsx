@@ -60,7 +60,7 @@ const ListOrders = () => {
             className="w-full flex flex-col py-3 border-b border-gray-400"
           >
             <p>Placed At: {new Date(order.placedAt).toLocaleDateString()}</p>
-            <p>Total Amount: ₹{order.totalAmount}</p>
+            <p>Total Amount: ₹{Math.round(order.totalAmount)}</p>
             <div className="flex items-center">
               <div
                 className={`h-2.5 w-2.5 rounded-full ${

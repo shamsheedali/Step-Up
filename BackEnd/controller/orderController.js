@@ -10,6 +10,7 @@ const createOrder = async (req, res) => {
       paymentMethod,
       shippingAddress,
       discountApplied,
+      razorpayPaymentId,
     } = req.body;
 
     const newOrder = new Orders({
@@ -19,6 +20,7 @@ const createOrder = async (req, res) => {
       paymentMethod,
       shippingAddress,
       discountApplied,
+      razorpayPaymentId,
     });
 
     console.log("newOrder", newOrder);

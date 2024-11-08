@@ -219,27 +219,11 @@ const CheckoutForm = () => {
     setCheckoutProducts(products);
 
     
-
-    const orderDetails = {
-      user: uid,
-      items: products.map((product, index) => ({
-        product: product._id,
-        price: product.price,
-        quantity: quantities[index],
-      })),
-      totalAmount: calculatedSubtotal,
-      paymentMethod: selectedPaymentMethod,
-      shippingAddress: selectedAddress,
-      discountApplied,
-    };
-
-    console.log("OrderDetails", Object.keys(orderDetails.shippingAddress).length);
-
     //Main validation like select address and payment method
   const mainValidate = () => {
     let tempErrors = {};
-    if (Object.keys(orderDetails.shippingAddress).length === 1) tempErrors.selectAddress = "address is required";
-    if (orderDetails.paymentMethod.trim() === "") tempErrors.paymentMethod = "choose payment method";
+    if (Object.keys(selectedAddress).length === 1) tempErrors.selectAddress = "address is required";
+    if (selectedPaymentMethod.trim() === "") tempErrors.paymentMethod = "choose payment method";
     setMainError(tempErrors);
     return Object.keys(tempErrors).length === 0;
   };
@@ -251,13 +235,27 @@ const CheckoutForm = () => {
         const paymentResponse = await handlePayment(
           username,
           email,
-          calculatedSubtotal,
+          Math.round(calculatedSubtotal),
           selectedAddress.phonenumber
         );
+
+        const orderDetails = {
+          user: uid,
+          items: products.map((product, index) => ({
+            product: product._id,
+            price: product.price,
+            quantity: quantities[index],
+          })),
+          totalAmount: calculatedSubtotal,
+          paymentMethod: selectedPaymentMethod,
+          shippingAddress: selectedAddress,
+          discountApplied,
+          razorpayPaymentId: paymentResponse.paymentId,
+        };
       
         console.log("Payment Success:", paymentResponse);
       
-        if (paymentResponse) {
+        if (paymentResponse.success) {
           const response = await createOrder(orderDetails);
           if (response) {
             navigate("/bag/checkout/order-success");
@@ -266,6 +264,18 @@ const CheckoutForm = () => {
           }
         }
       } else {
+        const orderDetails = {
+          user: uid,
+          items: products.map((product, index) => ({
+            product: product._id,
+            price: product.price,
+            quantity: quantities[index],
+          })),
+          totalAmount: calculatedSubtotal,
+          paymentMethod: selectedPaymentMethod,
+          shippingAddress: selectedAddress,
+          discountApplied,
+        };
         const response = await createOrder(orderDetails);
         if (response) {
           navigate("/bag/checkout/order-success");
@@ -411,7 +421,7 @@ const CheckoutForm = () => {
 
         {/* Select payment type */}
         <h1 className="text-xl">How would you like to pay?</h1>
-        <div className={`flex justify-around border ${mainError.paymentMethod ? "border-red-500" : ""} mt-4`}>
+        <div className={`flex justify-around ${mainError.paymentMethod ? "border border-red-500" : ""} mt-4`}>
           {/* Cash on Delivery */}
           <div
             onClick={() => handlePaymentSelect("cashOnDelivery")}

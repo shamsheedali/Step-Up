@@ -40,7 +40,7 @@ const ListOrders = () => {
   }, [uid, reRender]);
 
   const handleCancelOrder = async (orderId) => {
-    await cancelOrder(orderId);
+    await cancelOrder(orderId, uid);
     setReRender(true);
   };
 
@@ -61,6 +61,7 @@ const ListOrders = () => {
           >
             <p>Placed At: {new Date(order.placedAt).toLocaleDateString()}</p>
             <p>Total Amount: ₹{Math.round(order.totalAmount)}</p>
+            <p>Payment Method: {order.paymentMethod}</p>
             <div className="flex items-center">
               <div
                 className={`h-2.5 w-2.5 rounded-full ${
@@ -77,6 +78,10 @@ const ListOrders = () => {
               ></div>
               <p>{order.status}</p>
             </div>
+            {order.isCancelled && (
+
+            <h1 className="mx-auto text-red-500 font-bold text-lg">Order cancelled</h1>
+            )}
             <hr className="my-4" />
 
             {/* Check if items exist and map through them */}
@@ -118,10 +123,11 @@ const ListOrders = () => {
             )}
 
             <button
-              className="btn mt-4 px-4 py-2 text-white bg-black rounded-lg transition"
+              className={`btn mt-4 px-4 py-2 ${order.isCancelled ? "text-black" : "text-white"}  bg-black rounded-lg transition`}
               onClick={() => handleCancelOrder(order._id)}
+              disabled={order.isCancelled}
             >
-              Cancel Order
+             {order.isCancelled ? "Order Cancelled" : "Cancel Order"} 
             </button>
           </div>
         ))}

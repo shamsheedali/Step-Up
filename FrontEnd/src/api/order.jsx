@@ -54,11 +54,11 @@ const getOrderProducts = async (orderId) => {
 };
 
 //cancel order
-const cancelOrder = async(orderId) => {
+const cancelOrder = async(orderId, uid) => {
   try {
     const token = localStorage.getItem('userToken');
     
-    const response = await axios.delete(`${API_URL}/order-delete/${orderId}`, {
+    const response = await axios.delete(`${API_URL}/order-delete/${orderId}/${uid}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

@@ -58,6 +58,7 @@
       default: Date.now,
     },
     discountApplied: { type: Number, default: 0 },
+    isCancelled: {type: Boolean, default: false},
   }, {
       timestamps: true,
   });

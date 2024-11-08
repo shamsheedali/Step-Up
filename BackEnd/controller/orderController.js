@@ -1,6 +1,7 @@
 import Orders from "../modal/orderModal.js";
 import Product from "../modal/productModal.js";
 import Coupons from "../modal/couponModal.js";
+import Wallet from "../modal/walletModal.js";
 
 const createOrder = async (req, res) => {
   try {
@@ -34,7 +35,7 @@ const createOrder = async (req, res) => {
       { code: promo },
       { $push: { usedBy: user } }
     );
-    
+
     res
       .status(201)
       .json({ message: "Order created successfully", order: savedOrder });
@@ -88,9 +89,31 @@ const getOrderProducts = async (req, res) => {
 const cancelOrder = async (req, res) => {
   try {
     const orderId = req.params.id;
+    const uid = req.params.uid;
     console.log(orderId);
 
-    const order = await Orders.findByIdAndDelete({ _id: orderId });
+    const order = await Orders.findByIdAndUpdate(
+      orderId,
+      { isCancelled: true },
+      { new: true }
+    );
+    console.log(order);
+
+    if (order.paymentMethod === 'razorPay') {
+      const transaction = {
+        description: "Amount Returned Due to Order Cancellation",
+        type: "Credit",
+        amount: order.totalAmount,
+      };
+    
+      await Wallet.findOneAndUpdate(
+        { userId: uid },
+        { $push: { transactions: transaction } },
+        { upsert: true, new: true } 
+      );
+    }
+    
+
     res.status(200).json({ message: "Order Deleted!" });
   } catch (error) {
     console.log(error);

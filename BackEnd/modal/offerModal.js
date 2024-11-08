@@ -9,7 +9,7 @@ const offerSchema = new mongoose.Schema({
   categoryIncluded: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }], 
   startDate: { type: Date, required: true },
   endDate: { type: Date, required: true },
-  isActive: { type: Boolean, default: true },
+  isActive: { type: Boolean, default: false },
 });
 
 export default mongoose.model("Offer", offerSchema);

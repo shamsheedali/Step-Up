@@ -43,10 +43,10 @@ const deleteCoupon = async (id) => {
   }
 };
 
-const verifyCouponCode = async (code) => {
+const verifyCouponCode = async (code, uid) => {
   const token = localStorage.getItem("userToken");
   try {
-    const response = await axios.post(`${API_URL}/verify`, {code}, {
+    const response = await axios.post(`${API_URL}/verify`, {code, uid}, {
       headers: {
         Authorization: `Bearer, ${token}`,
       },

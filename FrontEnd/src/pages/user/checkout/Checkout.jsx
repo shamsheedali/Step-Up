@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import CheckoutForm from "../../../components/user_components/checkout_formsection/CheckoutForm";
 import Navbar from "../../../components/user_components/navbar/Navbar";
 import { useSelector } from "react-redux";
@@ -10,6 +10,13 @@ const Checkout = () => {
   const { calculatedSubtotal } = useSelector((state) => state.bag.bags[uid] || { calculatedSubtotal: 0 });
 
   const total = calculatedSubtotal + DELIVERY_FEE;
+
+  const [discountApplied, setDiscountApplied] = useState();
+  //function to get discount applied form child
+  const getDiscountApplied = (discount) => {
+    setDiscountApplied(discount);
+    console.log(discountApplied)
+  }
 
   return (
     <div className="min-h-screen h-fit">
@@ -23,7 +30,7 @@ const Checkout = () => {
             <div>
               <h1 className="text-3xl font-bold">Checkout</h1>
               
-                <CheckoutForm />
+                <CheckoutForm getDiscountApplied={getDiscountApplied} />
             </div>
 
             <div className="w-full flex flex-col gap-3">
@@ -43,6 +50,11 @@ const Checkout = () => {
                 <h1>₹{total.toFixed(2)}</h1>
               </div>
               <hr />
+            </div>
+
+            {/* coupon display */}
+            <div>
+              
             </div>
           </div>
         </div>

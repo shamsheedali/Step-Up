@@ -1,5 +1,6 @@
 import Orders from "../modal/orderModal.js";
 import Product from "../modal/productModal.js";
+import Coupons from "../modal/couponModal.js";
 
 const createOrder = async (req, res) => {
   try {
@@ -11,6 +12,7 @@ const createOrder = async (req, res) => {
       shippingAddress,
       discountApplied,
       razorpayPaymentId,
+      promo,
     } = req.body;
 
     const newOrder = new Orders({
@@ -26,6 +28,13 @@ const createOrder = async (req, res) => {
     console.log("newOrder", newOrder);
 
     const savedOrder = await newOrder.save();
+
+    //add uid in coupon used by
+    await Coupons.findOneAndUpdate(
+      { code: promo },
+      { $push: { usedBy: user } }
+    );
+    
     res
       .status(201)
       .json({ message: "Order created successfully", order: savedOrder });
@@ -125,11 +134,11 @@ const salesReport = async (req, res) => {
   try {
     let { startDate, endDate, period } = req.body;
 
-    if (period === 'daily') {
+    if (period === "daily") {
       ({ startDate, endDate } = getDailyRange());
-    } else if (period === 'weekly') {
+    } else if (period === "weekly") {
       ({ startDate, endDate } = getWeeklyRange());
-    } else if (period === 'monthly') {
+    } else if (period === "monthly") {
       ({ startDate, endDate } = getMonthlyRange());
     } else {
       startDate = new Date(startDate);
@@ -153,12 +162,14 @@ const salesReport = async (req, res) => {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$placedAt" } },
           totalRevenue: { $sum: "$totalAmount" },
           totalDiscount: { $sum: "$discountApplied" },
-          netSales: { $sum: { $subtract: ["$totalAmount", "$discountApplied"] } },
+          netSales: {
+            $sum: { $subtract: ["$totalAmount", "$discountApplied"] },
+          },
           orderCount: { $sum: 1 },
           itemsSold: { $sum: { $sum: "$items.quantity" } },
         },
       },
-      { $sort: { _id: 1 } } // Sort by date
+      { $sort: { _id: 1 } }, // Sort by date
     ]);
 
     // Aggregation pipeline for overall summary
@@ -176,7 +187,9 @@ const salesReport = async (req, res) => {
           _id: null,
           totalRevenue: { $sum: "$totalAmount" },
           totalDiscount: { $sum: "$discountApplied" },
-          netSales: { $sum: { $subtract: ["$totalAmount", "$discountApplied"] } },
+          netSales: {
+            $sum: { $subtract: ["$totalAmount", "$discountApplied"] },
+          },
           orderCount: { $sum: 1 },
         },
       },
@@ -187,12 +200,10 @@ const salesReport = async (req, res) => {
       overallSummary: overallSummary.length > 0 ? overallSummary[0] : {},
     });
   } catch (error) {
-    console.error('Error fetching sales report:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error fetching sales report:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
-
-
 
 //function for type of sorting
 
@@ -201,7 +212,7 @@ const getDailyRange = () => {
   today.setHours(0, 0, 0, 0);
   const endOfDay = new Date(today);
   endOfDay.setHours(23, 59, 59, 999);
-  console.log("this", today, endOfDay)
+  console.log("this", today, endOfDay);
   return { startDate: today, endDate: endOfDay };
 };
 

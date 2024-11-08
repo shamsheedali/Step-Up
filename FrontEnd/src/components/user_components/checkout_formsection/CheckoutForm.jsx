@@ -19,7 +19,7 @@ import { fetchCoupons, verifyCouponCode } from "../../../api/coupons";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
-const CheckoutForm = () => {
+const CheckoutForm = ({getDiscountApplied}) => {
   const { uid, username, email } = useSelector((state) => state.user);
   const itemsIds = useSelector(
     (state) => state.bag.bags[uid]?.quantities || {}
@@ -125,6 +125,8 @@ const CheckoutForm = () => {
     if (!formValues.country) tempErrors.country = "country is required";
     if (!formValues.phonenumber)
       tempErrors.phonenumber = "phonenumber is required";
+    else if (formValues.phonenumber.length <= 10)
+      tempErrors.phonenumber = "phonenumber is incorrect";
     setError(tempErrors);
     return Object.keys(tempErrors).length === 0;
   };
@@ -251,6 +253,7 @@ const CheckoutForm = () => {
           shippingAddress: selectedAddress,
           discountApplied,
           razorpayPaymentId: paymentResponse.paymentId,
+          promo,
         };
       
         console.log("Payment Success:", paymentResponse);
@@ -275,6 +278,7 @@ const CheckoutForm = () => {
           paymentMethod: selectedPaymentMethod,
           shippingAddress: selectedAddress,
           discountApplied,
+          promo,
         };
         const response = await createOrder(orderDetails);
         if (response) {
@@ -289,7 +293,7 @@ const CheckoutForm = () => {
 
   //verify code function
   const handlePromoVerify = async () => {
-    const { coupon } = await verifyCouponCode(promo);
+    const { coupon } = await verifyCouponCode(promo, uid);
 
     let newSubtotal;
 
@@ -308,7 +312,9 @@ const CheckoutForm = () => {
       setDiscountApplied(oldSubtotal - newSubtotal);
       setDisableVerify(true);
       setDisableRemove(false);
-      toast.success("Coupon Applied");
+      toast.success(`Coupon Applied You Saved ${oldSubtotal - newSubtotal}`);
+      //sending discount to parent
+      getDiscountApplied(oldSubtotal - newSubtotal);
     } else {
       toast.info(`Minimum Subtotal Should be ${coupon.minimumPurchase}`);
       setDisableVerify(false);

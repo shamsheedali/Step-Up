@@ -55,7 +55,7 @@ const getCoupons = async (req, res) => {
 
 //verify coupon code
 const verifyCouponCode = async(req, res) => {
-  const {code} = req.body;
+  const {code, uid} = req.body;
   try {
     const coupon = await Coupon.findOne({code});
 
@@ -70,6 +70,15 @@ const verifyCouponCode = async(req, res) => {
 
     if (!coupon.status) {
       return res.status(400).json({ message: "Coupon code is not valid." });
+    }
+
+    // Check if the user ID is already in the usedBy array
+    const isUsedByUser = coupon.usedBy.some(
+      (userId) => userId.toString() === uid
+    );
+
+    if (isUsedByUser) {
+      return res.status(400).json({ message: "You Already Userd This Coupon." });
     }
 
     res.status(200).json({

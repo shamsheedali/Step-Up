@@ -184,7 +184,7 @@ const CouponManagement = () => {
                       : coupon.discountValue}
                   </td>
                   <td className="px-6 py-4">{coupon.minimumPurchase}</td>
-                  <td className="px-6 py-4">{coupon.usedCount}</td>
+                  <td className="px-6 py-4">{coupon.maxDiscount || "-" }</td>
                   <td className="px-6 py-4">
                     {new Date(coupon.expiryDate).toDateString()}
                   </td>

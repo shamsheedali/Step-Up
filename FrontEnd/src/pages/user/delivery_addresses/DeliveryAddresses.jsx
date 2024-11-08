@@ -106,6 +106,8 @@ const DeliveryAddresses = () => {
     if (!formValues.country) tempErrors.country = "country is required";
     if (!formValues.phonenumber)
       tempErrors.phonenumber = "phonenumber is required";
+    else if (formValues.phonenumber.length <= 10)
+      tempErrors.phonenumber = "phonenumber is incorrect";
     setError(tempErrors);
     return Object.keys(tempErrors).length === 0;
   };

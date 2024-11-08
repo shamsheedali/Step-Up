@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { getOrders, salesReport } from "../../api/order";
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import * as XLSX from 'xlsx';
+import { useSelector } from "react-redux";
+import { toast } from "react-toastify"; // Assuming you are using react-toastify for notifications
 
 const SalesReport = () => {
   const [selectedFilter, setSelectedFilter] = useState("Sort");
@@ -12,6 +17,8 @@ const SalesReport = () => {
   const [overallOrderAmount, setOverallOrderAmount] = useState(0);
   const [overallDiscount, setOverallDiscount] = useState(0);
   const [orders, setOrders] = useState([]);
+
+  const uid = useSelector((state) => state.user.uid);
 
   // Function to calculate total sales, amount, and discount
   useEffect(() => {
@@ -57,7 +64,7 @@ const SalesReport = () => {
     try {
       const allReport = await salesReport(dateRange);
       setReports(allReport);
-      console.log("report", reports);
+      console.log("report", allReport); // Corrected to log allReport
     } catch (error) {
       console.error("Error fetching report:", error);
     }
@@ -86,6 +93,77 @@ const SalesReport = () => {
     } catch (error) {
       console.error("Error fetching report:", error);
     }
+  };
+
+  // Function to download PDF report
+  const downloadPdfReport = () => {
+    const doc = new jsPDF();
+
+    // Add title
+    doc.setFontSize(18);
+    doc.text("Sales Report", 14, 22);
+
+    // Add summary
+    doc.setFontSize(12);
+    doc.text(`Total Sales Count: ${totalSalesCount} Orders`, 14, 30);
+    doc.text(`Overall Order Amount: ₹${overallOrderAmount}`, 14, 36);
+    doc.text(`Overall Discount: ₹${overallDiscount}`, 14, 42);
+
+    // Prepare table data
+    const tableColumn = ["Date", "Total Sales Revenue", "Discount Applied", "Net Sales", "Number of Orders", "Total Items Sold"];
+    const tableRows = [];
+
+    if (reports.dailyReport && reports.dailyReport.length > 0) {
+      reports.dailyReport.slice().reverse().forEach(report => {
+        const reportData = [
+          new Date(report._id).toLocaleDateString("en-GB"),
+          `₹${report.totalRevenue.toFixed(2)}`,
+          `₹${report.totalDiscount.toFixed(2)}`,
+          `₹${report.netSales.toFixed(2)}`,
+          report.orderCount,
+          report.itemsSold
+        ];
+        tableRows.push(reportData);
+      });
+    }
+
+    // Add table
+    doc.autoTable({
+      startY: 50,
+      head: [tableColumn],
+      body: tableRows,
+    });
+
+    // Save PDF
+    doc.save("Sales_Report.pdf");
+  };
+
+  // Function to download Excel report
+  const downloadExcelReport = () => {
+    // Prepare data
+    const worksheetData = [
+      ["Date", "Total Sales Revenue", "Discount Applied", "Net Sales", "Number of Orders", "Total Items Sold"],
+      ...(
+        reports.dailyReport && reports.dailyReport.length > 0
+          ? reports.dailyReport.slice().reverse().map(report => [
+              new Date(report._id).toLocaleDateString("en-GB"),
+              report.totalRevenue,
+              report.totalDiscount,
+              report.netSales,
+              report.orderCount,
+              report.itemsSold
+            ])
+          : []
+      )
+    ];
+
+    // Create worksheet and workbook
+    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sales Report");
+
+    // Write and download the Excel file
+    XLSX.writeFile(workbook, "Sales_Report.xlsx");
   };
 
   return (
@@ -214,16 +292,16 @@ const SalesReport = () => {
             ) : (
               reports.dailyReport &&
               reports.dailyReport.slice().reverse().map((report) => (
-                <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                <tr key={report._id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                   <th
                     scope="row"
                     className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                   >
                     {new Date(report._id).toLocaleDateString("en-GB")}
                   </th>
-                  <td className="px-6 py-4">{report.totalRevenue}</td>
-                  <td className="px-6 py-4">{report.totalDiscount}</td>
-                  <td className="px-6 py-4">{report.netSales}</td>
+                  <td className="px-6 py-4">₹{report.totalRevenue.toFixed(2)}</td>
+                  <td className="px-6 py-4">₹{report.totalDiscount.toFixed(2)}</td>
+                  <td className="px-6 py-4">₹{report.netSales.toFixed(2)}</td>
                   <td className="px-6 py-4">{report.orderCount}</td>
                   <td className="px-6 py-4">{report.itemsSold}</td>
                 </tr>
@@ -232,30 +310,34 @@ const SalesReport = () => {
           </tbody>
         </table>
       </div>
-      {/* cards */}
+      {/* Summary Cards */}
       <div className="flex justify-around mt-5">
-  <div className="p-5 rounded-md text-md text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-    <h1>Total Sales Count</h1>
-    <h2 className="text-white">
-      {reports?.overallSummary?.orderCount || 0} Orders
-    </h2>
-  </div>
-  <div className="p-5 rounded-md text-md text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-    <h1>Overall Order Amount</h1>
-    <h2 className="text-white">₹{reports?.overallSummary?.totalRevenue || 0}</h2>
-  </div>
-  <div className="p-5 rounded-md text-md text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-    <h1>Overall Discount</h1>
-    <h2 className="text-white">
-      ₹{reports?.overallSummary?.totalDiscount || 0}
-    </h2>
-  </div>
-</div>
+        <div className="p-5 rounded-md text-md text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+          <h1>Total Sales Count</h1>
+          <h2 className="text-white">
+            {reports?.overallSummary?.orderCount || 0} Orders
+          </h2>
+        </div>
+        <div className="p-5 rounded-md text-md text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+          <h1>Overall Order Amount</h1>
+          <h2 className="text-white">₹{reports?.overallSummary?.totalRevenue || 0}</h2>
+        </div>
+        <div className="p-5 rounded-md text-md text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+          <h1>Overall Discount</h1>
+          <h2 className="text-white">
+            ₹{reports?.overallSummary?.totalDiscount || 0}
+          </h2>
+        </div>
+      </div>
 
-
+      {/* Download Buttons */}
       <div className="flex justify-center gap-5 mt-5">
-        <button className="btn">Download PDF</button>
-        <button className="btn">Download Excel</button>
+        <button onClick={downloadPdfReport} className="btn px-4 py-2 rounded">
+          Download PDF
+        </button>
+        <button onClick={downloadExcelReport} className="btn px-4 py-2 rounded">
+          Download Excel
+        </button>
       </div>
     </div>
   );

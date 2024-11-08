@@ -8,6 +8,7 @@ const OfferManagement = () => {
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
+  const [offerId, setOfferId] = useState([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOptionModalOpen, setIsOptionModalOpen] = useState(false);
@@ -60,6 +61,11 @@ const OfferManagement = () => {
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
+  };
+
+  const toggleOptionModal = (id) => {
+    setIsOptionModalOpen(!isOptionModalOpen);
+    setOfferId(id);
   };
 
   // Fetch offers
@@ -197,11 +203,18 @@ const OfferManagement = () => {
                     {new Date(offer.endDate).toDateString()}
                   </td>
                   <td className="px-6 py-4">
-                    {offer.isActive ? "Active" : "In Active"}
+                    <div className="flex items-center">
+                      <div
+                        className={`h-2.5 w-2.5 rounded-full ${
+                          offer.isActive ? "bg-green-500" : "bg-red-500"
+                        } me-2`}
+                      ></div>
+                      {offer.isActive ? "Active" : "In Active"}
+                    </div>
                   </td>
                   <td className="px-6 py-4 flex">
                     <button
-                      //  onClick={() => toggleOptionModal(coupon._id)}
+                       onClick={() => toggleOptionModal(offer._id)}
                       className="underline text-blue-500"
                     >
                       Options
@@ -423,7 +436,7 @@ const OfferManagement = () => {
       )}
 
       {/* Option Modal */}
-      {/* {isOptionModalOpen && (
+      {isOptionModalOpen && (
       <div
         className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black bg-opacity-50"
         onClick={toggleOptionModal}
@@ -457,11 +470,13 @@ const OfferManagement = () => {
 
           <div className="flex justify-center items-center gap-10 h-[15vh]">
             <button className="btn">In Activate</button>
-            <button className="btn bg-red-500 text-white hover:bg-red-700" onClick={() => handleDeleteCoupon(couponId)}>Delete</button>
+            <button className="btn bg-red-500 text-white hover:bg-red-700" 
+            // onClick={() => handleDeleteCoupon(couponId)}
+            >Delete</button>
           </div>
         </div>
       </div>
-    )} */}
+    )}
     </div>
   );
 };

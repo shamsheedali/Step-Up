@@ -30,6 +30,18 @@ const createOffer = async(offerData) => {
     } catch (error) {
         console.log(error);
     }
+};
+
+//GET ACTIVE OFFER (USER);
+const getActiveOffer = async() => {
+  try {
+    const response = await axios.get(`${API_URL}/get-activeOffer`);
+
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    console.log(error)
+  }
 }
 
-export { getAllOffers, createOffer };
+export { getAllOffers, createOffer, getActiveOffer };

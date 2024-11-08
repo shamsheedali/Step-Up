@@ -17,7 +17,14 @@ const BagSection = ({
   onQuantityChange,
 }) => {
   const userId = useSelector((state) => state.user.uid);
-  const quantities = useSelector((state) => state.bag.bags[userId]?.quantities[productId]);
+
+  // Fetch discount from Redux for the current product ID
+  const productOffer = useSelector((state) => state.offers[productId]);
+  const discount = productOffer ? productOffer.discount : 0;
+
+  const quantities = useSelector(
+    (state) => state.bag.bags[userId]?.quantities[productId]
+  );
 
   const dispatch = useDispatch();
 
@@ -37,25 +44,25 @@ const BagSection = ({
 
   //use effect for dispaching and storing quantity info in redux
   useEffect(() => {
-    dispatch(updateQuantity({userId, productId, quantity}))
+    dispatch(updateQuantity({ userId, productId, quantity }));
 
     setPrice(quantity * managePrice);
-  }, [dispatch, productId, quantity])
+  }, [dispatch, productId, quantity]);
 
   const handleQuantityInc = () => {
     setQuantity(quantity + 1);
     if (qty < stock) {
-      onQuantityChange(productId, qty + 1); 
+      onQuantityChange(productId, qty + 1);
     }
   };
-  
+
   const handleQuantityDec = () => {
     setQuantity(quantity - 1);
     if (qty > 1) {
-      onQuantityChange(productId, qty - 1); 
+      onQuantityChange(productId, qty - 1);
     }
-  }
-  
+  };
+
   //remove product from bag
   const handleDeleteFromBag = async () => {
     removeProduct(productId);
@@ -65,10 +72,15 @@ const BagSection = ({
   const handleAddToWishlist = async () => {
     const data = {
       userId,
-      productId
-    }
-    await addToWishlist(data)
-  }
+      productId,
+    };
+    await addToWishlist(data);
+  };
+
+  // Calculate discounted price
+  const getDiscountedPrice = (price) => {
+    return price - price * (discount / 100);
+  };
 
   return (
     <div>
@@ -107,8 +119,10 @@ const BagSection = ({
               </div>
             </div>
             <div>
-              <button className="btn ml-3 text-sm font-medium text-black bg-white border border-black rounded-full hover:bg-gray-300"
-              onClick={handleAddToWishlist}>
+              <button
+                className="btn ml-3 text-sm font-medium text-black bg-white border border-black rounded-full hover:bg-gray-300"
+                onClick={handleAddToWishlist}
+              >
                 <FiHeart />
               </button>
             </div>
@@ -124,9 +138,18 @@ const BagSection = ({
         </div>
         <div className="flex">
           <h1>
-            MRP : ₹ <span>{price}</span>
+            {discount > 0 ? (
+              <>₹{getDiscountedPrice(price).toFixed(0)}</>
+            ) : (
+              <>
+                MRP : ₹ <span>{price}</span>
+              </>
+            )}
           </h1>
-          <button className="ml-3 mb-3 px-3 py-3 text-sm font-medium text-black bg-white border border-black rounded-full hover:bg-gray-300" onClick={handleDeleteFromBag}>
+          <button
+            className="ml-3 mb-3 px-3 py-3 text-sm font-medium text-black bg-white border border-black rounded-full hover:bg-gray-300"
+            onClick={handleDeleteFromBag}
+          >
             <RiDeleteBinLine />
           </button>
         </div>

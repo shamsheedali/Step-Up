@@ -11,6 +11,7 @@ const DELIVERY_FEE = 100;
 
 const Bag = () => {
   const { uid } = useSelector((state) => state.user);
+  
   const { calculatedSubtotal } = useSelector((state) => state.bag.bags[uid] || { calculatedSubtotal: 0 });
   const quantities = useSelector((state) => state.bag.bags[uid]?.quantities || {});
 

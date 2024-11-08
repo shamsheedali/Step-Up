@@ -59,4 +59,21 @@ const getOffers = async (req, res) => {
     }
 }
 
-export {createOffer, getOffers};
+// GET ACTIVE OFFER (USER)
+const getActiveOffer = async (req, res) => {
+  try {
+      const activeOffer = await Offer.findOne({ isActive: true });
+
+      if (!activeOffer) {
+          return res.status(404).json({ message: "No active offer available" });
+      }
+
+      res.status(200).json({ activeOffer });
+  } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+export {createOffer, getOffers, getActiveOffer};

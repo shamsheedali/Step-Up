@@ -3,15 +3,29 @@ import { fetchProducts } from "../../../api/product";
 import { useNavigate } from "react-router-dom";
 import { HiOutlineShoppingBag } from "react-icons/hi2";
 import { addToBag } from "../../../api/bag";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { setOffer } from "../../../features/offers/OfferSlice";
 
-const ProductGrid = ({ products, loading }) => {
+const ProductGrid = ({ products, loading, offers }) => {
 
-  const {uid} = useSelector((state) => state.user);
+  console.log("offers", offers);
 
-  // const [products, setProducts] = useState([]);
-  // const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
+    useEffect(() => {
+      if (offers && offers.isActive) {
+        offers.productsIncluded.forEach((productId) => {
+          dispatch(
+            setOffer({
+              productId,
+              discount: offers.discount, 
+            })
+          );
+        });
+      }
+    }, [dispatch, offers]);
+
+  const { uid } = useSelector((state) => state.user);
 
   const navigate = useNavigate();
 
@@ -19,10 +33,10 @@ const ProductGrid = ({ products, loading }) => {
     navigate(`/products/${productID}`);
   };
 
-  //add to bag
+  // Add to bag function
   const handleAddToBag = async (productId) => {
     const product = products.find((product) => product._id === productId);
-    if(product.stock < 2){
+    if (product.stock < 2) {
       return toast.warning("Product Out Of Stock");
     }
     const data = {
@@ -34,6 +48,11 @@ const ProductGrid = ({ products, loading }) => {
     } catch (error) {
       console.log(error);
     }
+  };
+
+  // Function to calculate the discounted price
+  const getDiscountedPrice = (price, discount) => {
+    return price - (price * (discount / 100));
   };
 
   return (
@@ -49,36 +68,57 @@ const ProductGrid = ({ products, loading }) => {
           ) : (
             products
               .filter((product) => !product.isDeleted)
-              .map((product) => (
-                <div
-                  key={product._id}
-                  className="group cursor-pointer transition duration-500 ease-in-out hover:translate-y-[-10px] relative"
-                  
-                >
-                  <div onClick={() => handleCardClick(product._id)}>
-                    <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-h-8 xl:aspect-w-7">
-                      <img
-                        src={`data:image/jpeg;base64,${product.images[0]}`} // Display the first image
-                        alt={product.productName}
-                        className="h-full w-full object-cover object-center group-hover:opacity-75"
-                      />
-                    </div>
-                    <h3 className="mt-4 text-sm text-gray-700">
-                      {product.productName}
-                    </h3>
-                    <p className="mt-1 text-lg font-medium text-gray-900">
-                      ₹{product.price}
-                    </p>
-                  </div>
+              .map((product) => {
+                // Check if the product has an active offer
+                const isOnOffer = offers.productsIncluded.includes(product._id);
+                const discount = isOnOffer ? offers.discount : 0;
+                const discountedPrice = isOnOffer
+                  ? getDiscountedPrice(product.price, discount)
+                  : product.price;
 
+                return (
                   <div
-                    className="btn w-fit bg-black text-white p-3 text-xl absolute right-0 cursor-pointer transition duration-500 ease-in-out opacity-0 group-hover:opacity-100 group-hover:translate-y-[-20px] hover:scale-90 rounded-md"
-                    onClick={() => handleAddToBag(product._id)}
+                    key={product._id}
+                    className="group cursor-pointer transition duration-500 ease-in-out hover:translate-y-[-10px] relative"
                   >
-                    <HiOutlineShoppingBag />
+                    <div onClick={() => handleCardClick(product._id)}>
+                      <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-h-8 xl:aspect-w-7">
+                        <img
+                          src={`data:image/jpeg;base64,${product.images[0]}`} // Display the first image
+                          alt={product.productName}
+                          className="h-full w-full object-cover object-center group-hover:opacity-75"
+                        />
+                      </div>
+                      <h3 className="mt-4 text-sm text-gray-700">
+                        {product.productName}
+                      </h3>
+
+                      {/* Display price with discount */}
+                      <p className="mt-1 text-lg font-medium text-gray-900">
+                        {isOnOffer ? (
+                          <span className="text-black">
+                            ₹{discountedPrice.toFixed(0)}
+                          </span>
+                        ) : (
+                          `₹${product.price}`
+                        )}
+                        {isOnOffer && (
+                          <span className="ml-2 text-sm line-through text-gray-500">
+                            ₹{product.price}
+                          </span>
+                        )}
+                      </p>
+                    </div>
+
+                    <div
+                      className="btn w-fit bg-black text-white p-3 text-xl absolute right-0 cursor-pointer transition duration-500 ease-in-out opacity-0 group-hover:opacity-100 group-hover:translate-y-[-20px] hover:scale-90 rounded-md"
+                      onClick={() => handleAddToBag(product._id)}
+                    >
+                      <HiOutlineShoppingBag />
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
           )}
         </div>
       </div>

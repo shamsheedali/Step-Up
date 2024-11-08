@@ -78,6 +78,9 @@ const SingleProductPage = () => {
   const { id } = useParams();
 
   const { uid } = useSelector((state) => state.user);
+  // Fetch discount from Redux for the current product ID
+  const productOffer = useSelector((state) => state.offers[id]);
+  const discount = productOffer ? productOffer.discount : 0;
 
   const navigate = useNavigate();
 
@@ -141,9 +144,14 @@ const SingleProductPage = () => {
     await addToWishlist(data);
   };
 
-
+  //related products card click
   const handleCardClick = (productID) => {
     navigate(`/products/${productID}`);
+  };
+
+  // Calculate discounted price
+  const getDiscountedPrice = (price) => {
+    return price - price * (discount / 100);
   };
 
   return (
@@ -220,7 +228,16 @@ const SingleProductPage = () => {
             <div className="mt-4 lg:row-span-3 lg:mt-0">
               <h2 className="sr-only">Product information</h2>
               <p className="text-3xl tracking-tight text-gray-900">
-                ₹{product.price}
+                {discount > 0 ? (
+                  <>
+                    ₹{getDiscountedPrice(product.price).toFixed(0)}{" "}
+                    <span className="text-lg line-through text-gray-500">
+                      ₹{product.price}
+                    </span>
+                  </>
+                ) : (
+                  `₹${product.price}`
+                )}
               </p>
 
               {/* Stock */}
@@ -461,9 +478,7 @@ const SingleProductPage = () => {
                 key={relatedProduct._id}
                 className="group cursor-pointer transition duration-500 ease-in-out hover:translate-y-[-10px] relative"
               >
-                <div
-                 onClick={() => handleCardClick(relatedProduct._id)}
-                >
+                <div onClick={() => handleCardClick(relatedProduct._id)}>
                   <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-h-8 xl:aspect-w-7">
                     <img
                       src={`data:image/jpeg;base64,${relatedProduct.images[0]}`} // Display the first image

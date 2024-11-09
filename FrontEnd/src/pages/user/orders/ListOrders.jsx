@@ -7,6 +7,7 @@ import {
   getUserOrders,
 } from "../../../api/order";
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
 const ListOrders = () => {
   const uid = useSelector((state) => state.user.uid);
@@ -39,8 +40,11 @@ const ListOrders = () => {
     getOrders();
   }, [uid, reRender]);
 
-  const handleCancelOrder = async (orderId) => {
+  const handleCancelOrder = async (orderId, totalAmount, paymentMethod) => {
     await cancelOrder(orderId, uid);
+    if(paymentMethod === "razorPay"){
+      toast.success(`${totalAmount} Refunded to Your Wallet`);
+    }
     setReRender(true);
   };
 
@@ -124,7 +128,7 @@ const ListOrders = () => {
 
             <button
               className={`btn mt-4 px-4 py-2 ${order.isCancelled ? "text-black" : "text-white"}  bg-black rounded-lg transition`}
-              onClick={() => handleCancelOrder(order._id)}
+              onClick={() => handleCancelOrder(order._id, order.totalAmount, order.paymentMethod)}
               disabled={order.isCancelled}
             >
              {order.isCancelled ? "Order Cancelled" : "Cancel Order"} 

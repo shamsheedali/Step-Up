@@ -21,7 +21,7 @@ const OrderManagement = () => {
       setLoading(true);
       const { allOrders } = await getOrders();
       setOrders(allOrders);
-      console.log("All orders", allOrders)
+      console.log("All orders", allOrders);
       setLoading(false);
     };
     getAllOrders();
@@ -51,7 +51,7 @@ const OrderManagement = () => {
     }));
 
     setSelectedOrderProducts(orderProductsWithQty);
-    console.log("display",selectedOrderProducts);
+    console.log("display", selectedOrderProducts);
   };
 
   const toggleDropdown = (orderId) => {
@@ -98,9 +98,6 @@ const OrderManagement = () => {
                 Payment Method
               </th>
               <th scope="col" className="px-6 py-3">
-                Payment Status
-              </th>
-              <th scope="col" className="px-6 py-3">
                 Status
               </th>
               <th scope="col" className="px-6 py-3">
@@ -141,7 +138,6 @@ const OrderManagement = () => {
                     {new Date(order.placedAt).toDateString()}
                   </td>
                   <td className="px-6 py-4">{order.paymentMethod}</td>
-                  <td className="px-6 py-4">{order.paymentStatus}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center">
                       <div
@@ -290,42 +286,54 @@ const OrderManagement = () => {
 
               {/* Modal body*/}
               <div className="p-4 md:p-5 space-y-4 text-white">
-  {selectedOrderProducts.length === 0 && <p>No orders available.</p>}
-  {Array.isArray(selectedOrderProducts) && selectedOrderProducts.length > 0 ? (
-    selectedOrderProducts.map((item) => (
-      <div
-        key={item._id}
-        className="flex justify-between items-center border-b border-gray-200 py-4"
-      >
-        <div className="flex items-center gap-4">
-          <img
-            src={
-              `data:image/jpeg;base64,${item.images[0]}` ||
-              "https://via.placeholder.com/150"
-            }
-            alt={item.productName || "Product Image"}
-            className="w-20 h-20 object-cover rounded-lg"
-          />
-          <div>
-            <h3 className="text-md w-[190px] font-medium">
-              {item.productName || "No product name"}
-            </h3>
-            <p className="text-sm text-gray-500">
-              {item.category || "No category"}
-            </p>
-          </div>
-        </div>
-        <div>
-          <p className="font-semibold">₹{item.price}</p>
-          <p className="text-gray-500">Quantity: {item.quantity}</p>
-        </div>
-      </div>
-    ))
-  ) : (
-    <p className="text-gray-500">No items found in this order.</p>
-  )}
-</div>
+                {selectedOrderProducts.length === 0 && (
+                  <p>No orders available.</p>
+                )}
+                {Array.isArray(selectedOrderProducts) &&
+                selectedOrderProducts.length > 0 ? (
+                  selectedOrderProducts.map((item) => (
+                    <div
+                      key={item._id}
+                      className="flex justify-between items-center border-b border-gray-200 py-4"
+                    >
+                      <div className="flex items-center gap-4">
+                        <img
+                          src={
+                            `data:image/jpeg;base64,${item.images[0]}` ||
+                            "https://via.placeholder.com/150"
+                          }
+                          alt={item.productName || "Product Image"}
+                          className="w-20 h-20 object-cover rounded-lg"
+                        />
+                        <div>
+                          <h3 className="text-md w-[190px] font-medium">
+                            {item.productName || "No product name"}
+                          </h3>
+                          <p className="text-sm text-gray-500">
+                            {item.category || "No category"}
+                          </p>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="font-semibold">₹{item.price}</p>
+                        <p className="text-gray-500">
+                          Quantity: {item.quantity}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-500">No items found in this order.</p>
+                )}
 
+                <button
+                  className={`btn mt-4 px-4 py-2 text-white  bg-black rounded-lg transition `}
+                  // onClick={() => handleCancelOrder(order._id, order.totalAmount, order.paymentMethod)}
+                  // disabled={order.isCancelled}
+                >
+                  Cancel Order
+                </button>
+              </div>
             </div>
           </div>
         </div>

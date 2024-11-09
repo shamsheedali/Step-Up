@@ -27,7 +27,22 @@ const createOrder = async (req, res) => {
     });
 
     console.log("newOrder", newOrder);
+    
 
+    for (const item of items) {
+      const quantity = Number(item.quantity);
+    
+      if (isNaN(quantity)) {
+        throw new Error(`Invalid quantity for product ${item.product}: quantity must be a number.`);
+      }
+    
+      await Product.findByIdAndUpdate(
+        item.product,
+        { $inc: { stock: -quantity } }, 
+        { new: true }
+      );
+    }
+    
     const savedOrder = await newOrder.save();
 
     //add uid in coupon used by
@@ -90,13 +105,26 @@ const cancelOrder = async (req, res) => {
   try {
     const orderId = req.params.id;
     const uid = req.params.uid;
-    console.log(orderId);
 
     const order = await Orders.findByIdAndUpdate(
       orderId,
       { isCancelled: true },
       { new: true }
     );
+
+    for (const item of order.items) {
+      const quantity = Number(item.quantity);
+    
+      if (isNaN(quantity)) {
+        throw new Error(`Invalid quantity for product ${item.product}: quantity must be a number.`);
+      }
+    
+      await Product.findByIdAndUpdate(
+        item.product,
+        { $inc: { stock: +quantity } }, 
+        { new: true }
+      );
+    }
     console.log(order);
 
     if (order.paymentMethod === 'razorPay') {

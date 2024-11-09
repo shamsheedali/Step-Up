@@ -7,11 +7,21 @@ import { useSelector } from "react-redux";
 const Wallet = () => {
   const uid = useSelector((state) => state.user.uid);
   const [wallet, setWallet] = useState([]);
+  const [balance, setBalance] = useState(0);
 
   useEffect(() => {
     const getWallet = async () => {
       const { transactions } = await getUserWallet(uid);
-      console.log("Trax", transactions);
+      const totalBalance = transactions.reduce((acc, transaction) => {
+        if (transaction.type === "Credit") {
+          return acc + transaction.amount;
+        } else if (transaction.type === "Debit") {
+          return acc - transaction.amount;
+        }
+        return acc; 
+      }, 0);  
+      setBalance(totalBalance);
+      console.log("Trax", totalBalance);
       setWallet(transactions);
     };
     getWallet();
@@ -30,8 +40,8 @@ const Wallet = () => {
           <p>No data available.</p>
         ) : (
           <div>
-            <h2>
-              Your Balance : <span>30000</span>
+            <h2 className="text-lg">
+              Your Balance : <span>₹{Math.round(balance)}</span>
             </h2>
 
             {/* table */}
@@ -68,7 +78,7 @@ const Wallet = () => {
                             {new Date(data.date).toLocaleDateString()}
                           </td>
                           <td className="px-6 py-4">{data.type}</td>
-                          <td className="px-6 py-4">₹{data.amount}</td>
+                          <td className="px-6 py-4">₹{Math.round(data.amount)}</td>
                         </tr>
                       ))}
                   </tbody>

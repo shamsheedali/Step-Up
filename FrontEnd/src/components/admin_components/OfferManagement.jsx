@@ -92,6 +92,7 @@ const OfferManagement = () => {
     };
 
     const { offer } = await createOffer(offerData);
+    console.log("hei")
     toggleModal();
     setOffers((prev) => [...prev, offer]);
     setAddOfferData({
@@ -320,7 +321,7 @@ const OfferManagement = () => {
                     htmlFor="discountValue"
                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                   >
-                    Discount Value
+                    Discount %
                   </label>
                   <input
                     type="number"

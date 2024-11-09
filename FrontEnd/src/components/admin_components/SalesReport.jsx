@@ -105,9 +105,9 @@ const SalesReport = () => {
 
     // Add summary
     doc.setFontSize(12);
-    doc.text(`Total Sales Count: ${totalSalesCount} Orders`, 14, 30);
-    doc.text(`Overall Order Amount: ₹${overallOrderAmount}`, 14, 36);
-    doc.text(`Overall Discount: ₹${overallDiscount}`, 14, 42);
+    doc.text(`Total Sales Count: ${reports?.overallSummary?.orderCount || 0} Orders`, 14, 30);
+    doc.text(`Overall Order Amount: ₹${reports?.overallSummary?.totalRevenue || 0}`, 14, 36);
+    doc.text(`Overall Discount: ₹${reports?.overallSummary?.totalDiscount || 0}`, 14, 42);
 
     // Prepare table data
     const tableColumn = ["Date", "Total Sales Revenue", "Discount Applied", "Net Sales", "Number of Orders", "Total Items Sold"];

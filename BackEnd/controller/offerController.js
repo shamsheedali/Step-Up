@@ -1,5 +1,6 @@
 import Offer from "../modal/offerModal.js";
 
+//CREATING OFFER
 const createOffer = async (req, res) => {
   const {
     title,
@@ -27,6 +28,9 @@ const createOffer = async (req, res) => {
         .status(400)
         .json({ message: "Category is required for category-wide offers." });
     }
+
+    // Set all existing offers to inactive (isActive: false)
+    await Offer.updateMany({}, { $set: { isActive: false } });
 
     const offer = new Offer({
       title,
@@ -74,6 +78,5 @@ const getActiveOffer = async (req, res) => {
       res.status(500).json({ message: "Server error" });
   }
 };
-
 
 export {createOffer, getOffers, getActiveOffer};

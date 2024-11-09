@@ -6,6 +6,7 @@ const createCoupon = async (req, res) => {
     const {
       name,
       code,
+      description,
       discountType,
       discountValue,
       minimumPurchase,
@@ -22,6 +23,7 @@ const createCoupon = async (req, res) => {
     const newCoupon = new Coupon({
       name,
       code,
+      description,
       discountType,
       discountValue,
       minimumPurchase: minimumPurchase || 0,

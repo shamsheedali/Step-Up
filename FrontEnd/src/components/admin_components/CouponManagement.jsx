@@ -11,6 +11,7 @@ const CouponManagement = () => {
   const [addCouponData, setAddCouponData] = useState({
     couponName: "",
     couponCode: "",
+    description: "",
     discountType: "",
     discountValue: "",
     minOrderAmount: "",
@@ -52,6 +53,7 @@ const CouponManagement = () => {
     const couponData = {
       name: addCouponData.couponName,
       code: addCouponData.couponCode,
+      description: addCouponData.description,
       discountType: addCouponData.discountType,
       discountValue: addCouponData.discountValue,
       minimumPurchase: addCouponData.minOrderAmount,
@@ -271,6 +273,23 @@ const CouponManagement = () => {
                     id="couponCode"
                     name="couponCode"
                     value={addCouponData.couponCode}
+                    onChange={handleChange}
+                    required
+                    className="border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="description"
+                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    Coupon Description
+                  </label>
+                  <textarea
+                    type="text"
+                    id="description"
+                    name="description"
+                    value={addCouponData.description}
                     onChange={handleChange}
                     required
                     className="border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"

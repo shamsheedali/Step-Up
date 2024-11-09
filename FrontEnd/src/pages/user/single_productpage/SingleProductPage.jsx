@@ -13,7 +13,7 @@ import { useSelector } from "react-redux";
 import { addToBag } from "../../../api/bag";
 import { toast } from "react-toastify";
 import { GoHeart, GoHeartFill } from "react-icons/go";
-import { addToWishlist } from "../../../api/wishlist";
+import { addToWishlist, fetchWishlist } from "../../../api/wishlist";
 import { HiOutlineShoppingBag } from "react-icons/hi";
 
 // const product = {
@@ -89,11 +89,17 @@ const SingleProductPage = () => {
   const [loading, setLoading] = useState(false);
   const [selectedSize, setSelectedSize] = useState(null);
 
+  const [wishlistIcon, setWishlistIcon] = useState(<GoHeart />);
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
         const { singleProduct, relatedProductsData } = await getProduct(id);
+        const {wishlistItems} = await fetchWishlist(uid);
+        console.log("this", wishlistItems);
+        const exists = wishlistItems.some(wishlist => wishlist.productId === id);
+        if(exists) setWishlistIcon(<GoHeartFill />)
         setProduct(singleProduct);
         setRelatedProduct(
           relatedProductsData.filter((item) => item._id !== id)
@@ -141,7 +147,8 @@ const SingleProductPage = () => {
       userId: uid,
       productId,
     };
-    await addToWishlist(data);
+    const checkWishlist = await addToWishlist(data);
+    if(checkWishlist) setWishlistIcon(<GoHeartFill />)
   };
 
   //related products card click
@@ -407,7 +414,8 @@ const SingleProductPage = () => {
                     onClick={(e) => handleAddToWishlist(e, product._id)}
                     className="btn mt-10 flex w-fit items-center justify-center rounded-md border border-transparent bg-black px-5 py-3 text-lg font-bold text-white hover:bg-[#000000d6] focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
                   >
-                    <GoHeart />
+                    {/* <GoHeart /> */}
+                    {wishlistIcon}
                   </button>
                 </div>
               </form>
@@ -496,13 +504,6 @@ const SingleProductPage = () => {
                   </p>
                 </div>
 
-                {/* wishlist add button */}
-                <div
-                  className="btn w-fit bg-black text-white p-3 text-xl absolute right-12 cursor-pointer transition duration-500 ease-in-out opacity-0 group-hover:opacity-100 group-hover:translate-y-[-20px] hover:scale-90 rounded-md"
-                  onClick={(e) => handleAddToWishlist(e, relatedProduct._id)}
-                >
-                  <GoHeart />
-                </div>
                 {/* Add to bag button */}
                 <div
                   className="btn w-fit bg-black text-white p-3 text-xl absolute right-0 cursor-pointer transition duration-500 delay-150 ease-in-out opacity-0 group-hover:opacity-100 group-hover:translate-y-[-20px] hover:scale-90 rounded-md"

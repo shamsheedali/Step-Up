@@ -111,6 +111,7 @@ const SideBar = () => {
     }
   }, [selectedCategories, products]);
 
+  //FETCHING
   useEffect(() => {
     const getProducts = async () => {
       try {

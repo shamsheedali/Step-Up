@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { addToBag } from "../../../api/bag";
 import { useNavigate } from "react-router-dom";
 import { GoHeartFill } from "react-icons/go";
+import { RiDeleteBinLine } from "react-icons/ri";
 
 const Wishlist = () => {
   const { uid } = useSelector((state) => state.user);
@@ -112,7 +113,7 @@ const Wishlist = () => {
                   className="btn w-fit bg-black text-white p-3 text-xl absolute right-12 cursor-pointer transition duration-500 ease-in-out opacity-0 group-hover:opacity-100 group-hover:translate-y-[-20px] hover:scale-90 rounded-md"
                   onClick={() => handleRemoveProduct(product.productId)}
                 >
-                  <GoHeartFill />
+                  <RiDeleteBinLine />
                 </div>
                 <div
                   className="btn w-fit bg-black text-white p-3 text-xl absolute right-0 cursor-pointer transition duration-500 delay-150 ease-in-out opacity-0 group-hover:opacity-100 group-hover:translate-y-[-20px] hover:scale-90 rounded-md"

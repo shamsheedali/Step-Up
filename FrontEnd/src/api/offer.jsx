@@ -26,6 +26,7 @@ const createOffer = async(offerData) => {
         console.log(response);
         if(response.status === 201){
             toast.success("New Offer Created");
+            return response.data;
         }
     } catch (error) {
         console.log(error);

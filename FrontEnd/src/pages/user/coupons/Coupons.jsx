@@ -28,12 +28,14 @@ const Coupons = () => {
         <div className="flex gap-10 pt-12">
           {coupons.map((coupon) => (
             <div className="border border-black w-fit p-6 rounded-md text-center">
-              <h2>{coupon.name}</h2>
+              <h2 className="text-lg font-bold">{coupon.name}</h2>
               <h1>
-                {coupon.discountValue}
+                {/* {coupon.discountValue} */}
+                {coupon.discountType === "percentage" ? `${coupon.discountValue}` : `₹${coupon.discountValue}`}
                 {coupon.discountType === "percentage" ? "%" : ""} OFF
               </h1>
-              <h3>{coupon.code}</h3>
+              <h3 className="text-md underline">{coupon.description}</h3>
+              <h3>code :- {coupon.code}</h3>
               <button className="bg-black text-white py-2 px-8 rounded-md">
                 Copy Code
               </button>

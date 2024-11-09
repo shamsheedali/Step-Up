@@ -10,6 +10,7 @@ const addToWishlist = async (data) => {
 
     if (response.status === 200) {
       toast.success(response.data.message);
+      return true;
     }
   } catch (error) {
     if (error.response) {

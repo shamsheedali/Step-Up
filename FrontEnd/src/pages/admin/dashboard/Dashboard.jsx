@@ -9,6 +9,7 @@ import OrderManagement from "../../../components/admin_components/OrderManagemen
 import CouponManagement from "../../../components/admin_components/CouponManagement";
 import SalesReport from "../../../components/admin_components/SalesReport";
 import OfferManagement from "../../../components/admin_components/OfferManagement";
+import Overview from "../../../components/admin_components/Overview";
 
 const Dashboard = () => {
   return (
@@ -26,6 +27,7 @@ const Dashboard = () => {
           <Route path="coupon_management" element={<CouponManagement />} />
           <Route path="offer_management" element={<OfferManagement />} />
           <Route path="sales_report" element={<SalesReport />} />
+          <Route path="overview" element={<Overview />} />
         </Routes>
       </div>
     </div>

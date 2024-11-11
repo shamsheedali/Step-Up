@@ -49,7 +49,7 @@ const AdminLogin = () => {
           <h1 className="text-6xl absolute font-bold text-white">StepUp</h1>
 
         </div>
-        <div className="w-[50%] text-black font-clash-grotesk flex flex-col items-center justify-evenly py-3 gap-3 text-center">
+        <div className="w-[50%] text-black font-clash-grotesk flex flex-col items-center justify-center py-3 gap-8 text-center">
           <div>
             <h1 className="text-3xl font-bold font-clash-grotesk">
               Admin Login
@@ -63,7 +63,7 @@ const AdminLogin = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="peer w-full text-lg border-b-2 border-gray-300 bg-transparent focus:outline-none focus:border-black transition duration-300 ease-in-out"
+                className="peer w-full text-lg border-0 border-b-2 border-gray-300 bg-transparent focus:outline-none focus:border-black focus:ring-0 transition duration-300 ease-in-out"
                 required
               />
               <label
@@ -80,7 +80,7 @@ const AdminLogin = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="peer w-full text-lg border-b-2 border-gray-300 bg-transparent focus:outline-none focus:border-gray-800 transition duration-300 ease-in-out"
+                className="peer w-full text-lg border-0 border-b-2 border-gray-300 bg-transparent focus:outline-none focus:border-gray-800 focus:ring-0 transition duration-300 ease-in-out"
                 required
               />
               <label
@@ -98,21 +98,6 @@ const AdminLogin = () => {
               Log In
             </button>
           </form>
-
-          {/* LINE */}
-          <div className="w-80 h-[2px] bg-gray-500"></div>
-          {/* Icons */}
-          <div className="flex space-x-4 relative bottom-2">
-            {/* Google Icon */}
-            <div className="flex gap-2 items-center justify-center w-12 h-12 border-2 border-black rounded cursor-pointer">
-              <FaGoogle className="text-black text-xl" />
-            </div>
-
-            {/* Facebook Icon */}
-            <div className="flex gap-2 items-center justify-center w-12 h-12 border-2 border-black rounded cursor-pointer">
-              <FaFacebookF className="text-black text-xl" />
-            </div>
-          </div>
         </div>
       </div>
     </div>

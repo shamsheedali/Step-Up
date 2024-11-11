@@ -3,7 +3,7 @@ import { getOrders, salesReport } from "../../api/order";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify"; // Assuming you are using react-toastify for notifications
 
 const SalesReport = () => {
@@ -31,11 +31,11 @@ const SalesReport = () => {
         // Perform calculations
         const totalCount = allOrders.length;
         const totalAmount = allOrders.reduce(
-          (acc, order) => acc + order.amount,
+          (acc, order) => acc + order.totalAmount,
           0
         );
         const totalDiscount = allOrders.reduce(
-          (acc, order) => acc + order.discount,
+          (acc, order) => acc + order.discountApplied,
           0
         );
 

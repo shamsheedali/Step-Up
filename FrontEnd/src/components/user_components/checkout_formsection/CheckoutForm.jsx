@@ -268,7 +268,7 @@ const CheckoutForm = ({getDiscountApplied}) => {
         }
       } else if(selectedPaymentMethod === "cashOnDelivery") {
 
-        if(calculatedSubtotal <= 6000){
+        if(calculatedSubtotal >= 6000){
           toast.error("Cash on Delivery is not available for orders above Rs 6000.");
           return;
         }

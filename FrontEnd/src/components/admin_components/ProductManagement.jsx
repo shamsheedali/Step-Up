@@ -11,6 +11,7 @@ import { toast } from "react-toastify";
 const ProductManagement = () => {
   const wordLength = 3;
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [productID, setProductID] = useState("");
   const [loading, setLoading] = useState(false);
@@ -53,7 +54,9 @@ const ProductManagement = () => {
       const { allProducts } = await fetchProducts();
       setLoading(false);
       if (allProducts) {
+        console.log("cat", allProducts);
         setProducts(allProducts);
+        setFilteredProducts(allProducts);
         setLoading(false);
       } else {
         console.log("No data found");
@@ -68,6 +71,19 @@ const ProductManagement = () => {
   useEffect(() => {
     getProducts();
   }, [isChanged]);
+
+  //search query
+  const [searchQuery, setSearchQuery] = useState("");
+  useEffect(() => {
+    if (searchQuery) {
+      const filtered = products.filter((product) =>
+        product.productName.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredProducts(filtered);
+    } else {
+      setFilteredProducts(products);
+    }
+  }, [searchQuery, products]);
 
   //fetcing categories
   useEffect(() => {
@@ -238,7 +254,7 @@ const ProductManagement = () => {
     setIsChanged(!isChanged);
   };
 
-  console.log("this",addProductData);
+  console.log("this", addProductData);
 
   return (
     <div>
@@ -270,6 +286,8 @@ const ProductManagement = () => {
               <input
                 type="text"
                 id="table-search-users"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder="Search for products"
               />
@@ -323,7 +341,7 @@ const ProductManagement = () => {
                   </td>
                 </tr>
               ) : (
-                products.map((product) => (
+                filteredProducts.map((product) => (
                   <tr
                     className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
                     key={product._id}
@@ -354,7 +372,11 @@ const ProductManagement = () => {
                         </div>
                       </div>
                     </th>
-                    <td className="px-6 py-4">{categories.name}</td>
+                    <td className="px-6 py-4">
+                      {categories.find(
+                        (category) => category._id === product.category
+                      )?.name || "-"}
+                    </td>
                     <td className="px-6 py-4">{product.brand}</td>
                     <td className="px-6 py-4">{product.price}</td>
                     <td className="px-6 py-4">{product.stock}</td>

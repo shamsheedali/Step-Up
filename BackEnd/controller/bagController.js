@@ -52,13 +52,14 @@ const fetchBag = async (req, res) => {
 
     const bag = await Bag.findOne({ userId }).populate(
       "products.productId",
-      "productName category price stock images"
+      "productName category price stock images isDeleted"
     );
 
     if (!bag) {
       return res.status(404).json({ message: "Bag not found" });
     }
 
+    
     const bagDetails = bag.products.map((item) => ({
       productId: item.productId._id,
       productImage: item.productId.images[0],
@@ -66,9 +67,11 @@ const fetchBag = async (req, res) => {
       category: item.productId.category,
       price: item.productId.price,
       stock: item.productId.stock,
+      isDeleted: item.productId.isDeleted,
       quantity: item.quantity,
       subtotal: item.productId.price * item.quantity,
     }));
+    console.log("bag", bagDetails);
 
     // Calculate the total bag value
     const totalAmount = bagDetails.reduce(

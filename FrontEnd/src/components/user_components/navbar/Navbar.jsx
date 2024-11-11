@@ -51,7 +51,7 @@ const Navbar = () => {
   return (
     <div
       ref={navRef}
-      className="bg-white text-black sticky z-10 top-0 flex justify-between items-center py-5 px-10 font-clash-display font-bold"
+      className=" bg-white text-black sticky z-10 top-0 flex justify-between items-center py-5 px-10 font-clash-display font-bold"
     >
       <Link to={"/"}>
         <h1 className="text-2xl font-font-clash-grotesk cursor-pointer">
@@ -74,18 +74,22 @@ const Navbar = () => {
 
       <Menu as="div" className="relative inline-block text-left">
         <div>
-          <MenuButton
-            className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-            disabled={!username}
-          >
-            {username ? username : <Link to={"/login"}>Sign In</Link>}
-            <ChevronDownIcon
-              aria-hidden="true"
-              className={`-mr-1 h-5 w-5 text-gray-400 ${
-                username ? "" : "hidden"
-              }`}
-            />
-          </MenuButton>
+          {username ? (
+            <MenuButton className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+              {username}
+              <ChevronDownIcon
+                aria-hidden="true"
+                className="-mr-1 h-5 w-5 text-gray-400"
+              />
+            </MenuButton>
+          ) : (
+            <Link
+              to="/login"
+              className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+            >
+              Sign In
+            </Link>
+          )}
         </div>
 
         <MenuItems

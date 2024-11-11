@@ -29,6 +29,7 @@ const Bag = () => {
       setLoading(true);
       try {
         const { bagItems } = await fetchBag(uid);
+        console.log("bagItems", bagItems);
         setProducts(bagItems.reverse());
       } catch (error) {
         console.error("Error fetching bag items:", error);
@@ -46,11 +47,11 @@ const Bag = () => {
 
   useEffect(() => {
     console.log("Quantities:", quantities);
-    console.log("Products:", products); 
+    console.log("Products:", products);
 
     // Calculate subtotal based on products and quantities
     const calculatedSubtotal = products.reduce((acc, product) => {
-      const quantity = quantities[product.productId] || 0; 
+      const quantity = quantities[product.productId] || 0;
 
       // Get the discount from offers (if available)
       const productOffer = offers[product.productId];
@@ -140,20 +141,23 @@ const Bag = () => {
               <h1 className="text-3xl font-bold">Bag</h1>
 
               {products &&
-                products.map((product) => (
-                  <BagSection
-                    key={product.productId}
-                    img={product.productImage}
-                    name={product.productName}
-                    category={product.category}
-                    managePrice={product.price}
-                    qty={product.quantity}
-                    stock={product.stock}
-                    productId={product.productId}
-                    removeProduct={handleDeleteProduct}
-                    onQuantityChange={updateSubtotal}
-                  />
-                ))}
+                products.map(
+                  (product) =>
+                    !product.isDeleted && (
+                      <BagSection
+                        key={product.productId}
+                        img={product.productImage}
+                        name={product.productName}
+                        category={product.category}
+                        managePrice={product.price}
+                        qty={product.quantity}
+                        stock={product.stock}
+                        productId={product.productId}
+                        removeProduct={handleDeleteProduct}
+                        onQuantityChange={updateSubtotal}
+                      />
+                    )
+                )}
             </div>
 
             <div className="w-full flex flex-col gap-3">

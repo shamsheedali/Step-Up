@@ -31,6 +31,23 @@ const fetchProducts = async () => {
   }
 };
 
+//fetch product with limit (pagination)
+const fetchProductsLimit = async(page, limit = 4) => {
+  try {
+    const response = await axios.get(`${API_URL}/productLimit`, {
+      params: {
+        page,
+        limit,
+      }
+    })
+
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 const getProduct = async (id) => {
   try {
     const response = await axios.get(`${API_URL}/${id}`);
@@ -107,4 +124,5 @@ export {
   toggleProductState,
   editProduct,
   productCheckout,
+  fetchProductsLimit,
 };

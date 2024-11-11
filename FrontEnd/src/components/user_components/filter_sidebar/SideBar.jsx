@@ -20,10 +20,11 @@ import {
   Squares2X2Icon,
 } from "@heroicons/react/20/solid";
 import ProductGrid from "../product_grid/ProductGrid";
-import { fetchProducts } from "../../../api/product";
+import { fetchProducts, fetchProductsLimit } from "../../../api/product";
 import { fetchCategories } from "../../../api/category";
 import { getActiveOffer } from "../../../api/offer";
 import { useDispatch } from "react-redux";
+import Pagination from "../pagination/Pagination";
 
 const sortOptions = [
   { name: "Most Popular", value: "#", current: true },
@@ -91,6 +92,9 @@ const SideBar = () => {
   const [sortOrder, setSortOrder] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const entriesPerPage = 4; // Limit per page
+  const [totalProducts, setTotalProducts] = useState(0); // Store total products
 
   const handleCategoryChange = (category) => {
     setSelectedCategories((prevCategories) =>
@@ -116,15 +120,20 @@ const SideBar = () => {
     const getProducts = async () => {
       try {
         setLoading(true);
-        const { allProducts } = await fetchProducts();
+        // const { allProducts } = await fetchProducts();
+        const { products, totalProducts } = await fetchProductsLimit(
+          currentPage,
+          entriesPerPage
+        );
+        setTotalProducts(totalProducts);
         const { data } = await fetchCategories();
         const { activeOffer } = await getActiveOffer();
         setOffers(activeOffer);
         setCategories(data.filter((item) => item.isDeleted !== true));
         setLoading(false);
-        if (allProducts) {
-          setProducts(allProducts);
-          setFilteredProducts(allProducts);
+        if (products) {
+          setProducts(products);
+          setFilteredProducts(products);
         } else {
           console.log("No data found");
           setLoading(false);
@@ -136,7 +145,7 @@ const SideBar = () => {
       }
     };
     getProducts();
-  }, []);
+  }, [currentPage]);
 
   const handleSort = (order) => {
     setSortOrder(order);
@@ -264,27 +273,6 @@ const SideBar = () => {
             <h1 className="text-4xl font-bold tracking-tight text-gray-900">
               Products
             </h1>
-
-            <div class="p-5 overflow-hidden w-[60px] h-[60px] hover:w-[270px] bg-black shadow-[2px_2px_20px_rgba(0,0,0,0.08)] rounded-full flex group items-center hover:duration-300 duration-300">
-              <div class="flex items-center justify-center fill-white">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  id="Isolation_Mode"
-                  data-name="Isolation Mode"
-                  viewBox="0 0 24 24"
-                  width="22"
-                  height="22"
-                >
-                  <path d="M18.9,16.776A10.539,10.539,0,1,0,16.776,18.9l5.1,5.1L24,21.88ZM10.5,18A7.5,7.5,0,1,1,18,10.5,7.507,7.507,0,0,1,10.5,18Z"></path>
-                </svg>
-              </div>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                class="outline-none border-none border-black text-[20px] bg-transparent w-full text-white font-normal px-4"
-              />
-            </div>
 
             <div className="flex items-center">
               <Menu as="div" className="relative inline-block text-left">
@@ -414,8 +402,17 @@ const SideBar = () => {
               </form>
 
               {/* Product grid */}
-              <div className="lg:col-span-3">
+              <div className="lg:col-span-3 relative">
                 {/* Your content */}
+
+                <input
+                  type="text"
+                  placeholder="search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="border-0 border-b border-b-gray-400 text-[20px] bg-transparent w-60 absolute right-0 text-black focus:ring-0 focus:outline-none focus:border-transparent focus:border-b-gray-400"
+                />
+
                 <ProductGrid
                   products={filteredProducts}
                   loading={loading}
@@ -423,6 +420,14 @@ const SideBar = () => {
                 />
               </div>
             </div>
+
+            <Pagination
+              className="mx-auto"
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              totalEntries={totalProducts} // Use totalProducts for accurate total entries
+              entriesPerPage={entriesPerPage}
+            />
           </section>
         </main>
       </div>

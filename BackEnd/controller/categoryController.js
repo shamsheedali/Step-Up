@@ -1,4 +1,6 @@
 import Category from '../modal/categoryModal.js'; 
+import Product from "../modal/productModal.js";
+import Order from "../modal/orderModal.js";
 
 // ADD CATEGORY
 const addCategory = async (req, res) => {
@@ -71,4 +73,36 @@ const toggleCategoryStatus = async (req, res) => {
   }
 };
 
-export { addCategory, getCategories, editCategory, toggleCategoryStatus };
+//TOP SELLING CATEGORIES
+const getTopSellingCategories = async (req, res) => {
+  try {
+    const topCategories = await Order.aggregate([
+      { $unwind: "$items" },
+      {
+        $lookup: {
+          from: "products", 
+          localField: "items.product",
+          foreignField: "_id",
+          as: "productDetails",
+        },
+      },
+      { $unwind: "$productDetails" },
+      {
+        $group: {
+          _id: "$productDetails.category", 
+          totalQuantitySold: { $sum: "$items.quantity" },
+        },
+      },
+      { $sort: { totalQuantitySold: -1 } },
+      { $limit: 3 }, 
+    ]);
+
+    res.status(200).json({ categories: topCategories });
+  } catch (error) {
+    console.error("Error fetching top-selling categories:", error);
+    res.status(500).json({ error: "Failed to fetch top-selling categories" });
+  }
+};
+
+
+export { addCategory, getCategories, editCategory, toggleCategoryStatus, getTopSellingCategories };

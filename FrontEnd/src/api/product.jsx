@@ -117,6 +117,18 @@ const productCheckout = async (productIds) => {
   }
 };
 
+//Top selling products
+const getTopSellingProducts = async() => {
+  try {
+    const response = await axios.get(`${API_URL}/top-selling/products`);
+
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 export {
   addProduct,
   fetchProducts,
@@ -125,4 +137,5 @@ export {
   editProduct,
   productCheckout,
   fetchProductsLimit,
+  getTopSellingProducts,
 };

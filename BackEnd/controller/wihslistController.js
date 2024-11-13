@@ -52,21 +52,22 @@ const fetchWishlist = async (req, res) => {
     );
 
     if (!wishlist) {
-      return res.status(404).json({ message: "Wishlist not found" });
+      const newWishlist = new Wishlist({ userId, products: [] });
+      await newWishlist.save();
+      console.log("Wishlist for new user");
+    } else {
+      const wishlistDetails = wishlist.products.map((item) => ({
+        productId: item.productId._id,
+        productImage: item.productId.images[0],
+        productName: item.productId.productName,
+        category: item.productId.category,
+        price: item.productId.price,
+        stock: item.productId.stock,
+        quantity: item.quantity,
+        subtotal: item.productId.price * item.quantity,
+      }));
+      res.status(200).json({ wishlistItems: wishlistDetails });
     }
-
-    const wishlistDetails = wishlist.products.map((item) => ({
-      productId: item.productId._id,
-      productImage: item.productId.images[0],
-      productName: item.productId.productName,
-      category: item.productId.category,
-      price: item.productId.price,
-      stock: item.productId.stock,
-      quantity: item.quantity,
-      subtotal: item.productId.price * item.quantity,
-    }));
-
-    res.status(200).json({ wishlistItems: wishlistDetails });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error fetching bag" });

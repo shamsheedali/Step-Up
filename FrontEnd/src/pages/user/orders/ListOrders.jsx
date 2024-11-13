@@ -32,6 +32,7 @@ const ListOrders = () => {
         );
 
         setOrders(ordersWithProducts);
+        console.log("this", allOrders)
         setLoading(false);
         setReRender(false);
       } catch (error) {

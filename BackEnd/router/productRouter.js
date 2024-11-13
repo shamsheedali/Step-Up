@@ -8,6 +8,7 @@ import {
   editProduct,
   productCheckout,
   fetchProductsWithLimit,
+  getTopSellingProducts,
 } from "../controller/productController.js";
 import verifyToken from "../middleware/middleware.js";
 
@@ -25,5 +26,6 @@ router.get("/:id", getProduct);
 router.patch("/toggle/:id", verifyToken, toggleProductStatus);
 router.put("/:id", verifyToken, editProduct);
 router.post("/product-checkout", verifyToken, productCheckout);
+router.get('/top-selling/products', getTopSellingProducts);
 
 export default router;

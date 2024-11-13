@@ -1,4 +1,5 @@
 import Product from "../modal/productModal.js";
+import Order from "../modal/orderModal.js";
 
 const addProduct = async (req, res) => {
   try {
@@ -84,6 +85,7 @@ const fetchProductsWithLimit = async (req, res) => {
 
 //get Single Product
 const getProduct = async (req, res) => {
+  console.log("eeelk bernne")
   const id = req.params.id;
   try {
     const singleProduct = await Product.findById({ _id: id });
@@ -173,6 +175,41 @@ const productCheckout = async (req, res) => {
   }
 };
 
+//TOP SELLING PRODUCTS
+const getTopSellingProducts = async (req, res) => {
+  try {
+    const topProducts = await Order.aggregate([
+      { $unwind: "$items" },
+      {
+        $group: {
+          _id: "$items.product", 
+          totalQuantitySold: { $sum: "$items.quantity" },
+        },
+      },
+      { $sort: { totalQuantitySold: -1 } },
+      { $limit: 3 } 
+    ]);
+
+    const productIds = topProducts.map((product) => product._id);
+    const products = await Product.find({ _id: { $in: productIds } })
+      .select("productName price category images") // Select required fields
+      .lean(); // Use lean to get plain JavaScript objects
+
+    const populatedProducts = topProducts.map((topProduct) => {
+      const product = products.find((p) => p._id.toString() === topProduct._id.toString());
+      return {
+        ...product,
+        totalQuantitySold: topProduct.totalQuantitySold,
+      };
+    });
+
+    res.status(200).json({ products: populatedProducts });
+  } catch (error) {
+    console.error("Error fetching top-selling products:", error);
+    res.status(500).json({ error: "Failed to fetch top-selling products" });
+  }
+};
+
 export {
   addProduct,
   fetchProducts,
@@ -181,4 +218,5 @@ export {
   editProduct,
   productCheckout,
   fetchProductsWithLimit,
+  getTopSellingProducts,
 };

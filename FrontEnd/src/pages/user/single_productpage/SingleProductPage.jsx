@@ -96,10 +96,12 @@ const SingleProductPage = () => {
       try {
         setLoading(true);
         const { singleProduct, relatedProductsData } = await getProduct(id);
-        const {wishlistItems} = await fetchWishlist(uid);
+        const { wishlistItems } = await fetchWishlist(uid);
         console.log("this", wishlistItems);
-        const exists = wishlistItems.some(wishlist => wishlist.productId === id);
-        if(exists) setWishlistIcon(<GoHeartFill />)
+        const exists = wishlistItems.some(
+          (wishlist) => wishlist.productId === id
+        );
+        if (exists) setWishlistIcon(<GoHeartFill />);
         setProduct(singleProduct);
         setRelatedProduct(
           relatedProductsData.filter((item) => item._id !== id)
@@ -148,7 +150,7 @@ const SingleProductPage = () => {
       productId,
     };
     const checkWishlist = await addToWishlist(data);
-    if(checkWishlist) setWishlistIcon(<GoHeartFill />)
+    if (checkWishlist) setWishlistIcon(<GoHeartFill />);
   };
 
   //related products card click
@@ -169,8 +171,16 @@ const SingleProductPage = () => {
         <div className="pt-6">
           {/* Image gallery */}
           {loading ? (
-            <div className="w-full h-[50vh] flex justify-center items-center">
-              <span className="loading loading-spinner loading-lg text-black"></span>
+            <div className="mx-auto mt-6 max-w-2xl sm:px-6 lg:grid lg:max-w-7xl lg:grid-cols-3 lg:gap-x-8 lg:px-8">
+              <div className="aspect-h-4 h-[455px] aspect-w-3 skeleton animate-pulse bg-gray-300 overflow-hidden rounded-lg lg:block"></div>
+
+              <div className="hidden lg:grid lg:grid-cols-1 lg:gap-y-8">
+                <div className="aspect-h-2 aspect-w-3 h-[455px] skeleton animate-pulse bg-gray-300 overflow-hidden rounded-lg"></div>
+
+                <div className="aspect-h-2 aspect-w-3 h-[455px] skeleton animate-pulse bg-gray-300 overflow-hidden rounded-lg"></div>
+              </div>
+
+              <div className="aspect-h-5 aspect-w-4 h-[455px] skeleton animate-pulse bg-gray-300 lg:aspect-h-4 lg:aspect-w-3 sm:overflow-hidden sm:rounded-lg"></div>
             </div>
           ) : (
             <div className="mx-auto mt-6 max-w-2xl sm:px-6 lg:grid lg:max-w-7xl lg:grid-cols-3 lg:gap-x-8 lg:px-8">
@@ -226,16 +236,22 @@ const SingleProductPage = () => {
           {/* Product info */}
           <div className="mx-auto max-w-2xl px-4 pb-16 pt-10 sm:px-6 lg:grid lg:max-w-7xl lg:grid-cols-3 lg:grid-rows-[auto,auto,1fr] lg:gap-x-8 lg:px-8 lg:pb-24 lg:pt-16">
             <div className="lg:col-span-2 lg:border-r lg:border-gray-200 lg:pr-8">
-              <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-                {product.productName}
-              </h1>
+              {loading ? (
+                <div className="skeleton animate-pulse bg-gray-300 w-500 h-4"></div>
+              ) : (
+                <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
+                  {product.productName}
+                </h1>
+              )}
             </div>
 
             {/* Options */}
             <div className="mt-4 lg:row-span-3 lg:mt-0">
               <h2 className="sr-only">Product information</h2>
               <p className="text-3xl tracking-tight text-gray-900">
-                {discount > 0 ? (
+                {loading ? (
+                  <div className="skeleton animate-pulse bg-gray-300 w-[100px] h-7"></div>
+                ) : discount > 0 ? (
                   <>
                     ₹{getDiscountedPrice(product.price).toFixed(0)}{" "}
                     <span className="text-lg line-through text-gray-500">
@@ -427,9 +443,18 @@ const SingleProductPage = () => {
                 <h3 className="sr-only">Description</h3>
 
                 <div className="space-y-6">
-                  <p className="text-base text-gray-900">
-                    {product.description}
-                  </p>
+                  {loading ? (
+                    <>
+                      <div className="skeleton animate-pulse bg-gray-300 w-500 h-4"></div>
+                      <div className="skeleton animate-pulse bg-gray-300 w-500 h-4"></div>
+                      <div className="skeleton animate-pulse bg-gray-300 w-500 h-4"></div>
+                      <div className="skeleton animate-pulse bg-gray-300 w-[400px] h-4"></div>
+                    </>
+                  ) : (
+                    <p className="text-base text-gray-900">
+                      {product.description}
+                    </p>
+                  )}
                 </div>
               </div>
 

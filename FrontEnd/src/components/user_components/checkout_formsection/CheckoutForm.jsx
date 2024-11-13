@@ -219,6 +219,7 @@ const CheckoutForm = ({getDiscountApplied}) => {
     const quantities = Object.values(itemsIds);
     const { products } = await productCheckout(productIds);
     setCheckoutProducts(products);
+    console.log("itemIds", itemsIds)
 
     
     //Main validation like select address and payment method

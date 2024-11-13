@@ -66,5 +66,16 @@ const toggleCategoryStatus = async (categoryId) => {
   }
 };
 
+//Top selling categories
+const getTopSellingCategories = async() => {
+  try {
+    const response = await axios.get(`${API_URL}/top-selling/categories`);
 
-export { fetchCategories, addCategory, editCategory, toggleCategoryStatus };
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export { fetchCategories, addCategory, editCategory, toggleCategoryStatus, getTopSellingCategories };

@@ -11,7 +11,6 @@ const AllProduct = () => {
       <Navbar />
       <BreadCrumb />
       <SideBar />
-      {/* <Pagination /> */}
       <Footer />
     </div>
   );

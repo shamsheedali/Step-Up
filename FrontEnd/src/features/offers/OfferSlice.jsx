@@ -9,7 +9,7 @@ const offerSlice = createSlice({
       state[productId] = { originalPrice, discount };
     },
     clearOffers(state) {
-      return {}; // Clears all offers, e.g., when offers expire or are deactivated
+      return {}; 
     },
   },
 });

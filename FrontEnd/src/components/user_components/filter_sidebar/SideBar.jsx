@@ -25,6 +25,8 @@ import { fetchCategories } from "../../../api/category";
 import { getActiveOffer } from "../../../api/offer";
 import { useDispatch } from "react-redux";
 import Pagination from "../pagination/Pagination";
+import { toast } from "react-toastify";
+import { clearOffers } from "../../../features/offers/OfferSlice";
 
 const sortOptions = [
   { name: "Most Popular", value: "#", current: true },
@@ -47,6 +49,7 @@ function classNames(...classes) {
 }
 
 const SideBar = () => {
+  const dispatch = useDispatch();
   const [categories, setCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
 
@@ -127,8 +130,16 @@ const SideBar = () => {
         );
         setTotalProducts(totalProducts);
         const { data } = await fetchCategories();
-        const { activeOffer } = await getActiveOffer();
-        setOffers(activeOffer);
+        const  activeOffer  = await getActiveOffer();
+        console.log("active offer",activeOffer)
+        if(activeOffer.response){
+          const {status} = activeOffer.response
+          if(status===400 || status===404 || status=== 500){
+            console.log("server error")
+            dispatch(clearOffers())
+          }
+        }
+        setOffers(activeOffer.data);
         setCategories(data.filter((item) => item.isDeleted !== true));
         setLoading(false);
         if (products) {

@@ -85,7 +85,6 @@ const fetchProductsWithLimit = async (req, res) => {
 
 //get Single Product
 const getProduct = async (req, res) => {
-  console.log("eeelk bernne")
   const id = req.params.id;
   try {
     const singleProduct = await Product.findById({ _id: id });

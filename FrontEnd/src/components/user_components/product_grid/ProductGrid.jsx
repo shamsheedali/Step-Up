@@ -13,7 +13,8 @@ const ProductGrid = ({ products, loading, offers }) => {
 
   const dispatch = useDispatch();
     useEffect(() => {
-      if (offers && offers.isActive) {
+      if (offers && offers.isActive && offers.endDate < new Date()) {
+        console.log("this should not work")
         offers.productsIncluded.forEach((productId) => {
           dispatch(
             setOffer({
@@ -70,7 +71,7 @@ const ProductGrid = ({ products, loading, offers }) => {
               .filter((product) => !product.isDeleted)
               .map((product) => {
                 // Check if the product has an active offer
-                const isOnOffer = offers.productsIncluded.includes(product._id);
+                const isOnOffer = offers && offers.productsIncluded.includes(product._id);
                 const discount = isOnOffer ? offers.discount : 0;
                 const discountedPrice = isOnOffer
                   ? getDiscountedPrice(product.price, discount)

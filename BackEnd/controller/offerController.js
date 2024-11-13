@@ -68,7 +68,7 @@ const getActiveOffer = async (req, res) => {
   try {
       const activeOffer = await Offer.findOne({ isActive: true });
 
-      if (!activeOffer) {
+      if (!activeOffer || activeOffer.endDate < new Date()) {
           return res.status(404).json({ message: "No active offer available" });
       }
 

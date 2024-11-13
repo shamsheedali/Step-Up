@@ -10,6 +10,7 @@ const createOrder = async (req, res) => {
       items,
       totalAmount,
       paymentMethod,
+      paymentStatus,
       shippingAddress,
       discountApplied,
       razorpayPaymentId,
@@ -21,28 +22,30 @@ const createOrder = async (req, res) => {
       items,
       totalAmount,
       paymentMethod,
+      paymentStatus,
       shippingAddress,
       discountApplied,
       razorpayPaymentId,
     });
 
     console.log("newOrder", newOrder);
-    
 
     for (const item of items) {
       const quantity = Number(item.quantity);
-    
+
       if (isNaN(quantity)) {
-        throw new Error(`Invalid quantity for product ${item.product}: quantity must be a number.`);
+        throw new Error(
+          `Invalid quantity for product ${item.product}: quantity must be a number.`
+        );
       }
-    
+
       await Product.findByIdAndUpdate(
         item.product,
-        { $inc: { stock: -quantity } }, 
+        { $inc: { stock: -quantity } },
         { new: true }
       );
     }
-    
+
     const savedOrder = await newOrder.save();
 
     //add uid in coupon used by
@@ -114,33 +117,34 @@ const cancelOrder = async (req, res) => {
 
     for (const item of order.items) {
       const quantity = Number(item.quantity);
-    
+
       if (isNaN(quantity)) {
-        throw new Error(`Invalid quantity for product ${item.product}: quantity must be a number.`);
+        throw new Error(
+          `Invalid quantity for product ${item.product}: quantity must be a number.`
+        );
       }
-    
+
       await Product.findByIdAndUpdate(
         item.product,
-        { $inc: { stock: +quantity } }, 
+        { $inc: { stock: +quantity } },
         { new: true }
       );
     }
     console.log(order);
 
-    if (order.paymentMethod === 'razorPay') {
+    if (order.paymentMethod === "razorPay") {
       const transaction = {
         description: "Amount Returned Due to Order Cancellation",
         type: "Credit",
         amount: order.totalAmount,
       };
-    
+
       await Wallet.findOneAndUpdate(
         { userId: uid },
         { $push: { transactions: transaction } },
-        { upsert: true, new: true } 
+        { upsert: true, new: true }
       );
     }
-    
 
     res.status(200).json({ message: "Order Deleted!" });
   } catch (error) {
@@ -160,6 +164,7 @@ const getAllOrders = async (req, res) => {
   }
 };
 
+//change order status
 const changeStatus = async (req, res) => {
   const { orderId, status } = req.query;
 
@@ -177,6 +182,28 @@ const changeStatus = async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ message: "Error updating order status", error });
+  }
+};
+
+//CHANGE PAYMENT STATUS
+const changePaymentStatus = async (req, res) => {
+  const { orderId, paymentStatus } = req.query;
+  console.log(req.query);
+  try {
+    const updatedOrder = await Orders.findByIdAndUpdate(
+      orderId,
+      { paymentStatus },
+      { new: true }
+    );
+    console.log(updatedOrder);
+
+    if (updatedOrder) {
+      res.status(200).json({ message: "Payment Completed", updatedOrder });
+    } else {
+      res.status(404).json({ message: "Order not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Error updating payment status", error });
   }
 };
 
@@ -293,4 +320,5 @@ export {
   getAllOrders,
   changeStatus,
   salesReport,
+  changePaymentStatus,
 };

@@ -19,7 +19,7 @@ import { fetchCoupons, verifyCouponCode } from "../../../api/coupons";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
-const CheckoutForm = ({getDiscountApplied}) => {
+const CheckoutForm = ({ getDiscountApplied }) => {
   const { uid, username, email } = useSelector((state) => state.user);
   const itemsIds = useSelector(
     (state) => state.bag.bags[uid]?.quantities || {}
@@ -219,29 +219,24 @@ const CheckoutForm = ({getDiscountApplied}) => {
     const quantities = Object.values(itemsIds);
     const { products } = await productCheckout(productIds);
     setCheckoutProducts(products);
-    console.log("itemIds", itemsIds)
+    console.log("itemIds", itemsIds);
 
-    
     //Main validation like select address and payment method
-  const mainValidate = () => {
-    let tempErrors = {};
-    if (Object.keys(selectedAddress).length === 1) tempErrors.selectAddress = "address is required";
-    if (selectedPaymentMethod.trim() === "") tempErrors.paymentMethod = "choose payment method";
-    setMainError(tempErrors);
-    return Object.keys(tempErrors).length === 0;
-  };
+    const mainValidate = () => {
+      let tempErrors = {};
+      if (Object.keys(selectedAddress).length === 1)
+        tempErrors.selectAddress = "address is required";
+      if (selectedPaymentMethod.trim() === "")
+        tempErrors.paymentMethod = "choose payment method";
+      setMainError(tempErrors);
+      return Object.keys(tempErrors).length === 0;
+    };
 
-    if(mainValidate()){
-      console.log("validated")
+    if (mainValidate()) {
+      console.log("validated");
 
       if (selectedPaymentMethod === "razorPay") {
-        const paymentResponse = await handlePayment(
-          username,
-          email,
-          Math.round(calculatedSubtotal),
-          selectedAddress.phonenumber
-        );
-
+        // try {
         const orderDetails = {
           user: uid,
           items: products.map((product, index) => ({
@@ -253,24 +248,55 @@ const CheckoutForm = ({getDiscountApplied}) => {
           paymentMethod: selectedPaymentMethod,
           shippingAddress: selectedAddress,
           discountApplied,
-          razorpayPaymentId: paymentResponse.paymentId,
+          paymentStatus: "Pending",
           promo,
         };
-      
-        console.log("Payment Success:", paymentResponse);
-      
-        if (paymentResponse.success) {
-          const response = await createOrder(orderDetails);
-          if (response) {
-            navigate("/bag/checkout/order-success");
-            dispatch(emptyBag({ userId: uid }));
-            await clearBag(uid);
-          }
-        }
-      } else if(selectedPaymentMethod === "cashOnDelivery") {
+        await handlePayment(
+          username,
+          email,
+          Math.round(calculatedSubtotal),
+          selectedAddress.phonenumber
+        )
+          .then(async (res) => {
+            console.log("Success", res);
+            const updatedOrderDetails = {
+              ...orderDetails,
+              paymentStatus: "Completed",
+            };
 
-        if(calculatedSubtotal >= 6000){
-          toast.error("Cash on Delivery is not available for orders above Rs 6000.");
+            const response = await createOrder(updatedOrderDetails);
+            if (response) {
+              navigate("/bag/checkout/order-success");
+              dispatch(emptyBag({ userId: uid }));
+              await clearBag(uid);
+            }
+          })
+          .catch(async (err) => {
+            console.log("pending", err);
+            // Creating order for pending payment (if payment failed)
+            const response = await createOrder(orderDetails);
+            if (response) {
+              navigate("/bag/checkout/order-success");
+              toast.warn("Your Payment is Pending");
+              dispatch(emptyBag({ userId: uid }));
+              await clearBag(uid);
+            }
+          });
+
+        //   if (paymentResponse.success) {
+        //
+        //   }
+
+        //
+        // } catch (error) {
+        //   console.error("Payment failed or error occurred:", error);
+        //   toast.error("Payment failed. Please try again.");
+        // }
+      } else if (selectedPaymentMethod === "cashOnDelivery") {
+        if (calculatedSubtotal >= 6000) {
+          toast.error(
+            "Cash on Delivery is not available for orders above Rs 6000."
+          );
           return;
         }
 
@@ -295,7 +321,6 @@ const CheckoutForm = ({getDiscountApplied}) => {
         }
       }
     }
-    
   };
 
   //verify code function
@@ -349,7 +374,9 @@ const CheckoutForm = ({getDiscountApplied}) => {
             allAddresses.find((addr) => addr._id === e.target.value)
           )
         }
-        className={`block w-full mt-2 border ${mainError.selectAddress ? "border-red-500" : "border-black"}  rounded-md`}
+        className={`block w-full mt-2 border ${
+          mainError.selectAddress ? "border-red-500" : "border-black"
+        }  rounded-md`}
       >
         <option value="" disabled>
           Select a delivery Address
@@ -434,7 +461,11 @@ const CheckoutForm = ({getDiscountApplied}) => {
 
         {/* Select payment type */}
         <h1 className="text-xl">How would you like to pay?</h1>
-        <div className={`flex justify-around ${mainError.paymentMethod ? "border border-red-500" : ""} mt-4`}>
+        <div
+          className={`flex justify-around ${
+            mainError.paymentMethod ? "border border-red-500" : ""
+          } mt-4`}
+        >
           {/* Cash on Delivery */}
           <div
             onClick={() => handlePaymentSelect("cashOnDelivery")}
@@ -473,9 +504,8 @@ const CheckoutForm = ({getDiscountApplied}) => {
             <LuWallet />
             <h1>Wallet</h1>
           </div>
-
         </div>
-      <p className="text-sm text-red-500">{mainError.paymentMethod}</p>
+        <p className="text-sm text-red-500">{mainError.paymentMethod}</p>
 
         <button
           className="btn rounded-full mt-3 mb-6 w-full bg-black text-white tracking-[1px]"

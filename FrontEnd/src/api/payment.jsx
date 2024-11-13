@@ -15,7 +15,6 @@ const handlePayment = async (username, email, totalAmount, phonenumber) => {
 
     console.log(data);
 
-    // Return a Promise to handle the payment result
     return new Promise((resolve, reject) => {
       const options = {
         key: razorpayKey,
@@ -31,7 +30,8 @@ const handlePayment = async (username, email, totalAmount, phonenumber) => {
           console.log(response.razorpay_signature);
           resolve({
             success: true,
-            paymentId: response.razorpay_payment_id, 
+            paymentId: response.razorpay_payment_id,
+            paymentStatus: "completed",
           });
         },
         prefill: {
@@ -42,23 +42,32 @@ const handlePayment = async (username, email, totalAmount, phonenumber) => {
         theme: {
           color: "#000",
         },
+        modal: {
+          ondismiss: function () {
+            console.log("Checkout form closed by the user");
+            reject({ success: false, error: "User closed the payment form." });
+          },
+        },
       };
 
-      // Open Razorpay payment form
       const razorpay = new window.Razorpay(options);
       razorpay.open();
 
-      // Handle payment failure
       razorpay.on("payment.failed", function (response) {
+        console.log("Error in HandlePayment");
         toast.error(response.error.description);
-        reject(false);
+
+        // window.location.href = "/bag/checkout/order-success";
+        reject({
+          success: false,
+          error: response.error,
+        });
       });
     });
   } catch (error) {
     console.error("Payment Error: ", error);
-    return false; 
+    return { success: false, error: "Payment initialization failed" };
   }
 };
-
 
 export { handlePayment };

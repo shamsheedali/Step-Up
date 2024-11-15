@@ -8,13 +8,13 @@ const adminlogin = async (userData) => {
     const response = await axios.post(`${API_URL}/admin_login`, userData);
     if (response.status === 200 && response.data.token) {
       localStorage.setItem("adminToken", response.data.token);
-      return true; // Success
+      return true; 
     } else {
-      return false; // Login failed
+      return false; 
     }
   } catch (error) {
     console.error("Error While Admin login:", error);
-    return false; // Error occurred
+    return false; 
   }
 };
 

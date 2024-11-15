@@ -48,8 +48,9 @@ const fetchWishlist = async (req, res) => {
 
     const wishlist = await Wishlist.findOne({ userId }).populate(
       "products.productId",
-      "productName category price stock images"
+      "productName category price stock isDeleted images"
     );
+
 
     if (!wishlist) {
       const newWishlist = new Wishlist({ userId, products: [] });
@@ -63,6 +64,7 @@ const fetchWishlist = async (req, res) => {
         category: item.productId.category,
         price: item.productId.price,
         stock: item.productId.stock,
+        isDeleted: item.productId.isDeleted,
         quantity: item.quantity,
         subtotal: item.productId.price * item.quantity,
       }));

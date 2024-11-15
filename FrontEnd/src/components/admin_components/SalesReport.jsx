@@ -4,7 +4,7 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { useDispatch, useSelector } from "react-redux";
-import { toast } from "react-toastify"; // Assuming you are using react-toastify for notifications
+import { toast } from "react-toastify"; 
 
 const SalesReport = () => {
   const [selectedFilter, setSelectedFilter] = useState("Sort");

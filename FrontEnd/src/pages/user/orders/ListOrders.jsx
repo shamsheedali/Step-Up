@@ -13,6 +13,8 @@ import { IoMdDownload, IoMdRefresh } from "react-icons/io";
 import { handlePayment } from "../../../api/payment";
 import { BiTimeFive } from "react-icons/bi";
 import { IoIosCheckmarkCircle } from "react-icons/io";
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const ListOrders = () => {
   const { uid, username, email } = useSelector((state) => state.user);
@@ -78,6 +80,77 @@ const ListOrders = () => {
     }
   };
 
+  const handleDownloadInvoice = async (orderId) => {
+    const order = orders.find((o) => o._id === orderId);
+    const doc = new jsPDF();
+
+    console.log("this is it!", order)
+  
+    // Header Section
+    doc.setFontSize(18);
+    doc.text("StepUp", 14, 20); 
+    doc.setFontSize(12);
+    doc.text("Address Line 1", 14, 28);
+    doc.text("Address Line 2", 14, 34);
+    doc.text("City, ZIP Code", 14, 40);
+    doc.text("Phone: 123-456-7890", 14, 46);
+    doc.text("Email: info@StepUp.com", 14, 52);
+  
+    // Invoice Title and Date
+    doc.setFontSize(16);
+    doc.text("Invoice", 150, 20);
+    doc.setFontSize(10);
+    doc.text(`Invoice Date: ${new Date().toLocaleDateString()}`, 150, 26);
+    doc.text(`Invoice No: ${orderId}`, 150, 32);
+  
+    // Client Information Section
+    doc.setFontSize(12);
+    doc.text("Bill To:", 14, 70);
+    doc.text(`Client Name: ${username || "John Doe"}`, 14, 76);
+    doc.text(`Client Address: ${order.shippingAddress.postcode, order.shippingAddress.town || "123 Client St."}`, 14, 82);
+    doc.text(`Client Email: ${email || "client@example.com"}`, 14, 88);
+  
+    // Order Summary
+    doc.text("Order Summary", 14, 100);
+    doc.text(`Placed At: ${new Date(order.placedAt).toLocaleDateString()}`, 14, 106);
+    doc.text(`Payment Method: ${order.paymentMethod}`, 14, 112);
+    doc.text(`Total Amount: ₹${Math.round(order.totalAmount)}`, 14, 118);
+  
+    // Itemized List Table
+    const items = order.items || [
+      { name: "Item 1", quantity: 1, price: 500 },
+      { name: "Item 2", quantity: 2, price: 750 },
+    ]; // Dummy items for placeholder
+  
+    const tableData = items.map((item, index) => [
+      index + 1,
+      item.product.productName,
+      item.quantity,
+      `₹${item.price.toFixed(2)}`,
+      `₹${(item.quantity * item.price).toFixed(2)}`,
+    ]);
+  
+    doc.autoTable({
+      startY: 130,
+      head: [["#", "Products", "Quantity", "Unit Price", "Total Price"]],
+      body: tableData,
+      theme: "grid",
+    });
+  
+    // Total Amount
+    doc.setFontSize(12);
+    const finalY = doc.lastAutoTable.finalY + 10; // Position below the table
+    doc.text(`Total: ₹${Math.round(order.totalAmount)}`, 150, finalY);
+  
+    // Footer
+    doc.setFontSize(10);
+    doc.text("Thank you for your business!", 14, finalY + 20);
+    doc.text("If you have any questions, please contact us at support@StepUp.com", 14, finalY + 26);
+  
+    // Save PDF
+    doc.save(`Invoice-${orderId}.pdf`);
+  };
+
   return (
     <div className="text-black min-h-screen h-fit">
       <Navbar />
@@ -126,6 +199,7 @@ const ListOrders = () => {
               orders.map((order) => (
                 <div
                   key={order._id}
+                  id="invoice"
                   className="relative w-full flex flex-col py-3 border-b border-gray-400"
                 >
                   <p>
@@ -134,7 +208,8 @@ const ListOrders = () => {
                   <p>Total Amount: ₹{Math.round(order.totalAmount)}</p>
                   <div>
                     <p className="flex items-center">
-                      Payment Method: {order.paymentMethod}{" - "}
+                      Payment Method: {order.paymentMethod}
+                      {" - "}
                       {order.paymentMethod === "razorPay" && (
                         <span
                           className={`px-3 py-1 rounded flex items-center gap-1 ${
@@ -182,7 +257,10 @@ const ListOrders = () => {
                   {/* buttons */}
                   <div className="absolute right-0 flex flex-col gap-3">
                     {!order.isCancelled && (
-                      <button className="btn">
+                      <button
+                        className="btn"
+                        onClick={() => handleDownloadInvoice(order._id)}
+                      >
                         <IoMdDownload /> Invoice
                       </button>
                     )}
@@ -205,7 +283,6 @@ const ListOrders = () => {
                   </div>
                   <hr className="my-4" />
 
-                  {/* Check if items exist and map through them */}
                   {Array.isArray(order.items) && order.items.length > 0 ? (
                     order.items.map((item) => (
                       <div

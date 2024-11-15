@@ -19,7 +19,7 @@ const Wishlist = () => {
       setLoading(true);
       try {
         const { wishlistItems } = await fetchWishlist(uid);
-        setProducts(wishlistItems.reverse());
+        setProducts(wishlistItems.filter((item) => !item.isDeleted).reverse());
       } catch (error) {
         console.error("Error fetching Wishlist items:", error);
       } finally {

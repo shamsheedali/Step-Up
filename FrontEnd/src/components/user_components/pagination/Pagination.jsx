@@ -6,7 +6,6 @@ const Pagination = ({
   totalEntries,
   entriesPerPage,
 }) => {
-
   const totalPages = Math.ceil(totalEntries / entriesPerPage);
 
   const handleNext = () => {
@@ -27,7 +26,6 @@ const Pagination = ({
           {/* Prev Button */}
           <button
             className="flex items-center justify-center px-4 h-10 text-base font-medium text-white bg-black rounded-s hover:bg-gray-900 dark:bg-black dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-
             onClick={handlePrev}
             disabled={currentPage === 1}
           >
@@ -48,10 +46,16 @@ const Pagination = ({
             </svg>
             Prev
           </button>
+
+          <div className="w-6 h-10 bg-gray-500 flex items-center justify-center text-white">
+            <h1>{currentPage}</h1>
+          </div>
+
           {/* Next Button */}
-          <button className="flex items-center justify-center px-4 h-10 text-base font-medium text-white bg-black border-0 border-s border-gray-700 rounded-e hover:bg-gray-900 dark:bg-black dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-          onClick={handleNext}
-          disabled={currentPage === totalPages}
+          <button
+            className="flex items-center justify-center px-4 h-10 text-base font-medium text-white bg-black border-0 border-s border-gray-700 rounded-e hover:bg-gray-900 dark:bg-black dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+            onClick={handleNext}
+            disabled={currentPage === totalPages}
           >
             Next
             <svg

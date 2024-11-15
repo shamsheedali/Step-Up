@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { FaGoogle, FaFacebookF } from "react-icons/fa";
 import SignupImg from '../../../assets/images/auth/nike.png';
 import { adminlogin } from '../../../api/admin'
 import { useNavigate } from "react-router-dom";
@@ -32,7 +31,7 @@ const AdminLogin = () => {
       const loginSuccess = await adminlogin(formData);
   
       if (loginSuccess) {
-        navigate('/dashboard'); 
+        navigate('/dashboard/overview'); 
       } else {
         setErrors({ general: "Invalid login credentials" }); 
       }

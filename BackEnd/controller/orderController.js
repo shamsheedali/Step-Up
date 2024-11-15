@@ -111,7 +111,9 @@ const cancelOrder = async (req, res) => {
 
     const order = await Orders.findByIdAndUpdate(
       orderId,
-      { isCancelled: true },
+      { isCancelled: true,
+        status: "Cancelled",
+       },
       { new: true }
     );
 
@@ -130,7 +132,6 @@ const cancelOrder = async (req, res) => {
         { new: true }
       );
     }
-    console.log(order);
 
     if (order.paymentMethod === "razorPay") {
       const transaction = {
@@ -158,6 +159,24 @@ const getAllOrders = async (req, res) => {
     const allOrders = await Orders.find();
 
     res.status(200).json({ allOrders });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Error while fetching orders" });
+  }
+};
+
+//orders with pagination (Admin)
+const getOrdersPagination = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 5;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * limit;
+
+    const totalOrders = await Orders.countDocuments({});
+    const allOrders = await Orders.find({}).skip(skip).limit(limit);
+    console.log(allOrders);
+
+    res.status(200).json({ allOrders, totalOrders });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Error while fetching orders" });
@@ -321,4 +340,5 @@ export {
   changeStatus,
   salesReport,
   changePaymentStatus,
+  getOrdersPagination,
 };

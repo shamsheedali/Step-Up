@@ -67,15 +67,15 @@ const fetchProducts = async (req, res) => {
   }
 };
 
-//FETCHING PRODUCT (USER) WITH PAGINATION
+//FETCHING PRODUCT WITH PAGINATION
 const fetchProductsWithLimit = async (req, res) => {
   try {
-    const limit = parseInt(req.query.limit) || 8;
+    const limit = parseInt(req.query.limit) || 5;
     const page = parseInt(req.query.page) || 1;
     const skip = (page - 1) * limit;
 
-    const totalProducts = await Product.countDocuments({ isDeleted: false });
-    const products = await Product.find({ isDeleted: false }).skip(skip).limit(limit);
+    const totalProducts = await Product.countDocuments({});
+    const products = await Product.find({}).skip(skip).limit(limit);
 
     res.status(200).json({ products, totalProducts });
   } catch (error) {

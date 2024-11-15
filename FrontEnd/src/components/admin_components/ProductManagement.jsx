@@ -3,15 +3,26 @@ import {
   addProduct,
   editProduct,
   fetchProducts,
+  fetchProductsLimit,
   toggleProductState,
 } from "../../api/product";
 import { fetchCategories } from "../../api/category";
 import { toast } from "react-toastify";
+import Pagination from "../user_components/pagination/Pagination";
 
 const ProductManagement = () => {
   const wordLength = 3;
+  const [error, setError] = useState({});
+  //pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const entriesPerPage = 5;
+  const [totalProducts, setTotalProducts] = useState(0);
+
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
+  //edit product images
+  const [previewImages, setPreviewImages] = useState([]);
+
   const [categories, setCategories] = useState([]);
   const [productID, setProductID] = useState("");
   const [loading, setLoading] = useState(false);
@@ -48,15 +59,37 @@ const ProductManagement = () => {
     setSelectedImages([]);
   };
 
+  //edit image preview function
+  const handlePreviewChange = (e, index) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImages((prevImages) => {
+          const updatedImages = [...prevImages];
+          updatedImages[index] = reader.result.replace(
+            /^data:image\/\w+;base64,/,
+            ""
+          );
+          return updatedImages;
+        });
+      };
+
+      // Read the file as a data URL (base64) for preview
+      reader.readAsDataURL(file);
+    }
+  };
+
   const getProducts = async () => {
     try {
       setLoading(true);
-      const { allProducts } = await fetchProducts();
+      // const { allProducts } = await fetchProducts();
+      const allProducts = await fetchProductsLimit(currentPage, entriesPerPage);
       setLoading(false);
-      if (allProducts) {
-        console.log("cat", allProducts);
-        setProducts(allProducts);
-        setFilteredProducts(allProducts);
+      if (allProducts.products) {
+        setProducts(allProducts.products);
+        setTotalProducts(allProducts.totalProducts)
+        setFilteredProducts(allProducts.products);
         setLoading(false);
       } else {
         console.log("No data found");
@@ -70,7 +103,7 @@ const ProductManagement = () => {
   //fetching products
   useEffect(() => {
     getProducts();
-  }, [isChanged]);
+  }, [isChanged, currentPage]);
 
   //search query
   const [searchQuery, setSearchQuery] = useState("");
@@ -89,7 +122,7 @@ const ProductManagement = () => {
   useEffect(() => {
     const getCategories = async () => {
       const { data } = await fetchCategories();
-      setCategories(data);
+      setCategories(data.filter((category) => !category.isDeleted));
     };
     getCategories();
   }, []);
@@ -104,6 +137,7 @@ const ProductManagement = () => {
     setVariantIsModalOpen(!isVariantModalOpen);
   };
 
+  //Function to toggle edit modal
   const toggleEditModal = (id) => {
     setEditModalOpen(!isEditModalOpen);
     setProductID(id);
@@ -121,6 +155,8 @@ const ProductManagement = () => {
         newArrival: productToEdit.newArrival === true ? true : false,
         images: productToEdit.images,
       });
+      console.log(productToEdit);
+      setPreviewImages(productToEdit.images);
     } else {
       setAddProductData({
         name: "",
@@ -193,19 +229,24 @@ const ProductManagement = () => {
         images: newImages,
       }));
 
-      return newImages; // Return the new images array
+      return newImages;
     });
+  };
+
+  //Add product validate
+  const validate = () => {
+    const tempError = {};
+    if (addProductData.price <= 500) tempError.price = "invaild price";
+    if (addProductData.stock <= 0) tempError.stock = "invaild stock";
+    if (addProductData.images.length === 0) tempError.images = "choose images";
+    setError(tempError);
+    return Object.keys(tempError).length === 0;
   };
 
   //Adding Product
   const handleaddProductSubmit = async (e) => {
-    setLoading(true);
-    if (selectedImages.length > 5) {
-      alert("You cannot upload more than 5 images.");
-      setLoading(false);
-      return;
-    }
     e.preventDefault();
+    setLoading(true);
 
     const formData = new FormData();
     formData.append("name", addProductData.name);
@@ -221,29 +262,35 @@ const ProductManagement = () => {
       formData.append("images", image);
     });
 
-    try {
-      await addProduct(formData); // Sending FormData instead of JSON object
-      setLoading(false);
-      resetForm();
-      toggleModal();
-      setIsChanged(!isChanged);
-    } catch (error) {
-      console.log("Error while adding product", error);
-      setLoading(false);
-    }
+    if (validate()) {
+      try {
+        await addProduct(formData);
+        setError("");
+        setLoading(false);
+        resetForm();
+        toggleModal();
+        setIsChanged(!isChanged);
+      } catch (error) {
+        console.log("Error while adding product", error);
+        setLoading(false);
+      }
+    } else setLoading(false);
   };
 
   //edit Product
   const handleEditProductSubmit = async (e) => {
     e.preventDefault();
-    try {
-      console.log(addProductData);
-      await editProduct(productID, addProductData);
-      resetForm();
-      toggleEditModal();
-      setIsChanged(!isChanged);
-    } catch (error) {
-      console.log(error);
+    if (validate()) {
+      try {
+        addProductData.images = previewImages;
+        console.log("this one while editing", previewImages);
+        await editProduct(productID, addProductData);
+        resetForm();
+        toggleEditModal();
+        setIsChanged(!isChanged);
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 
@@ -253,8 +300,6 @@ const ProductManagement = () => {
     setProducts((prev) => [...prev, updatedProduct]);
     setIsChanged(!isChanged);
   };
-
-  console.log("this", addProductData);
 
   return (
     <div>
@@ -301,6 +346,7 @@ const ProductManagement = () => {
           </div>
 
           {/* Table */}
+          <h1 className="text-white ml-9">Total Products : {totalProducts}</h1>
           <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
               <tr>
@@ -321,9 +367,6 @@ const ProductManagement = () => {
                 </th>
                 <th scope="col" className="px-6 py-3">
                   Status
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Variant
                 </th>
                 <th scope="col" className="px-6 py-3">
                   Edit
@@ -393,14 +436,6 @@ const ProductManagement = () => {
                     <td className="px-6 py-4">
                       <span
                         className="font-medium text-green-600 dark:text-green-600 cursor-pointer hover:underline"
-                        onClick={toggleVariantModal}
-                      >
-                        Add Variant
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className="font-medium text-green-600 dark:text-green-600 cursor-pointer hover:underline"
                         onClick={() => toggleEditModal(product._id)}
                       >
                         Edit
@@ -421,6 +456,14 @@ const ProductManagement = () => {
               )}
             </tbody>
           </table>
+
+          <Pagination
+            className="mx-auto"
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            totalEntries={totalProducts} 
+            entriesPerPage={entriesPerPage}
+          />
 
           {/* Add Product Modal */}
           {isModalOpen && (
@@ -520,6 +563,7 @@ const ProductManagement = () => {
                           placeholder="₹2999"
                           required
                         />
+                        <p className="text-sm text-red-400">{error.price}</p>
                       </div>
 
                       <div className="col-span-2 sm:col-span-1">
@@ -539,6 +583,7 @@ const ProductManagement = () => {
                           placeholder="Enter stock"
                           required
                         />
+                        <p className="text-sm text-red-400">{error.stock}</p>
                       </div>
 
                       <div className="col-span-2">
@@ -559,7 +604,7 @@ const ProductManagement = () => {
                           <option value="">Select a category</option>
                           {categories.map((category) => (
                             <option key={category._id} value={category._id}>
-                              {category.isDeleted ? "" : category.name}
+                              {category.name}
                             </option>
                           ))}
                         </select>
@@ -695,166 +740,6 @@ const ProductManagement = () => {
             </div>
           )}
 
-          {/* Add Variant Modal */}
-          {isVariantModalOpen && (
-            <div
-              id="crud-modal"
-              tabIndex="-1"
-              aria-hidden="true"
-              className="fixed inset-0 z-50 flex items-center justify-center w-full h-full bg-black bg-opacity-50"
-            >
-              <div className="relative p-4 w-full max-w-md max-h-full">
-                <div className="relative bg-white rounded-lg shadow dark:bg-gray-700 overflow-y-auto max-h-[80vh]">
-                  <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      Add Variant
-                    </h3>
-                    <button
-                      type="button"
-                      className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                      onClick={toggleVariantModal}
-                    >
-                      <svg
-                        className="w-3 h-3"
-                        aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 14 14"
-                      >
-                        <path
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                        />
-                      </svg>
-                      <span className="sr-only">Close modal</span>
-                    </button>
-                  </div>
-                  {/* Modal body */}
-                  <form className="p-4 md:p-5">
-                    <div className="grid gap-4 mb-4 grid-cols-2">
-                      <div className="col-span-2">
-                        <label
-                          htmlFor="name"
-                          className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                        >
-                          Name
-                        </label>
-                        <input
-                          type="text"
-                          name="name"
-                          id="name"
-                          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                          placeholder="Type product name"
-                          required
-                        />
-                      </div>
-
-                      <div className="col-span-2">
-                        <label
-                          htmlFor="description"
-                          className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                        >
-                          Description
-                        </label>
-                        <textarea
-                          name="description"
-                          id="description"
-                          rows="3"
-                          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                          placeholder="Add a short description"
-                          required
-                        ></textarea>
-                      </div>
-
-                      <div className="col-span-2 sm:col-span-1">
-                        <label
-                          htmlFor="price"
-                          className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                        >
-                          Price
-                        </label>
-                        <input
-                          type="number"
-                          name="price"
-                          id="price"
-                          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                          placeholder="₹2999"
-                          required
-                        />
-                      </div>
-
-                      <div className="col-span-2 sm:col-span-1">
-                        <label
-                          htmlFor="stock"
-                          className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                        >
-                          Stock
-                        </label>
-                        <input
-                          type="number"
-                          name="stock"
-                          id="stock"
-                          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                          placeholder="Enter stock"
-                          required
-                        />
-                      </div>
-
-                      <div className="col-span-2">
-                        <label
-                          htmlFor="images"
-                          className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                        >
-                          Upload Images
-                        </label>
-                        <input
-                          type="file"
-                          name="images"
-                          id="images"
-                          accept="image/*"
-                          multiple
-                          onChange={handleImageChange}
-                          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                        />
-                        {/* Preview images */}
-                        {selectedImages.length > 0 && (
-                          <div className="mt-4 flex flex-wrap gap-2">
-                            {selectedImages.map((image, index) => (
-                              <div key={index} className="relative">
-                                <img
-                                  src={URL.createObjectURL(image)}
-                                  alt="Preview"
-                                  className="w-20 h-20 object-cover rounded-md"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => removeImage(index)}
-                                  className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center"
-                                >
-                                  X
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <button
-                      type="submit"
-                      className="btn bg-green-700 text-white hover:bg-green-800 px-4 py-2 rounded-lg"
-                    >
-                      Add Variant
-                    </button>
-                  </form>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Edit Product Modal */}
           {isEditModalOpen && (
             <div
@@ -953,6 +838,7 @@ const ProductManagement = () => {
                           placeholder="₹2999"
                           required
                         />
+                        <p className="text-sm text-red-400">{error.price}</p>
                       </div>
 
                       <div className="col-span-2 sm:col-span-1">
@@ -972,6 +858,7 @@ const ProductManagement = () => {
                           placeholder="Enter stock"
                           required
                         />
+                        <p className="text-sm text-red-400">{error.stock}</p>
                       </div>
 
                       <div className="col-span-2">
@@ -981,16 +868,21 @@ const ProductManagement = () => {
                         >
                           Category
                         </label>
-                        <input
-                          type="text"
+                        <select
                           name="category"
                           value={addProductData.category}
                           onChange={handleChange}
                           id="category"
                           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                          placeholder="Enter product category"
                           required
-                        />
+                        >
+                          <option value="">Select a category</option>
+                          {categories.map((category) => (
+                            <option key={category._id} value={category._id}>
+                              {category.name}
+                            </option>
+                          ))}
+                        </select>
                       </div>
 
                       <div className="col-span-2">
@@ -1034,42 +926,37 @@ const ProductManagement = () => {
                         >
                           Upload Images
                         </label>
-                        <input
-                          type="file"
-                          name="images"
-                          id="images"
-                          accept="image/*"
-                          multiple
-                          onChange={handleImageChange}
-                          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                        />
-                        {/* Preview images */}
-                        {selectedImages.length > 0 && (
-                          <div className="mt-4 flex flex-wrap gap-2">
-                            {selectedImages.map((image, index) => (
-                              <div key={index} className="relative">
-                                <img
-                                  src={URL.createObjectURL(image)} // Create a preview URL for the image
-                                  alt="Preview"
-                                  className="w-20 h-20 object-cover rounded-md"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => removeImage(index)}
-                                  className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center"
-                                >
-                                  X
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                        <div className="flex flex-col gap-3">
+                          {previewImages.map((img, index) => (
+                            <div key={index}>
+                              <input
+                                type="file"
+                                name={`image${index}`}
+                                id={`image${index}`}
+                                onChange={(e) => handlePreviewChange(e, index)}
+                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                              />
+                              {/* Preview images */}
+                              {img && (
+                                <div className="mt-4 flex flex-wrap gap-2">
+                                  <div className="relative">
+                                    <img
+                                      src={`data:image/jpeg;base64,${img}`}
+                                      alt="Preview"
+                                      className="w-20 h-20 object-cover rounded-md"
+                                    />
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
 
                     <button
                       type="submit"
-                      className="btn bg-blue-700 text-white hover:bg-blue-800 px-4 py-2 rounded-lg"
+                      className="btn w-full bg-green-500 text-black hover:bg-green-800 px-4 py-2 rounded-lg"
                     >
                       {loading ? "Updating Product..." : "Update Product"}
                     </button>
@@ -1078,6 +965,7 @@ const ProductManagement = () => {
               </div>
             </div>
           )}
+
         </div>
       </div>
     </div>

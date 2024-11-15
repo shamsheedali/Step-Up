@@ -21,7 +21,6 @@ const Wallet = () => {
         return acc; 
       }, 0);  
       setBalance(totalBalance);
-      console.log("Trax", totalBalance);
       setWallet(transactions);
     };
     getWallet();
@@ -70,12 +69,12 @@ const Wallet = () => {
                         <tr className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
                           <th
                             scope="row"
-                            className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                            className="track px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                           >
                             {data.description}
                           </th>
                           <td className="px-6 py-4">
-                            {new Date(data.date).toLocaleDateString()}
+                            {new Date(data.date).toDateString()}
                           </td>
                           <td className="px-6 py-4">{data.type}</td>
                           <td className="px-6 py-4">₹{Math.round(data.amount)}</td>

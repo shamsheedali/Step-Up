@@ -29,8 +29,7 @@ const Bag = () => {
       setLoading(true);
       try {
         const { bagItems } = await fetchBag(uid);
-        console.log("bagItems", bagItems);
-        setProducts(bagItems.reverse());
+        setProducts(bagItems.filter((item) => !item.isDeleted).reverse());
       } catch (error) {
         console.error("Error fetching bag items:", error);
       } finally {
@@ -46,8 +45,6 @@ const Bag = () => {
   const offers = useSelector((state) => state.offers);
 
   useEffect(() => {
-    console.log("Quantities:", quantities);
-    console.log("Products:", products);
 
     // Calculate subtotal based on products and quantities
     const calculatedSubtotal = products.reduce((acc, product) => {
@@ -69,7 +66,6 @@ const Bag = () => {
       return acc + itemTotal;
     }, 0);
 
-    console.log("Subtotal:", calculatedSubtotal);
     dispatch(storeSubtotal({ userId: uid, subtotal: calculatedSubtotal }));
   }, [products, quantities, dispatch, uid, offers]);
 

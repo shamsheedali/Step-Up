@@ -96,8 +96,8 @@ const SideBar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const entriesPerPage = 4; // Limit per page
-  const [totalProducts, setTotalProducts] = useState(0); // Store total products
+  const entriesPerPage = 4; 
+  const [totalProducts, setTotalProducts] = useState(0); 
 
   const handleCategoryChange = (category) => {
     setSelectedCategories((prevCategories) =>
@@ -123,7 +123,6 @@ const SideBar = () => {
     const getProducts = async () => {
       try {
         setLoading(true);
-        // const { allProducts } = await fetchProducts();
         const { products, totalProducts } = await fetchProductsLimit(
           currentPage,
           entriesPerPage
@@ -143,7 +142,7 @@ const SideBar = () => {
         setCategories(data.filter((item) => item.isDeleted !== true));
         setLoading(false);
         if (products) {
-          setProducts(products);
+          setProducts(products.filter((product) => !product.isDeleted));
           setFilteredProducts(products);
         } else {
           console.log("No data found");

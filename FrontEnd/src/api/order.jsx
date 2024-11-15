@@ -73,7 +73,7 @@ const cancelOrder = async (orderId, uid) => {
   }
 };
 
-//get all orders for admin
+//get all orders 
 const getOrders = async () => {
   try {
     const response = await axios.get(`${API_URL}/getallorders`);
@@ -83,6 +83,21 @@ const getOrders = async () => {
     console.log(error);
   }
 };
+
+//get orders for pagination
+const orderLimit = async (page, limit) => {
+  try {
+    const response = await axios.get(`${API_URL}/limitOrders`, {
+      params: {
+        page,
+        limit,
+      }
+    })
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 //change status
 const changeStatus = async (orderId, status) => {
@@ -140,4 +155,5 @@ export {
   changeStatus,
   salesReport,
   changePaymentStatus,
+  orderLimit,
 };

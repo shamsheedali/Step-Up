@@ -41,7 +41,6 @@ const fetchProductsLimit = async(page, limit = 4) => {
       }
     })
 
-    console.log(response);
     return response.data;
   } catch (error) {
     console.log(error);

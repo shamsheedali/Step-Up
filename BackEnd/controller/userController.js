@@ -31,7 +31,7 @@ const signUp = async (req, res) => {
         email: newUser.email,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "1d" }
     );
 
     res.status(201).json({ message: "Signup Successful", token, newUser });
@@ -63,7 +63,7 @@ const login = async (req, res) => {
         email: user.email,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "1d" }
     );
 
     //updating isVerified

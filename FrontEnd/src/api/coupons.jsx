@@ -13,6 +13,22 @@ const fetchCoupons = async () => {
   }
 };
 
+//fetch with limit (pagination)
+const fetchCouponsLimit = async (page, limit) => {
+  try {
+    const response = await axios.get(`${API_URL}/couponLimit`, {
+      params: {
+        page,
+        limit,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 const createCoupon = async (couponData) => {
   const token = localStorage.getItem("adminToken");
   try {
@@ -26,6 +42,50 @@ const createCoupon = async (couponData) => {
     return response.data;
   } catch (error) {
     console.log(error);
+  }
+};
+
+//edit coupon
+const updateCoupon = async (id, couponData) => {
+  const token = localStorage.getItem("adminToken");
+  try {
+    const response = await axios.put(
+      `${API_URL}/edit-coupon/${id}`,
+      couponData,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    toast.success("Updated Coupon");
+  } catch (error) {
+    console.log(error);
+    toast.error("Error Updating Coupon!");
+  }
+};
+
+//toggle coupon state
+const toggleCouponState = async (id) => {
+  const token = localStorage.getItem("adminToken");
+  try {
+    const response = await axios.patch(
+      `${API_URL}/toggle/${id}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (response.data) {
+      toast.success(response.data.message);
+      console.log(response.data);
+      return response.data;
+    }
+  } catch (error) {
+    console.error("Error toggling Coupon status:", error);
+    toast.error("Failed to update Coupon status");
   }
 };
 
@@ -46,24 +106,36 @@ const deleteCoupon = async (id) => {
 const verifyCouponCode = async (code, uid) => {
   const token = localStorage.getItem("userToken");
   try {
-    const response = await axios.post(`${API_URL}/verify`, {code, uid}, {
-      headers: {
-        Authorization: `Bearer, ${token}`,
-      },
-    });
+    const response = await axios.post(
+      `${API_URL}/verify`,
+      { code, uid },
+      {
+        headers: {
+          Authorization: `Bearer, ${token}`,
+        },
+      }
+    );
     console.log(response);
 
     return response.data;
   } catch (error) {
     console.log(error);
-    if(error.response.status === 404){
-        toast.error(error.response.data.message)
-    } else if(error.response.status === 400){
-        toast.error(error.response.data.message)
-    }else {
-        toast.error("Server error. Please try again later.")
+    if (error.response.status === 404) {
+      toast.error(error.response.data.message);
+    } else if (error.response.status === 400) {
+      toast.error(error.response.data.message);
+    } else {
+      toast.error("Server error. Please try again later.");
     }
   }
 };
 
-export { fetchCoupons, createCoupon, deleteCoupon, verifyCouponCode };
+export {
+  fetchCoupons,
+  createCoupon,
+  deleteCoupon,
+  verifyCouponCode,
+  updateCoupon,
+  toggleCouponState,
+  fetchCouponsLimit,
+};

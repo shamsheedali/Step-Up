@@ -70,7 +70,7 @@ const editProduct = async (id, data) => {
   }
 };
 
-//TOOGLE--PRODUCT--ISDELETED
+//TOGGLE--PRODUCT--ISDELETED
 const toggleProductState = async (id) => {
   const token = localStorage.getItem("adminToken");
   try {

@@ -83,7 +83,6 @@ const ProductManagement = () => {
   const getProducts = async () => {
     try {
       setLoading(true);
-      // const { allProducts } = await fetchProducts();
       const allProducts = await fetchProductsLimit(currentPage, entriesPerPage);
       setLoading(false);
       if (allProducts.products) {
@@ -118,7 +117,7 @@ const ProductManagement = () => {
     }
   }, [searchQuery, products]);
 
-  //fetcing categories
+  //fetching categories
   useEffect(() => {
     const getCategories = async () => {
       const { data } = await fetchCategories();
@@ -155,7 +154,6 @@ const ProductManagement = () => {
         newArrival: productToEdit.newArrival === true ? true : false,
         images: productToEdit.images,
       });
-      console.log(productToEdit);
       setPreviewImages(productToEdit.images);
     } else {
       setAddProductData({
@@ -236,15 +234,15 @@ const ProductManagement = () => {
   //Add product validate
   const validate = () => {
     const tempError = {};
-    if (addProductData.price <= 500) tempError.price = "invaild price";
-    if (addProductData.stock <= 0) tempError.stock = "invaild stock";
+    if (addProductData.price <= 500) tempError.price = "invalid price";
+    if (addProductData.stock <= 0) tempError.stock = "invalid stock";
     if (addProductData.images.length === 0) tempError.images = "choose images";
     setError(tempError);
     return Object.keys(tempError).length === 0;
   };
 
   //Adding Product
-  const handleaddProductSubmit = async (e) => {
+  const handleAddProductSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
@@ -283,7 +281,6 @@ const ProductManagement = () => {
     if (validate()) {
       try {
         addProductData.images = previewImages;
-        console.log("this one while editing", previewImages);
         await editProduct(productID, addProductData);
         resetForm();
         toggleEditModal();
@@ -379,8 +376,8 @@ const ProductManagement = () => {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="4" className="text-center">
-                    <span className="loading loading-spinner loading-lg"></span>
+                  <td colSpan="8" className="text-center">
+                    <span className="mx-auto">Loading...</span>
                   </td>
                 </tr>
               ) : (
@@ -505,7 +502,7 @@ const ProductManagement = () => {
                   {/* Modal body */}
                   <form
                     className="p-4 md:p-5"
-                    onSubmit={handleaddProductSubmit}
+                    onSubmit={handleAddProductSubmit}
                   >
                     <div className="grid gap-4 mb-4 grid-cols-2">
                       <div className="col-span-2">

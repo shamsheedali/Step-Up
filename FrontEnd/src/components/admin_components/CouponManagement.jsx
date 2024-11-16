@@ -1,23 +1,35 @@
 import React, { useEffect, useState } from "react";
-import { createCoupon, deleteCoupon, fetchCoupons } from "../../api/coupons";
+import { createCoupon, deleteCoupon, fetchCoupons, fetchCouponsLimit, toggleCouponState, updateCoupon } from "../../api/coupons";
 import { fetchCategories } from "../../api/category";
+import { toast } from "react-toastify";
+import Pagination from "../user_components/pagination/Pagination";
 
 const CouponManagement = () => {
   const [loading, setLoading] = useState(false);
+  const [reRender, setReRender] = useState(false);
   const [coupons, setCoupons] = useState([]);
   const [couponId, setCouponId] = useState([]);
+  //Modal's
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOptionModalOpen, setIsOptionModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  //status for option modal
+  const [couponStatus, setCouponStatus] = useState(false);
+
+  //pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const entriesPerPage = 5;
+  const [totalCoupons, setTotalCoupons] = useState(0);
+
   const [addCouponData, setAddCouponData] = useState({
     couponName: "",
     couponCode: "",
     description: "",
-    discountType: "",
-    discountValue: "",
-    minOrderAmount: "",
+    discountPercentage: "",
+    minimumPurchase: "",
     maxDiscount: "",
     usageLimit: "",
-    expirationDate: "",
+    expiryDate: "",
   });
 
   const handleChange = (e) => {
@@ -29,22 +41,75 @@ const CouponManagement = () => {
     }
   };
 
+  //toggle add modal
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
+    setAddCouponData({});
   };
 
-  const toggleOptionModal = (id) => {
+  //toggle edit modal
+  const toggleEditModal = (id) => {
+    setIsEditModalOpen(!isEditModalOpen);
+    //closing option modal while edit modal is open
+    setIsOptionModalOpen(false);
+
+    if (!isEditModalOpen) {
+      const coupon = coupons.find((coupon) => coupon._id === id);
+      setAddCouponData({
+        couponName: coupon.name,
+        couponCode: coupon.code,
+        description: coupon.description,
+        discountPercentage: coupon.discountPercentage,
+        minimumPurchase: coupon.minimumPurchase,
+        maxDiscount: coupon.maxDiscount,
+        usageLimit: coupon.usageLimit,
+        expiryDate: coupon.expiryDate,
+      });
+    } else {
+      setAddCouponData({
+        couponName: "",
+        couponCode: "",
+        description: "",
+        discountPercentage: "",
+        minimumPurchase: "",
+        maxDiscount: "",
+        usageLimit: "",
+        expiryDate: "",
+      });
+    }
+  };
+
+  //toggle option modal
+  const toggleOptionModal = (id, status) => {
     setIsOptionModalOpen(!isOptionModalOpen);
     setCouponId(id);
+    setCouponStatus(status);
   };
 
   useEffect(() => {
     const getCoupons = async () => {
-      const allCoupons = await fetchCoupons();
-      setCoupons(allCoupons);
+      // const allCoupons = await fetchCoupons();
+      const allCoupons = await fetchCouponsLimit(currentPage, entriesPerPage);
+      setCoupons(allCoupons.coupons);
+      setTotalCoupons(allCoupons.totalCoupons)
     };
     getCoupons();
-  }, []);
+  }, [reRender, currentPage]);
+
+  //coupon validation
+  const validate = () => {
+    if (
+      addCouponData.discountPercentage > 70 ||
+      addCouponData.discountPercentage < 5
+    ) {
+      toast.error("Discount Percentage Should be < 70%");
+      return false;
+    } else if (addCouponData.minimumPurchase < 3000) {
+      toast.error("Minimum Purchase should be atleast 3000");
+      return false;
+    }
+    return true;
+  };
 
   //add coupon submit
   const handleCouponSubmit = async (e) => {
@@ -54,34 +119,45 @@ const CouponManagement = () => {
       name: addCouponData.couponName,
       code: addCouponData.couponCode,
       description: addCouponData.description,
-      discountType: addCouponData.discountType,
-      discountValue: addCouponData.discountValue,
-      minimumPurchase: addCouponData.minOrderAmount,
+      discountPercentage: addCouponData.discountPercentage,
+      minimumPurchase: addCouponData.minimumPurchase,
       maxDiscount: addCouponData.maxDiscount,
-      expiryDate: addCouponData.expirationDate,
+      usageLimit: addCouponData.usageLimit,
+      expiryDate: addCouponData.expiryDate,
     };
 
-    const {coupon} = await createCoupon(couponData);
-    toggleModal();
-    setCoupons((prevCoupons) => [...prevCoupons, coupon]);
-    setAddCouponData({
-      couponName: "",
-      couponCode: "",
-      discountType: "",
-      discountValue: "",
-      minOrderAmount: "",
-      maxDiscount: "",
-      usageLimit: "",
-      expirationDate: "",
-    });
+    if (validate()) {
+      const { coupon } = await createCoupon(couponData);
+      toggleModal();
+      setCoupons((prevCoupons) => [...prevCoupons, coupon]);
+      setAddCouponData({});
+    }
   };
 
-  //delete coupon
-  const handleDeleteCoupon = async(id) => {
-    await deleteCoupon(id);
-    setCoupons(coupons.filter(coupon => coupon._id !== id));
+  //Edit coupon
+  const handleEditCouponSubmit = async(e) => {
+    e.preventDefault();
+    if(validate()) {
+      await updateCoupon(couponId, addCouponData);
+      toggleEditModal();
+      setReRender(prev => !prev)
+    }
+  };
+
+  //Toggle coupon status
+  const handleCouponStatus = async(e) => {
+    e.preventDefault();
+    const { updatedCoupon } = await toggleCouponState(couponId);
     toggleOptionModal();
+    setReRender(!reRender);
   }
+
+  //delete coupon
+  const handleDeleteCoupon = async (id) => {
+    await deleteCoupon(id);
+    setCoupons(coupons.filter((coupon) => coupon._id !== id));
+    toggleOptionModal();
+  };
 
   return (
     <div className="absolute top-14 right-0 w-[1110px]">
@@ -133,13 +209,10 @@ const CouponManagement = () => {
                 Code
               </th>
               <th scope="col" className="px-6 py-3">
-                Discount Type
+                Min Purchase
               </th>
               <th scope="col" className="px-6 py-3">
-                Discount Value
-              </th>
-              <th scope="col" className="px-6 py-3">
-                Mininum Amount
+                Discount Percentage
               </th>
               <th scope="col" className="px-6 py-3">
                 Max Discount
@@ -147,7 +220,9 @@ const CouponManagement = () => {
               <th scope="col" className="px-6 py-3">
                 Expiry Date
               </th>
-              {/* <th scope="col" className="px-6 py-3">Min Purchase</th> */}
+              <th scope="col" className="px-6 py-3">
+                Usage
+              </th>
               <th scope="col" className="px-6 py-3">
                 Status
               </th>
@@ -166,7 +241,7 @@ const CouponManagement = () => {
             ) : (
               coupons.map((coupon) => (
                 <tr
-                   key={coupon._id}
+                  key={coupon._id}
                   className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
                 >
                   <th
@@ -174,21 +249,18 @@ const CouponManagement = () => {
                     className="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white"
                   >
                     <div className="ps-3">
-                      {/* <div className="text-base font-semibold">name</div> */}
                       <div className="font-normal">{coupon.name}</div>
                     </div>
                   </th>
                   <td className="px-6 py-4">{coupon.code}</td>
-                  <td className="px-6 py-4">{coupon.discountType}</td>
-                  <td className="px-6 py-4">
-                    {coupon.discountType === "percentage"
-                      ? `${coupon.discountValue}%`
-                      : coupon.discountValue}
-                  </td>
                   <td className="px-6 py-4">{coupon.minimumPurchase}</td>
-                  <td className="px-6 py-4">{coupon.maxDiscount || "-" }</td>
+                  <td className="px-6 py-4">{coupon.discountPercentage}%</td>
+                  <td className="px-6 py-4">₹{coupon.maxDiscount}</td>
                   <td className="px-6 py-4">
                     {new Date(coupon.expiryDate).toDateString()}
+                  </td>
+                  <td className="px-6 py-4">
+                    {coupon.usedCount} of {coupon.usageLimit}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center">
@@ -201,13 +273,26 @@ const CouponManagement = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 flex">
-                    <button onClick={() => toggleOptionModal(coupon._id)} className="underline text-blue-500" >Options</button>
+                    <button
+                      onClick={() => toggleOptionModal(coupon._id, coupon.status)}
+                      className="underline text-blue-500"
+                    >
+                      Options
+                    </button>
                   </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
+
+        <Pagination
+            className="mx-auto"
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            totalEntries={totalCoupons} 
+            entriesPerPage={entriesPerPage}
+          />
       </div>
 
       {/* Add Coupon Modal */}
@@ -298,63 +383,47 @@ const CouponManagement = () => {
 
                 <div>
                   <label
-                    htmlFor="discountType"
+                    htmlFor="minimumPurchase"
                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                   >
-                    Discount Type
-                  </label>
-                  <select
-                    id="discountType"
-                    value={addCouponData.discountType}
-                    onChange={handleChange}
-                    name="discountType"
-                    required
-                    className="border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                  >
-                    <option value="">Select Type</option>
-                    <option value="percentage">Percentage</option>
-                    <option value="fixed">Fixed Amount</option>
-                  </select>
-                </div>
-                <div>
-                  <label
-                    htmlFor="discountValue"
-                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                  >
-                    Discount Value
+                    Minimum Purchase Amount
                   </label>
                   <input
                     type="number"
-                    id="discountValue"
-                    value={addCouponData.discountValue}
+                    id="minimumPurchase"
+                    value={addCouponData.minimumPurchase}
                     onChange={handleChange}
-                    name="discountValue"
+                    name="minimumPurchase"
+                    placeholder="25000"
+                    className="border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="discountPercentage"
+                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    Discount Percentage %
+                  </label>
+                  <input
+                    type="number"
+                    id="discountPercentage"
+                    value={addCouponData.discountPercentage}
+                    onChange={handleChange}
+                    name="discountPercentage"
+                    placeholder="30%"
                     required
                     className="border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                   />
                 </div>
-                <div>
-                  <label
-                    htmlFor="minOrderAmount"
-                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                  >
-                    Minimum Order Amount
-                  </label>
-                  <input
-                    type="number"
-                    id="minOrderAmount"
-                    value={addCouponData.minOrderAmount}
-                    onChange={handleChange}
-                    name="minOrderAmount"
-                    className="border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                  />
-                </div>
+
                 <div>
                   <label
                     htmlFor="maxDiscount"
                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                   >
-                    Max Discount for %
+                    Max Discount for % in Price
                   </label>
                   <input
                     type="number"
@@ -362,22 +431,40 @@ const CouponManagement = () => {
                     value={addCouponData.maxDiscount}
                     onChange={handleChange}
                     name="maxDiscount"
+                    placeholder="1000"
+                    className="border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="usageLimit"
+                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    Coupon Usage Limit
+                  </label>
+                  <input
+                    type="number"
+                    id="usageLimit"
+                    value={addCouponData.usageLimit}
+                    onChange={handleChange}
+                    name="usageLimit"
                     className="border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                   />
                 </div>
                 <div>
                   <label
-                    htmlFor="expirationDate"
+                    htmlFor="expiryDate"
                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                   >
                     Expiration Date
                   </label>
                   <input
                     type="date"
-                    id="expirationDate"
-                    value={addCouponData.expirationDate}
+                    id="expiryDate"
+                    value={addCouponData.expiryDate}
                     onChange={handleChange}
-                    name="expirationDate"
+                    name="expiryDate"
                     required
                     className="border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                   />
@@ -396,6 +483,200 @@ const CouponManagement = () => {
                   className="text-white bg-blue-600 hover:bg-blue-700 rounded-lg px-5 py-2.5 text-sm dark:bg-blue-600 dark:hover:bg-blue-700"
                 >
                   Add Coupon
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edot Coupon Modal */}
+      {isEditModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black bg-opacity-50"
+          onClick={toggleEditModal}
+        >
+          <div
+            className="relative p-4 w-full max-w-md max-h-full bg-white rounded-lg shadow dark:bg-gray-700 h-[80vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-4 border-b rounded-t dark:border-gray-600">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Edit Coupon
+              </h3>
+              <button
+                type="button"
+                className="text-gray-400 bg-transparent hover:bg-gray-200 rounded-lg p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                onClick={toggleEditModal}
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 8.293l5.646-5.647a.5.5 0 0 1 .708.708L10.707 9l5.647 5.646a.5.5 0 0 1-.708.708L10 9.707l-5.646 5.647a.5.5 0 0 1-.708-.708L9.293 9 3.646 3.354a.5.5 0 0 1 .708-.708L10 8.293z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </div>
+            <form onSubmit={handleEditCouponSubmit}>
+              <div className="p-6 space-y-6">
+                <div>
+                  <label
+                    htmlFor="couponName"
+                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    Coupon Name
+                  </label>
+                  <input
+                    type="text"
+                    id="couponName"
+                    name="couponName"
+                    value={addCouponData.couponName}
+                    onChange={handleChange}
+                    required
+                    className="border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="couponCode"
+                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    Coupon Code
+                  </label>
+                  <input
+                    type="text"
+                    id="couponCode"
+                    name="couponCode"
+                    value={addCouponData.couponCode}
+                    onChange={handleChange}
+                    required
+                    className="border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="description"
+                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    Coupon Description
+                  </label>
+                  <textarea
+                    type="text"
+                    id="description"
+                    name="description"
+                    value={addCouponData.description}
+                    onChange={handleChange}
+                    required
+                    className="border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="minimumPurchase"
+                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    Minimum Purchase Amount
+                  </label>
+                  <input
+                    type="number"
+                    id="minimumPurchase"
+                    value={addCouponData.minimumPurchase}
+                    onChange={handleChange}
+                    name="minimumPurchase"
+                    placeholder="25000"
+                    className="border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="discountPercentage"
+                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    Discount Percentage %
+                  </label>
+                  <input
+                    type="number"
+                    id="discountPercentage"
+                    value={addCouponData.discountPercentage}
+                    onChange={handleChange}
+                    name="discountPercentage"
+                    placeholder="30%"
+                    required
+                    className="border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="maxDiscount"
+                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    Max Discount for % in Price
+                  </label>
+                  <input
+                    type="number"
+                    id="maxDiscount"
+                    value={addCouponData.maxDiscount}
+                    onChange={handleChange}
+                    name="maxDiscount"
+                    placeholder="1000"
+                    className="border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="usageLimit"
+                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    Coupon Usage Limit
+                  </label>
+                  <input
+                    type="number"
+                    id="usageLimit"
+                    value={addCouponData.usageLimit}
+                    onChange={handleChange}
+                    name="usageLimit"
+                    className="border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="expiryDate"
+                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    Expiration Date
+                  </label>
+                  <input
+                    type="date"
+                    id="expiryDate"
+                    value={addCouponData.expiryDate ? addCouponData.expiryDate.split("T")[0] : ""}                    onChange={handleChange}
+                    name="expiryDate"
+                    required
+                    className="border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center justify-end p-6 border-t border-gray-200 rounded-b dark:border-gray-600">
+                <button
+                  type="button"
+                  className="text-gray-500 bg-transparent hover:bg-gray-200 rounded-lg px-5 py-2.5 text-sm dark:hover:bg-gray-600 dark:hover:text-white"
+                  onClick={toggleEditModal}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="text-white bg-green-600 hover:bg-green-700 rounded-lg px-5 py-2.5 text-sm dark:bg-green-600 dark:hover:bg-green-700"
+                >
+                  Update Coupon
                 </button>
               </div>
             </form>
@@ -437,8 +718,16 @@ const CouponManagement = () => {
             </div>
 
             <div className="flex justify-center items-center gap-10 h-[15vh]">
-              <button className="btn">In Activate</button>
-              <button className="btn bg-red-500 text-white hover:bg-red-700" onClick={() => handleDeleteCoupon(couponId)}>Delete</button>
+              <button className="btn" onClick={() => toggleEditModal(couponId)}>
+                Edit Coupon
+              </button>
+              <button className="btn" onClick={handleCouponStatus}>{couponStatus ? "In Activate" : "Activate"}</button>
+              <button
+                className="btn bg-red-500 text-white hover:bg-red-700"
+                onClick={() => handleDeleteCoupon(couponId)}
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>

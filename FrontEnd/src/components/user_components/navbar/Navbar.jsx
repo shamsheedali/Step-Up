@@ -42,9 +42,9 @@ const Navbar = () => {
   const handleLogout = async (e) => {
     e.preventDefault();
     await logoutFunction();
-    console.log("Logging out..."); // Debugging log
+    console.log("Logging out..."); 
     dispatch(logoutUser());
-    console.log("User logged out."); // Debugging log
+    console.log("User logged out."); 
     persistor.purge();
   };
 

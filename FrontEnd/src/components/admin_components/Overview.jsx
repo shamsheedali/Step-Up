@@ -138,12 +138,12 @@ const Overview = () => {
     scales: {
       x: {
         grid: {
-          display: false, // Hide x-axis grid lines
+          display: false, 
         },
       },
       y: {
         grid: {
-          display: false, // Hide y-axis grid lines
+          display: false, 
         },
       },
     },
@@ -246,13 +246,13 @@ const Overview = () => {
             {topProducts.map((product) => (
               <div className="flex justify-between items-center border-b border-black py-4">
                 <div className="flex items-center gap-4">
-                  <img
+                  {/* <img
                     src={
                       `data:image/jpeg;base64,${product.images[0]}` ||
                       "https://via.placeholder.com/150"
                     }
                     className="w-20 h-20 object-cover rounded-lg"
-                  />
+                  /> */}
                   <div>
                     <h3 className="text-md w-[190px] font-medium">
                       {product.productName || "No product found"}

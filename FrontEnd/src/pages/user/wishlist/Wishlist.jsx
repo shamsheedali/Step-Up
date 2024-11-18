@@ -95,7 +95,7 @@ const Wishlist = () => {
                 <div onClick={() => handleCardClick(product.productId)}>
                   <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-h-8 xl:aspect-w-7">
                     <img
-                      src={`data:image/jpeg;base64,${product.productImage}`} // Display the first image
+                      src={`data:image/jpeg;base64,${product.productImage}`} 
                       alt={product.productName}
                       className="h-full w-full object-cover object-center group-hover:opacity-75"
                     />

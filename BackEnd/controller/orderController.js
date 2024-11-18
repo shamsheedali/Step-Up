@@ -3,6 +3,7 @@ import Product from "../modal/productModal.js";
 import Coupons from "../modal/couponModal.js";
 import Wallet from "../modal/walletModal.js";
 
+//Creating order
 const createOrder = async (req, res) => {
   try {
     const {
@@ -63,6 +64,7 @@ const createOrder = async (req, res) => {
   }
 };
 
+//Get specific user's order
 const getUserOrders = async (req, res) => {
   try {
     const userId = req.params.id;
@@ -104,6 +106,7 @@ const getOrderProducts = async (req, res) => {
   }
 };
 
+//Canceling order
 const cancelOrder = async (req, res) => {
   try {
     const orderId = req.params.id;
@@ -111,9 +114,7 @@ const cancelOrder = async (req, res) => {
 
     const order = await Orders.findByIdAndUpdate(
       orderId,
-      { isCancelled: true,
-        status: "Cancelled",
-       },
+      { isCancelled: true, status: "Cancelled" },
       { new: true }
     );
 
@@ -145,6 +146,10 @@ const cancelOrder = async (req, res) => {
         { $push: { transactions: transaction } },
         { upsert: true, new: true }
       );
+
+      await Orders.findByIdAndUpdate(orderId, {
+        paymentStatus: "Refunded",
+      });
     }
 
     res.status(200).json({ message: "Order Deleted!" });
@@ -154,6 +159,7 @@ const cancelOrder = async (req, res) => {
   }
 };
 
+//Fetching all orders
 const getAllOrders = async (req, res) => {
   try {
     const allOrders = await Orders.find();
@@ -244,7 +250,6 @@ const salesReport = async (req, res) => {
       endDate.setHours(23, 59, 59, 999);
     }
 
-    // Aggregation pipeline for daily records
     const dailyReport = await Orders.aggregate([
       {
         $match: {
@@ -266,10 +271,9 @@ const salesReport = async (req, res) => {
           itemsSold: { $sum: { $sum: "$items.quantity" } },
         },
       },
-      { $sort: { _id: 1 } }, // Sort by date
+      { $sort: { _id: 1 } },
     ]);
 
-    // Aggregation pipeline for overall summary
     const overallSummary = await Orders.aggregate([
       {
         $match: {

@@ -32,7 +32,7 @@ const fetchProducts = async () => {
 };
 
 //fetch product with limit (pagination)
-const fetchProductsLimit = async(page, limit = 4) => {
+const fetchProductsLimit = async(page, limit) => {
   try {
     const response = await axios.get(`${API_URL}/productLimit`, {
       params: {

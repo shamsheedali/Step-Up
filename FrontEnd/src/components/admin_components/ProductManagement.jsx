@@ -12,7 +12,6 @@ import Pagination from "../user_components/pagination/Pagination";
 
 const ProductManagement = () => {
   const wordLength = 3;
-  const [error, setError] = useState({});
   //pagination
   const [currentPage, setCurrentPage] = useState(1);
   const entriesPerPage = 5;
@@ -233,12 +232,18 @@ const ProductManagement = () => {
 
   //Add product validate
   const validate = () => {
-    const tempError = {};
-    if (addProductData.price <= 500) tempError.price = "invalid price";
-    if (addProductData.stock <= 0) tempError.stock = "invalid stock";
-    if (addProductData.images.length === 0) tempError.images = "choose images";
-    setError(tempError);
-    return Object.keys(tempError).length === 0;
+    if(addProductData.name.trim() === ""){
+      toast.error("Give Proper Product Name");
+      return false;
+    }
+    if (addProductData.price <= 500){
+      toast.error("price should be greater than 500");
+      return false;
+    }else if(addProductData.stock <= 0) {
+      toast.error("invalid stock");
+      return false;
+    }
+    return true;
   };
 
   //Adding Product
@@ -260,10 +265,16 @@ const ProductManagement = () => {
       formData.append("images", image);
     });
 
+    console.log("formData",formData);
+
     if (validate()) {
+      if(selectedImages.length < 3 || selectedImages.length > 4){
+        toast.error("Minimum 3 image Maximum 5 image");
+        setLoading(false);
+        return false;
+      }
       try {
         await addProduct(formData);
-        setError("");
         setLoading(false);
         resetForm();
         toggleModal();
@@ -302,7 +313,7 @@ const ProductManagement = () => {
     <div>
       <div className="absolute top-14 right-0 w-[1110px]">
         <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-          <div className="flex items-center px-9 justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4 bg-white dark:bg-[#1f2937]">
+          <div className="flex items-center justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 py-4 px-5 bg-white dark:bg-[#1f2937]">
             <h1 className="text-white text-2xl">Products</h1>
             <label htmlFor="table-search" className="sr-only">
               Search
@@ -343,7 +354,7 @@ const ProductManagement = () => {
           </div>
 
           {/* Table */}
-          <h1 className="text-white ml-9">Total Products : {totalProducts}</h1>
+          <h1 className="text-white ml-5">Total Products : {totalProducts}</h1>
           <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
               <tr>
@@ -560,7 +571,6 @@ const ProductManagement = () => {
                           placeholder="₹2999"
                           required
                         />
-                        <p className="text-sm text-red-400">{error.price}</p>
                       </div>
 
                       <div className="col-span-2 sm:col-span-1">
@@ -580,7 +590,6 @@ const ProductManagement = () => {
                           placeholder="Enter stock"
                           required
                         />
-                        <p className="text-sm text-red-400">{error.stock}</p>
                       </div>
 
                       <div className="col-span-2">
@@ -835,7 +844,6 @@ const ProductManagement = () => {
                           placeholder="₹2999"
                           required
                         />
-                        <p className="text-sm text-red-400">{error.price}</p>
                       </div>
 
                       <div className="col-span-2 sm:col-span-1">
@@ -855,7 +863,6 @@ const ProductManagement = () => {
                           placeholder="Enter stock"
                           required
                         />
-                        <p className="text-sm text-red-400">{error.stock}</p>
                       </div>
 
                       <div className="col-span-2">

@@ -8,7 +8,7 @@ const variantSchema = new mongoose.Schema({
   color: { type: String, required: true },
   price: { type: Number, required: true },
   stock: { type: Number, required: true },
-  images: [{ type: String, required: true }], // Images specific to variant
+  images: [{ type: String, required: true }], 
   isDeleted: {type: Boolean, default: false}
 });
 
@@ -27,7 +27,8 @@ const productSchema = new mongoose.Schema({
     required: true,
   },
   category: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Category",
     required: true,
   },
   brand: {

@@ -5,44 +5,27 @@ const createOffer = async (req, res) => {
   const {
     title,
     description,
-    discount,
-    type,
+    associatedFor,
+    offerPrice,
     productsIncluded,
     categoryIncluded,
-    startDate,
     endDate,
+    isActive,
   } = req.body;
 
-  console.log(req.body);
-
+  
   try {
-    if (type === "product" && !productsIncluded.length) {
-      return res
-        .status(400)
-        .json({
-          message: "Products are required for product-specific offers.",
-        });
-    }
-    if (type === "category" && !categoryIncluded) {
-      return res
-        .status(400)
-        .json({ message: "Category is required for category-wide offers." });
-    }
-
-    // Set all existing offers to inactive (isActive: false)
-    await Offer.updateMany({}, { $set: { isActive: false } });
-
     const offer = new Offer({
       title,
       description,
-      discount,
-      type,
+      associatedFor,
+      offerPrice,
       productsIncluded,
       categoryIncluded,
-      startDate,
       endDate,
-      isActive: true,
+      isActive,
     });
+    console.log(offer);
 
     await offer.save();
     res.status(201).json({ message: "Offer created", offer });
@@ -51,6 +34,37 @@ const createOffer = async (req, res) => {
     res.status(500).json({ message: "Error creating offer", error });
   }
 };
+
+//EDIT OFFER 
+const editOffer = async(req, res) => {
+  const offerId = req.params.id;
+  try {
+    const offer = await Offer.findById({_id : offerId});
+    
+    if(!offer) return res.status(404).json({message: "offer not found!"});
+
+    const updatedOffer = await Offer.findByIdAndUpdate(offerId, req.body, {new: true});
+
+    console.log(updatedOffer);
+    return res.status(200).json({updatedOffer});
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({message : "Error while Updating offer!"});
+  }
+}
+
+//DELETE OFFER
+const deleteOffer = async(req, res) => {
+  const offerId = req.params.id;
+  try {
+    await Offer.findByIdAndDelete({_id: offerId})
+
+    res.status(200).json({message: "Offer Deleted"})
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({message: "Error While Deleting Offer!", error});
+  }
+}
 
 //GET ALL OFFERS (ADMIN)
 const getOffers = async (req, res) => {
@@ -79,4 +93,4 @@ const getActiveOffer = async (req, res) => {
   }
 };
 
-export {createOffer, getOffers, getActiveOffer};
+export {createOffer, editOffer, getOffers, deleteOffer, getActiveOffer};

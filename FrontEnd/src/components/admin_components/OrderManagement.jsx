@@ -107,7 +107,7 @@ const OrderManagement = () => {
   return (
     <div className="absolute top-14 right-0 w-[1110px]">
       <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-        <div className="flex items-center justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4 px-10 bg-white dark:bg-[#1f2937]">
+        <div className="flex items-center justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 py-4 px-5 bg-white dark:bg-[#1f2937]">
           <h1 className="text-white text-2xl">Orders</h1>
           <label htmlFor="table-search" className="sr-only">
             Search

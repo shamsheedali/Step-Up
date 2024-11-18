@@ -45,7 +45,7 @@ const handlePayment = async (username, email, totalAmount, phonenumber) => {
         modal: {
           ondismiss: function () {
             console.log("Checkout form closed by the user");
-            reject({ success: false, error: "User closed the payment form." });
+            reject({ success: false, error: "closed" });
           },
         },
       };

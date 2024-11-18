@@ -91,7 +91,7 @@ const CheckoutForm = ({ getDiscountApplied }) => {
     setDisableButton(false);
   };
 
-  //add allAddresses moda
+  //add allAddresses modal
   const openModal = () => {
     setIsModalOpen(true);
   };
@@ -219,7 +219,6 @@ const CheckoutForm = ({ getDiscountApplied }) => {
     const quantities = Object.values(itemsIds);
     const { products } = await productCheckout(productIds);
     setCheckoutProducts(products);
-    console.log("itemIds", itemsIds);
 
     //Main validation like select address and payment method
     const mainValidate = () => {
@@ -244,7 +243,7 @@ const CheckoutForm = ({ getDiscountApplied }) => {
             price: product.price,
             quantity: quantities[index],
           })),
-          totalAmount: calculatedSubtotal,
+          totalAmount: calculatedSubtotal + 100,
           paymentMethod: selectedPaymentMethod,
           shippingAddress: selectedAddress,
           discountApplied,
@@ -254,7 +253,7 @@ const CheckoutForm = ({ getDiscountApplied }) => {
         await handlePayment(
           username,
           email,
-          Math.round(calculatedSubtotal),
+          Math.round(calculatedSubtotal + 100),
           selectedAddress.phonenumber
         )
           .then(async (res) => {
@@ -273,25 +272,17 @@ const CheckoutForm = ({ getDiscountApplied }) => {
           })
           .catch(async (err) => {
             console.log("pending", err);
-            // Creating order for pending payment (if payment failed)
-            const response = await createOrder(orderDetails);
-            if (response) {
-              navigate("/bag/checkout/order-success");
-              toast.warn("Your Payment is Pending");
-              dispatch(emptyBag({ userId: uid }));
-              await clearBag(uid);
+            if (err.error !== "closed") {
+              // Creating order for pending payment (if payment failed)
+              const response = await createOrder(orderDetails);
+              if (response) {
+                navigate("/bag/checkout/order-success");
+                toast.warn("Your Payment is Pending");
+                dispatch(emptyBag({ userId: uid }));
+                await clearBag(uid);
+              }
             }
           });
-
-        //   if (paymentResponse.success) {
-        //
-        //   }
-
-        //
-        // } catch (error) {
-        //   console.error("Payment failed or error occurred:", error);
-        //   toast.error("Payment failed. Please try again.");
-        // }
       } else if (selectedPaymentMethod === "cashOnDelivery") {
         if (calculatedSubtotal >= 6000) {
           toast.error(
@@ -307,7 +298,7 @@ const CheckoutForm = ({ getDiscountApplied }) => {
             price: product.price,
             quantity: quantities[index],
           })),
-          totalAmount: calculatedSubtotal,
+          totalAmount: calculatedSubtotal + 100,
           paymentMethod: selectedPaymentMethod,
           shippingAddress: selectedAddress,
           discountApplied,

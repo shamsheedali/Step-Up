@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { createCoupon, deleteCoupon, fetchCoupons, fetchCouponsLimit, toggleCouponState, updateCoupon } from "../../api/coupons";
+import {
+  createCoupon,
+  deleteCoupon,
+  fetchCoupons,
+  fetchCouponsLimit,
+  toggleCouponState,
+  updateCoupon,
+} from "../../api/coupons";
 import { fetchCategories } from "../../api/category";
 import { toast } from "react-toastify";
 import Pagination from "../user_components/pagination/Pagination";
@@ -91,7 +98,7 @@ const CouponManagement = () => {
       // const allCoupons = await fetchCoupons();
       const allCoupons = await fetchCouponsLimit(currentPage, entriesPerPage);
       setCoupons(allCoupons.coupons);
-      setTotalCoupons(allCoupons.totalCoupons)
+      setTotalCoupons(allCoupons.totalCoupons);
     };
     getCoupons();
   }, [reRender, currentPage]);
@@ -106,6 +113,15 @@ const CouponManagement = () => {
       return false;
     } else if (addCouponData.minimumPurchase < 3000) {
       toast.error("Minimum Purchase should be atleast 3000");
+      return false;
+    } else if(addCouponData.couponName.trim() === ""){
+      toast.error("Invalid coupon name");
+      return false;
+    } else if(addCouponData.couponCode.trim() === ""){
+      toast.error("Invalid coupon code");
+      return false;
+    } else if(new Date(addCouponData.expiryDate) < new Date()){
+      toast.error("Invalid Date");
       return false;
     }
     return true;
@@ -135,22 +151,22 @@ const CouponManagement = () => {
   };
 
   //Edit coupon
-  const handleEditCouponSubmit = async(e) => {
+  const handleEditCouponSubmit = async (e) => {
     e.preventDefault();
-    if(validate()) {
+    if (validate()) {
       await updateCoupon(couponId, addCouponData);
       toggleEditModal();
-      setReRender(prev => !prev)
+      setReRender((prev) => !prev);
     }
   };
 
   //Toggle coupon status
-  const handleCouponStatus = async(e) => {
+  const handleCouponStatus = async (e) => {
     e.preventDefault();
     const { updatedCoupon } = await toggleCouponState(couponId);
     toggleOptionModal();
     setReRender(!reRender);
-  }
+  };
 
   //delete coupon
   const handleDeleteCoupon = async (id) => {
@@ -162,7 +178,7 @@ const CouponManagement = () => {
   return (
     <div className="absolute top-14 right-0 w-[1110px]">
       <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-        <div className="flex items-center px-9 justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4 bg-white dark:bg-[#1f2937]">
+        <div className="flex items-center px-5 justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 py-4 bg-white dark:bg-[#1f2937]">
           <h1 className="text-white text-2xl">Coupons</h1>
           <label htmlFor="table-search" className="sr-only">
             Search
@@ -274,7 +290,9 @@ const CouponManagement = () => {
                   </td>
                   <td className="px-6 py-4 flex">
                     <button
-                      onClick={() => toggleOptionModal(coupon._id, coupon.status)}
+                      onClick={() =>
+                        toggleOptionModal(coupon._id, coupon.status)
+                      }
                       className="underline text-blue-500"
                     >
                       Options
@@ -287,12 +305,12 @@ const CouponManagement = () => {
         </table>
 
         <Pagination
-            className="mx-auto"
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-            totalEntries={totalCoupons} 
-            entriesPerPage={entriesPerPage}
-          />
+          className="mx-auto"
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          totalEntries={totalCoupons}
+          entriesPerPage={entriesPerPage}
+        />
       </div>
 
       {/* Add Coupon Modal */}
@@ -657,7 +675,12 @@ const CouponManagement = () => {
                   <input
                     type="date"
                     id="expiryDate"
-                    value={addCouponData.expiryDate ? addCouponData.expiryDate.split("T")[0] : ""}                    onChange={handleChange}
+                    value={
+                      addCouponData.expiryDate
+                        ? addCouponData.expiryDate.split("T")[0]
+                        : ""
+                    }
+                    onChange={handleChange}
                     name="expiryDate"
                     required
                     className="border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
@@ -721,7 +744,9 @@ const CouponManagement = () => {
               <button className="btn" onClick={() => toggleEditModal(couponId)}>
                 Edit Coupon
               </button>
-              <button className="btn" onClick={handleCouponStatus}>{couponStatus ? "In Activate" : "Activate"}</button>
+              <button className="btn" onClick={handleCouponStatus}>
+                {couponStatus ? "In Activate" : "Activate"}
+              </button>
               <button
                 className="btn bg-red-500 text-white hover:bg-red-700"
                 onClick={() => handleDeleteCoupon(couponId)}

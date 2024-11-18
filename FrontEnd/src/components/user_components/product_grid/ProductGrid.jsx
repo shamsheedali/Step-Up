@@ -9,7 +9,6 @@ import { setOffer } from "../../../features/offers/OfferSlice";
 
 const ProductGrid = ({ products, loading, offers }) => {
 
-  console.log("offers", offers);
 
   const dispatch = useDispatch();
     useEffect(() => {

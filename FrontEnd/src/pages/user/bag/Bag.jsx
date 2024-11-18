@@ -6,6 +6,7 @@ import { delFromBag, fetchBag } from "../../../api/bag";
 import { useDispatch, useSelector } from "react-redux";
 import { removeProduct, storeSubtotal } from "../../../features/bag/BagSlice";
 import { Link } from "react-router-dom";
+import { fetchCategories } from "../../../api/category";
 
 const DELIVERY_FEE = 100;
 
@@ -22,6 +23,7 @@ const Bag = () => {
   const dispatch = useDispatch();
 
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -29,6 +31,8 @@ const Bag = () => {
       setLoading(true);
       try {
         const { bagItems } = await fetchBag(uid);
+        const { data } = await fetchCategories();
+        setCategories(data);
         setProducts(bagItems.filter((item) => !item.isDeleted).reverse());
       } catch (error) {
         console.error("Error fetching bag items:", error);
@@ -46,11 +50,10 @@ const Bag = () => {
 
   useEffect(() => {
 
-    // Calculate subtotal based on products and quantities
+    // subtotal based on products and quantities
     const calculatedSubtotal = products.reduce((acc, product) => {
       const quantity = quantities[product.productId] || 0;
 
-      // Get the discount from offers (if available)
       const productOffer = offers[product.productId];
       const discount = productOffer ? productOffer.discount : 0;
 
@@ -74,11 +77,9 @@ const Bag = () => {
     setProducts((prevProducts) => {
       const updatedProducts = prevProducts.map((product) => {
         if (product.productId === productId) {
-          // Get the discount from offers (if available)
           const productOffer = offers[product.productId];
           const discount = productOffer ? productOffer.discount : 0;
 
-          // Calculate price with discount, if any
           const priceAfterDiscount =
             discount > 0 ? product.price * (1 - discount / 100) : product.price;
 
@@ -87,7 +88,6 @@ const Bag = () => {
         return product;
       });
 
-      // Recalculate the subtotal with the updated product list
       const newSubtotal = updatedProducts.reduce(
         (acc, product) =>
           acc +
@@ -144,7 +144,7 @@ const Bag = () => {
                         key={product.productId}
                         img={product.productImage}
                         name={product.productName}
-                        category={product.category}
+                        category={categories.find((category) => category._id === product.category)?.name || ""}
                         managePrice={product.price}
                         qty={product.quantity}
                         stock={product.stock}

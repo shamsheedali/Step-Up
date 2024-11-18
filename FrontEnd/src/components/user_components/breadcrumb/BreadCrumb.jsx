@@ -9,15 +9,15 @@ const BreadCrumb = () => {
   const [productName, setProductName] = useState('');
 
   useEffect(() => {
-    // Assuming the product route is '/products/:productId'
-    const isProductPage = pathnames[0] === 'products' && pathnames[1];
+    const isProductPage = (pathnames[0] === 'products' || pathnames[0] === 'wishlist') && pathnames[1];
 
+    
     const fetchProduct = async () => {
       if (isProductPage) {
-        const productId = pathnames[1]; // Extract productId
+        const productId = pathnames[1]; 
         try {
           const { singleProduct } = await getProduct(productId);
-          setProductName(singleProduct.productName); // Set product name
+          setProductName(singleProduct.productName); 
         } catch (error) {
           console.error('Error fetching product:', error);
         }
@@ -52,7 +52,7 @@ const BreadCrumb = () => {
           {pathnames.map((pathname, index) => {
             const routeTo = `/${pathnames.slice(0, index + 1).join("/")}`;
             const isLast = index === pathnames.length - 1;
-            const isProductPage = pathnames[0] === 'products' && index === 1;
+            const isProductPage = (pathnames[0] === 'products' || pathnames[0] === 'wishlist') && index === 1;
 
             return (
               <li key={routeTo}>

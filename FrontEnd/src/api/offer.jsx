@@ -7,7 +7,6 @@ const getAllOffers = async () => {
   try {
     const response = await axios.get(`${API_URL}/get-offers`);
 
-    console.log(response);
     return response.data;
   } catch (error) {
     console.log(error);
@@ -33,6 +32,36 @@ const createOffer = async(offerData) => {
     }
 };
 
+//edit offer
+const updateOffer = async(offerId, offerData) => {
+  const token = localStorage.getItem('adminToken');
+  try {
+    const response = await axios.put(`${API_URL}/editOffer/${offerId}`, offerData, {
+      headers: {Authorization : `Bearer ${token}`}
+    });
+
+    toast.success("Offer Updated")
+  } catch (error) {
+    console.log(error);
+    toast.error("Error while updating offer");
+  }
+}
+
+//Delete offer
+const deleteOffer = async (offerId) => {
+  const token = localStorage.getItem('adminToken');
+  try {
+    const response = await axios.delete(`${API_URL}/deleteOffer/${offerId}`, {
+      headers: {Authorization: `Bearer ${token}`}
+    });
+
+    toast.success("Offer Deleted");
+  } catch (error) {
+    console.log(error);
+    toast.error("Error While Deleting Offer!");
+  }
+}
+
 //GET ACTIVE OFFER (USER);
 const getActiveOffer = async() => {
   try {
@@ -46,4 +75,4 @@ const getActiveOffer = async() => {
   }
 }
 
-export { getAllOffers, createOffer, getActiveOffer };
+export { getAllOffers, createOffer, updateOffer, getActiveOffer, deleteOffer };

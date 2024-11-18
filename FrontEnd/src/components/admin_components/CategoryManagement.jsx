@@ -112,7 +112,7 @@ const CategoryManagement = () => {
     <div>
       <div className="absolute top-14 right-0 w-[1110px]">
         <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-          <div className="flex items-center justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4 bg-gray-800 dark:bg-gray-900">
+          <div className="flex items-center justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 py-4 px-5 bg-gray-800 dark:bg-gray-900">
             <h1 className="text-white text-2xl">Category</h1>
             <div className="flex items-center space-x-4">
               <div className="relative">

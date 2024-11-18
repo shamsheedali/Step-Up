@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { getOrders, salesReport } from "../../api/order";
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-import * as XLSX from 'xlsx';
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import * as XLSX from "xlsx";
 import { useDispatch, useSelector } from "react-redux";
-import { toast } from "react-toastify"; 
+import { toast } from "react-toastify";
 
 const SalesReport = () => {
   const [selectedFilter, setSelectedFilter] = useState("Sort");
@@ -20,15 +20,12 @@ const SalesReport = () => {
 
   const uid = useSelector((state) => state.user.uid);
 
-  // Function to calculate total sales, amount, and discount
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        // Fetch all orders using getOrders function
         const { allOrders } = await getOrders();
         setOrders(allOrders);
 
-        // Perform calculations
         const totalCount = allOrders.length;
         const totalAmount = allOrders.reduce(
           (acc, order) => acc + order.totalAmount,
@@ -64,7 +61,6 @@ const SalesReport = () => {
     try {
       const allReport = await salesReport(dateRange);
       setReports(allReport);
-      console.log("report", allReport); // Corrected to log allReport
     } catch (error) {
       console.error("Error fetching report:", error);
     }
@@ -78,7 +74,7 @@ const SalesReport = () => {
     e.preventDefault();
 
     if (!startDate || !endDate) {
-      alert("Please select both start and end dates.");
+      toast("Please select both start and end dates.");
       return;
     }
 
@@ -99,77 +95,131 @@ const SalesReport = () => {
   const downloadPdfReport = () => {
     const doc = new jsPDF();
 
-    // Add title
-    doc.setFontSize(18);
-    doc.text("Sales Report", 14, 22);
+    doc.setFont("Helvetica", "bold");
+    doc.setTextColor(0);
 
-    // Add summary
+    doc.setFontSize(20);
+    doc.text("Sales Report", doc.internal.pageSize.getWidth() / 2, 20, {
+      align: "center",
+    });
+
+    const rupeeSymbol = String.fromCharCode(8377); 
+
     doc.setFontSize(12);
-    doc.text(`Total Sales Count: ${reports?.overallSummary?.orderCount || 0} Orders`, 14, 30);
-    doc.text(`Overall Order Amount: ₹${reports?.overallSummary?.totalRevenue || 0}`, 14, 36);
-    doc.text(`Overall Discount: ₹${reports?.overallSummary?.totalDiscount || 0}`, 14, 42);
+    doc.setFont("Helvetica", "normal");
+    const summaryData = [
+      `Total Sales Count: ${reports?.overallSummary?.orderCount || 0} Orders`,
+      `Overall Order Amount: ${rupeeSymbol}${(reports?.overallSummary?.totalRevenue || 0).toFixed(2)}`,
+      `Overall Discount: ${rupeeSymbol}${(reports?.overallSummary?.totalDiscount || 0).toFixed(2)}`,
+    ];
+
+    summaryData.forEach((text, index) => {
+      doc.text(text, 14, 30 + index * 6);
+    });
 
     // Prepare table data
-    const tableColumn = ["Date", "Total Sales Revenue", "Discount Applied", "Net Sales", "Number of Orders", "Total Items Sold"];
+    const tableColumn = [
+      "Date",
+      "Total Sales Revenue",
+      "Discount Applied",
+      "Net Sales",
+      "Number of Orders",
+      "Total Items Sold",
+    ];
     const tableRows = [];
 
     if (reports.dailyReport && reports.dailyReport.length > 0) {
-      reports.dailyReport.slice().reverse().forEach(report => {
-        const reportData = [
-          new Date(report._id).toLocaleDateString("en-GB"),
-          `₹${report.totalRevenue.toFixed(2)}`,
-          `₹${report.totalDiscount.toFixed(2)}`,
-          `₹${report.netSales.toFixed(2)}`,
-          report.orderCount,
-          report.itemsSold
-        ];
-        tableRows.push(reportData);
-      });
+      reports.dailyReport
+        .slice()
+        .reverse()
+        .forEach((report) => {
+          const reportData = [
+            new Date(report._id).toLocaleDateString("en-GB"),
+            `${rupeeSymbol}${report.totalRevenue.toFixed(2)}`,
+            `${rupeeSymbol}${report.totalDiscount.toFixed(2)}`,
+            `${rupeeSymbol}${report.netSales.toFixed(2)}`,
+            report.orderCount.toString(),
+            report.itemsSold.toString(),
+          ];
+          tableRows.push(reportData);
+        });
     }
 
-    // Add table
     doc.autoTable({
       startY: 50,
       head: [tableColumn],
       body: tableRows,
+      theme: "grid",
+      headStyles: { fillColor: [0, 0, 0], textColor: [255, 255, 255] },
+      bodyStyles: { textColor: [0, 0, 0] },
+      alternateRowStyles: { fillColor: [240, 240, 240] },
+      columnStyles: {
+        0: { halign: "center" },
+        1: { halign: "right" },
+        2: { halign: "right" },
+        3: { halign: "right" },
+        4: { halign: "center" },
+        5: { halign: "center" },
+      },
     });
 
     // Save PDF
     doc.save("Sales_Report.pdf");
   };
 
+
+
   // Function to download Excel report
   const downloadExcelReport = () => {
-    // Prepare data
     const worksheetData = [
-      ["Date", "Total Sales Revenue", "Discount Applied", "Net Sales", "Number of Orders", "Total Items Sold"],
-      ...(
-        reports.dailyReport && reports.dailyReport.length > 0
-          ? reports.dailyReport.slice().reverse().map(report => [
+      [
+        "Date",
+        "Total Sales Revenue",
+        "Discount Applied",
+        "Net Sales",
+        "Number of Orders",
+        "Total Items Sold",
+      ],
+      ...(reports.dailyReport && reports.dailyReport.length > 0
+        ? reports.dailyReport
+            .slice()
+            .reverse()
+            .map((report) => [
               new Date(report._id).toLocaleDateString("en-GB"),
-              report.totalRevenue,
-              report.totalDiscount,
-              report.netSales,
-              report.orderCount,
-              report.itemsSold
+              `₹${report.totalRevenue.toFixed(2)}`, // Format as currency
+              `₹${report.totalDiscount.toFixed(2)}`, // Format as currency
+              `₹${report.netSales.toFixed(2)}`, // Format as currency
+              report.orderCount.toString(), // Ensure this is a string
+              report.itemsSold.toString()   // Ensure this is a string
             ])
-          : []
-      )
+        : []),
     ];
-
+  
     // Create worksheet and workbook
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+  
+    // Set column widths for better alignment in the Excel file
+    const columnWidths = [
+      { wch: 12 }, // Date column
+      { wch: 20 }, // Total Sales Revenue column
+      { wch: 20 }, // Discount Applied column
+      { wch: 15 }, // Net Sales column
+      { wch: 18 }, // Number of Orders column
+      { wch: 18 }, // Total Items Sold column
+    ];
+    worksheet['!cols'] = columnWidths;
+  
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Sales Report");
-
+  
     // Write and download the Excel file
     XLSX.writeFile(workbook, "Sales_Report.xlsx");
   };
-
+  
   return (
-    <div className="absolute top-14 right-0 w-[1110px]">
+    <div className="absolute top-14 right-0 w-[1110px] px-3 bg-[#1f2937]">
       <div className="relative overflow-x-auto shadow-md sm:rounded-lg min-h-[30vh] h-fit">
-        <div className="flex flex-column sm:flex-row flex-wrap space-y-4 sm:space-y-0 items-center justify-between pb-4">
+        <div className="flex flex-column sm:flex-row flex-wrap space-y-4 sm:space-y-0 items-center justify-between py-4 px-10">
           <div>
             <button
               id="dropdownRadioButton"
@@ -291,21 +341,31 @@ const SalesReport = () => {
               </tr>
             ) : (
               reports.dailyReport &&
-              reports.dailyReport.slice().reverse().map((report) => (
-                <tr key={report._id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                  <th
-                    scope="row"
-                    className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+              reports.dailyReport
+                .slice()
+                .reverse()
+                .map((report) => (
+                  <tr
+                    key={report._id}
+                    className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
                   >
-                    {new Date(report._id).toLocaleDateString("en-GB")}
-                  </th>
-                  <td className="px-6 py-4">₹{report.totalRevenue.toFixed(2)}</td>
-                  <td className="px-6 py-4">₹{report.totalDiscount.toFixed(2)}</td>
-                  <td className="px-6 py-4">₹{report.netSales.toFixed(2)}</td>
-                  <td className="px-6 py-4">{report.orderCount}</td>
-                  <td className="px-6 py-4">{report.itemsSold}</td>
-                </tr>
-              ))
+                    <th
+                      scope="row"
+                      className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                    >
+                      {new Date(report._id).toLocaleDateString("en-GB")}
+                    </th>
+                    <td className="px-6 py-4">
+                      ₹{report.totalRevenue.toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4">
+                      ₹{report.totalDiscount.toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4">₹{report.netSales.toFixed(2)}</td>
+                    <td className="px-6 py-4">{report.orderCount}</td>
+                    <td className="px-6 py-4">{report.itemsSold}</td>
+                  </tr>
+                ))
             )}
           </tbody>
         </table>
@@ -320,7 +380,9 @@ const SalesReport = () => {
         </div>
         <div className="p-5 rounded-md text-md text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <h1>Overall Order Amount</h1>
-          <h2 className="text-white">₹{reports?.overallSummary?.totalRevenue || 0}</h2>
+          <h2 className="text-white">
+            ₹{reports?.overallSummary?.totalRevenue || 0}
+          </h2>
         </div>
         <div className="p-5 rounded-md text-md text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <h1>Overall Discount</h1>
@@ -331,7 +393,7 @@ const SalesReport = () => {
       </div>
 
       {/* Download Buttons */}
-      <div className="flex justify-center gap-5 mt-5">
+      <div className="flex justify-center gap-5 my-5">
         <button onClick={downloadPdfReport} className="btn px-4 py-2 rounded">
           Download PDF
         </button>

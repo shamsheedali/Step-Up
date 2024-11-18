@@ -54,7 +54,7 @@ const SideBar = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
 
   const categoryOptions = categories.map((category) => ({
-    value: category.name,
+    value: category._id,
     label: category.name,
     checked: false,
   }));
@@ -96,8 +96,8 @@ const SideBar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const entriesPerPage = 4; 
-  const [totalProducts, setTotalProducts] = useState(0); 
+  const entriesPerPage = 8;
+  const [totalProducts, setTotalProducts] = useState(0);
 
   const handleCategoryChange = (category) => {
     setSelectedCategories((prevCategories) =>
@@ -109,12 +109,12 @@ const SideBar = () => {
 
   useEffect(() => {
     if (selectedCategories.length > 0) {
-      const filtered = products.filter((product) =>
+      const filtered = products.filter((product) => 
         selectedCategories.includes(product.category)
       );
       setFilteredProducts(filtered);
     } else {
-      setFilteredProducts(products); // No filter applied
+      setFilteredProducts(products);
     }
   }, [selectedCategories, products]);
 
@@ -129,13 +129,12 @@ const SideBar = () => {
         );
         setTotalProducts(totalProducts);
         const { data } = await fetchCategories();
-        const  activeOffer  = await getActiveOffer();
-        console.log("active offer",activeOffer)
-        if(activeOffer.response){
-          const {status} = activeOffer.response
-          if(status===400 || status===404 || status=== 500){
-            console.log("server error")
-            dispatch(clearOffers())
+        const activeOffer = await getActiveOffer();
+        if (activeOffer.response) {
+          const { status } = activeOffer.response;
+          if (status === 400 || status === 404 || status === 500) {
+            console.log("server error");
+            dispatch(clearOffers());
           }
         }
         setOffers(activeOffer.data);
@@ -172,7 +171,7 @@ const SideBar = () => {
   //search query
   useEffect(() => {
     if (searchQuery) {
-      const filtered = products.filter((product) =>
+      const filtered = filteredProducts.filter((product) =>
         product.productName.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setFilteredProducts(filtered);
@@ -428,16 +427,15 @@ const SideBar = () => {
                   loading={loading}
                   offers={offers}
                 />
+                <Pagination
+                  className="mx-auto"
+                  currentPage={currentPage}
+                  setCurrentPage={setCurrentPage}
+                  totalEntries={totalProducts} 
+                  entriesPerPage={entriesPerPage}
+                />
               </div>
             </div>
-
-            <Pagination
-              className="mx-auto"
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              totalEntries={totalProducts} // Use totalProducts for accurate total entries
-              entriesPerPage={entriesPerPage}
-            />
           </section>
         </main>
       </div>

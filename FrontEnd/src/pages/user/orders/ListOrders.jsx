@@ -13,12 +13,15 @@ import { IoMdDownload, IoMdRefresh } from "react-icons/io";
 import { handlePayment } from "../../../api/payment";
 import { BiTimeFive } from "react-icons/bi";
 import { IoIosCheckmarkCircle } from "react-icons/io";
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import { fetchCategories } from "../../../api/category";
+import { Link } from "react-router-dom";
 
 const ListOrders = () => {
   const { uid, username, email } = useSelector((state) => state.user);
   const [orders, setOrders] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [reRender, setReRender] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -27,7 +30,8 @@ const ListOrders = () => {
       try {
         setLoading(true);
         const allOrders = await getUserOrders(uid);
-
+        const { data } = await fetchCategories();
+        setCategories(data);
         const ordersWithProducts = await Promise.all(
           allOrders.reverse().map(async (order) => {
             const { data } = await getOrderProducts(order._id);
@@ -39,7 +43,6 @@ const ListOrders = () => {
         );
 
         setOrders(ordersWithProducts);
-        console.log("this", allOrders);
         setLoading(false);
         setReRender(false);
       } catch (error) {
@@ -53,15 +56,6 @@ const ListOrders = () => {
 
     getOrders();
   }, [uid, reRender]);
-
-  //Cancel Order
-  const handleCancelOrder = async (orderId, totalAmount, paymentMethod) => {
-    await cancelOrder(orderId, uid);
-    if (paymentMethod === "razorPay") {
-      toast.success(`${Math.round(totalAmount)} Refunded to Your Wallet`);
-    }
-    setReRender(true);
-  };
 
   //Retry Payment
   const handleRetryPayment = async (orderId, totalAmount, phonenumber) => {
@@ -78,77 +72,6 @@ const ListOrders = () => {
     } catch (error) {
       console.log(error);
     }
-  };
-
-  const handleDownloadInvoice = async (orderId) => {
-    const order = orders.find((o) => o._id === orderId);
-    const doc = new jsPDF();
-
-    console.log("this is it!", order)
-  
-    // Header Section
-    doc.setFontSize(18);
-    doc.text("StepUp", 14, 20); 
-    doc.setFontSize(12);
-    doc.text("Address Line 1", 14, 28);
-    doc.text("Address Line 2", 14, 34);
-    doc.text("City, ZIP Code", 14, 40);
-    doc.text("Phone: 123-456-7890", 14, 46);
-    doc.text("Email: info@StepUp.com", 14, 52);
-  
-    // Invoice Title and Date
-    doc.setFontSize(16);
-    doc.text("Invoice", 150, 20);
-    doc.setFontSize(10);
-    doc.text(`Invoice Date: ${new Date().toLocaleDateString()}`, 150, 26);
-    doc.text(`Invoice No: ${orderId}`, 150, 32);
-  
-    // Client Information Section
-    doc.setFontSize(12);
-    doc.text("Bill To:", 14, 70);
-    doc.text(`Client Name: ${username || "John Doe"}`, 14, 76);
-    doc.text(`Client Address: ${order.shippingAddress.postcode, order.shippingAddress.town || "123 Client St."}`, 14, 82);
-    doc.text(`Client Email: ${email || "client@example.com"}`, 14, 88);
-  
-    // Order Summary
-    doc.text("Order Summary", 14, 100);
-    doc.text(`Placed At: ${new Date(order.placedAt).toLocaleDateString()}`, 14, 106);
-    doc.text(`Payment Method: ${order.paymentMethod}`, 14, 112);
-    doc.text(`Total Amount: ₹${Math.round(order.totalAmount)}`, 14, 118);
-  
-    // Itemized List Table
-    const items = order.items || [
-      { name: "Item 1", quantity: 1, price: 500 },
-      { name: "Item 2", quantity: 2, price: 750 },
-    ]; // Dummy items for placeholder
-  
-    const tableData = items.map((item, index) => [
-      index + 1,
-      item.product.productName,
-      item.quantity,
-      `₹${item.price.toFixed(2)}`,
-      `₹${(item.quantity * item.price).toFixed(2)}`,
-    ]);
-  
-    doc.autoTable({
-      startY: 130,
-      head: [["#", "Products", "Quantity", "Unit Price", "Total Price"]],
-      body: tableData,
-      theme: "grid",
-    });
-  
-    // Total Amount
-    doc.setFontSize(12);
-    const finalY = doc.lastAutoTable.finalY + 10; // Position below the table
-    doc.text(`Total: ₹${Math.round(order.totalAmount)}`, 150, finalY);
-  
-    // Footer
-    doc.setFontSize(10);
-    doc.text("Thank you for your business!", 14, finalY + 20);
-    doc.text("If you have any questions, please contact us at support@StepUp.com", 14, finalY + 26);
-  
-    // Save PDF
-    doc.save(`Invoice-${orderId}.pdf`);
   };
 
   return (
@@ -256,14 +179,9 @@ const ListOrders = () => {
 
                   {/* buttons */}
                   <div className="absolute right-0 flex flex-col gap-3">
-                    {!order.isCancelled && (
-                      <button
-                        className="btn"
-                        onClick={() => handleDownloadInvoice(order._id)}
-                      >
-                        <IoMdDownload /> Invoice
-                      </button>
-                    )}
+                    <Link to={`/profile/orders/${order._id}`}>
+                      <p className="underline cursor-pointer">See Details</p>
+                    </Link>
                     {order.paymentMethod === "razorPay" &&
                     order.paymentStatus === "Pending" &&
                     !order.isCancelled ? (
@@ -281,13 +199,13 @@ const ListOrders = () => {
                       </button>
                     ) : null}
                   </div>
-                  <hr className="my-4" />
+                  {/* <hr className="my-4" /> */}
 
                   {Array.isArray(order.items) && order.items.length > 0 ? (
                     order.items.map((item) => (
                       <div
                         key={item._id}
-                        className="flex justify-between items-center border-b border-gray-200 py-4"
+                        className="flex justify-between items-center border-t border-gray-200 py-4"
                       >
                         <div className="flex items-center gap-4">
                           <img
@@ -303,7 +221,10 @@ const ListOrders = () => {
                               {item.product?.productName || "No product name"}
                             </h3>
                             <p className="text-sm text-gray-500">
-                              {item.product?.category || "No category"}
+                              {categories.find(
+                                (category) =>
+                                  category._id === item.product?.category
+                              )?.name || ""}
                             </p>
                           </div>
                         </div>
@@ -314,7 +235,7 @@ const ListOrders = () => {
                           </p>
                         </div>
                         <div>
-                          <p>Subtotal: ₹{item.price * item.quantity}</p>
+                          {/* <p>Subtotal: ₹{item.price * item.quantity}</p> */}
                         </div>
                       </div>
                     ))
@@ -323,22 +244,6 @@ const ListOrders = () => {
                       No items found in this order.
                     </p>
                   )}
-
-                  <button
-                    className={`btn mt-4 px-4 py-2 ${
-                      order.isCancelled ? "text-black" : "text-white"
-                    } bg-black rounded-lg transition`}
-                    onClick={() =>
-                      handleCancelOrder(
-                        order._id,
-                        order.totalAmount,
-                        order.paymentMethod
-                      )
-                    }
-                    disabled={order.isCancelled}
-                  >
-                    {order.isCancelled ? "Order Cancelled" : "Cancel Order"}
-                  </button>
                 </div>
               ))
             )}

@@ -21,6 +21,7 @@ import Wishlist from "./pages/user/wishlist/Wishlist";
 import Coupons from "./pages/user/coupons/Coupons";
 import OrderSuccessPage from "./pages/user/order_success/OrderSuccessPage";
 import Wallet from "./pages/user/wallet/Wallet";
+import OrderDetailsPage from "./pages/user/orderDetails/OrderDetailsPage";
 
 const App = () => {
   return (
@@ -41,6 +42,7 @@ const App = () => {
           <Route path="/profile/settings" element={<Settings />} />
           <Route path="/profile/settings/delivery-addresses" element={<DeliveryAddresses />} />
           <Route path="/profile/orders" element={<ListOrders />} />
+          <Route path="/profile/orders/:id" element={<OrderDetailsPage />} />
           <Route path="/profile/coupons" element={<Coupons />} />
           <Route path="/profile/wallet" element={<Wallet />} />
           <Route path="/bag/checkout" element={<Checkout />} />

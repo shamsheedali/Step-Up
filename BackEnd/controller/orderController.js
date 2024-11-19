@@ -70,7 +70,7 @@ const getUserOrders = async (req, res) => {
     const userId = req.params.id;
 
     const orders = await Orders.find({ user: userId })
-      .populate("items totalAmount status paymentMethod createdAt") // Populate product details in items array
+      .populate("items totalAmount status paymentMethod createdAt")
       .exec();
 
     if (orders.length === 0) {

@@ -95,6 +95,7 @@ const SideBar = () => {
   const [sortOrder, setSortOrder] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
+  //pagination
   const [currentPage, setCurrentPage] = useState(1);
   const entriesPerPage = 8;
   const [totalProducts, setTotalProducts] = useState(0);
@@ -427,6 +428,7 @@ const SideBar = () => {
                   loading={loading}
                   offers={offers}
                 />
+
                 <Pagination
                   className="mx-auto"
                   currentPage={currentPage}

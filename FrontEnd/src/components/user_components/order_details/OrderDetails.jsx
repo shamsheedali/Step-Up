@@ -11,6 +11,7 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 import { BiTimeFive } from "react-icons/bi";
 import { IoIosCheckmarkCircle } from "react-icons/io";
+import { toast } from "react-toastify";
 
 const OrderDetails = ({ id }) => {
   const { uid, username, email } = useSelector((state) => state.user);
@@ -53,7 +54,6 @@ const OrderDetails = ({ id }) => {
     if (paymentMethod === "razorPay") {
       toast.success(`${Math.round(totalAmount)} Refunded to Your Wallet`);
     }
-    console.log("here")
     setReRender(true);
   };
 

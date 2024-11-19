@@ -3,28 +3,27 @@ import Navbar from "../../../components/user_components/navbar/Navbar";
 import ProfileNavbar from "../../../components/user_components/profile_navbar/ProfileNavbar";
 import { getUserWallet } from "../../../api/wallet";
 import { useSelector } from "react-redux";
+import Pagination from "../../../components/user_components/pagination/Pagination";
 
 const Wallet = () => {
   const uid = useSelector((state) => state.user.uid);
   const [wallet, setWallet] = useState([]);
   const [balance, setBalance] = useState(0);
+  //pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const entriesPerPage = 5;
+  const [totalTransactions, setTotalTransactions] = useState(0);
 
   useEffect(() => {
     const getWallet = async () => {
-      const { transactions } = await getUserWallet(uid);
-      const totalBalance = transactions.reduce((acc, transaction) => {
-        if (transaction.type === "Credit") {
-          return acc + transaction.amount;
-        } else if (transaction.type === "Debit") {
-          return acc - transaction.amount;
-        }
-        return acc; 
-      }, 0);  
+      const { transactions, totalBalance, totalTransactions } =
+        await getUserWallet(uid, currentPage, entriesPerPage);
       setBalance(totalBalance);
-      setWallet(transactions);
+      setTotalTransactions(totalTransactions);
+      setWallet(transactions.reverse());
     };
     getWallet();
-  }, []);
+  }, [currentPage]);
 
   return (
     <div className="text-black min-h-screen h-fit">
@@ -39,9 +38,14 @@ const Wallet = () => {
           <p>No data available.</p>
         ) : (
           <div>
-            <h2 className="text-lg">
-              Your Balance : <span>₹{Math.round(balance)}</span>
-            </h2>
+            <div className="flex justify-between my-3">
+              <h2 className="text-lg">
+                Total Transactions : <span>{totalTransactions}</span>
+              </h2>
+              <h2 className="text-lg">
+                Your Balance : <span>₹{Math.round(balance)}</span>
+              </h2>
+            </div>
 
             {/* table */}
             <div>
@@ -77,7 +81,9 @@ const Wallet = () => {
                             {new Date(data.date).toDateString()}
                           </td>
                           <td className="px-6 py-4">{data.type}</td>
-                          <td className="px-6 py-4">₹{Math.round(data.amount)}</td>
+                          <td className="px-6 py-4">
+                            ₹{Math.round(data.amount)}
+                          </td>
                         </tr>
                       ))}
                   </tbody>
@@ -86,6 +92,14 @@ const Wallet = () => {
             </div>
           </div>
         )}
+
+        <Pagination
+          className="mx-auto"
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          totalEntries={totalTransactions}
+          entriesPerPage={entriesPerPage}
+        />
       </div>
     </div>
   );

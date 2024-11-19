@@ -132,7 +132,6 @@ const ListOrders = () => {
                   <div>
                     <p className="flex items-center">
                       Payment Method: {order.paymentMethod}
-                      {" - "}
                       {order.paymentMethod === "razorPay" && (
                         <span
                           className={`px-3 py-1 rounded flex items-center gap-1 ${

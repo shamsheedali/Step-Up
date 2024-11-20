@@ -159,7 +159,7 @@ const productCheckout = async (req, res) => {
       return res.status(400).json({ message: "Invalid product IDs" });
     }
 
-    // Find products with the specified IDs
+    // Finding products with the specified IDs
     const products = await Product.find({ _id: { $in: productIds } });
 
     if (!products || products.length === 0) {

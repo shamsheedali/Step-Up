@@ -17,6 +17,7 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 import { fetchCategories } from "../../../api/category";
 import { Link } from "react-router-dom";
+import Pagination from "../../../components/user_components/pagination/Pagination";
 
 const ListOrders = () => {
   const { uid, username, email } = useSelector((state) => state.user);
@@ -24,16 +25,25 @@ const ListOrders = () => {
   const [categories, setCategories] = useState([]);
   const [reRender, setReRender] = useState(false);
   const [loading, setLoading] = useState(false);
+  //pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const entriesPerPage = 5;
+  const [totalOrders, setTotalOrders] = useState(0);
 
   useEffect(() => {
     const getOrders = async () => {
       try {
         setLoading(true);
-        const allOrders = await getUserOrders(uid);
+        const { allOrders, totalOrders } = await getUserOrders(
+          uid,
+          currentPage,
+          entriesPerPage
+        );
+        setTotalOrders(totalOrders);
         const { data } = await fetchCategories();
         setCategories(data);
         const ordersWithProducts = await Promise.all(
-          allOrders.reverse().map(async (order) => {
+          allOrders.map(async (order) => {
             const { data } = await getOrderProducts(order._id);
             return {
               ...order,
@@ -55,7 +65,7 @@ const ListOrders = () => {
     };
 
     getOrders();
-  }, [uid, reRender]);
+  }, [uid, reRender, currentPage]);
 
   //Retry Payment
   const handleRetryPayment = async (orderId, totalAmount, phonenumber) => {
@@ -79,7 +89,7 @@ const ListOrders = () => {
       <Navbar />
       <ProfileNavbar />
 
-      <div className="pt-8 px-36">
+      <div className="pt-8 px-36 pb-5">
         <h1 className="text-2xl font-bold">Your Orders</h1>
         <hr />
 
@@ -123,7 +133,7 @@ const ListOrders = () => {
                 <div
                   key={order._id}
                   id="invoice"
-                  className="relative w-full flex flex-col py-3 border-b border-gray-400"
+                  className="relative w-full flex flex-col py-3 border-b-2 border-black"
                 >
                   <p>
                     Placed At: {new Date(order.placedAt).toLocaleDateString()}
@@ -177,7 +187,7 @@ const ListOrders = () => {
                   )}
 
                   {/* buttons */}
-                  <div className="absolute right-0 flex flex-col gap-3">
+                  <div className="absolute right-0 flex flex-col items-end gap-3">
                     <Link to={`/profile/orders/${order._id}`}>
                       <p className="underline cursor-pointer">See Details</p>
                     </Link>
@@ -227,14 +237,9 @@ const ListOrders = () => {
                             </p>
                           </div>
                         </div>
-                        <div>
+                        <div className="text-right">
                           <p className="font-semibold">₹{item.price}</p>
-                          <p className="text-gray-500">
-                            Quantity: {item.quantity}
-                          </p>
-                        </div>
-                        <div>
-                          {/* <p>Subtotal: ₹{item.price * item.quantity}</p> */}
+                          <p className="text-gray-500">Qty: {item.quantity}</p>
                         </div>
                       </div>
                     ))
@@ -245,6 +250,16 @@ const ListOrders = () => {
                   )}
                 </div>
               ))
+            )}
+
+            {!orders.length === 0 && (
+              <Pagination
+                className="mx-auto"
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                totalEntries={totalOrders}
+                entriesPerPage={entriesPerPage}
+              />
             )}
           </>
         )}

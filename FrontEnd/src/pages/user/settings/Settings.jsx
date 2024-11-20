@@ -24,11 +24,12 @@ const Settings = () => {
 
   const [isFormChanged, setIsFormChanged] = useState(false);
   const [error, setError] = useState("");
+  const [profileError, setProfileError] = useState({});
 
   useEffect(() => {
     const hasFormChanged =
       formValues.username !== username || formValues.email !== email;
-      setIsFormChanged(hasFormChanged);
+    setIsFormChanged(hasFormChanged);
   }, [formValues, username, email]);
 
   const handleInputChange = (e) => {
@@ -60,33 +61,56 @@ const Settings = () => {
       newPassword: "",
       confirmPassword: "",
     });
-    setError('');
+    setError("");
+  };
+
+  const profileValidate = () => {
+    let tempError = {};
+    if (formValues.username.trim() === "" || formValues.username.length < 4) {
+      tempError.username = "username should be at least 4 characters";
+    } else if (/^[0-9]/.test(formValues.username)) {
+      tempError.username = "username cannot start with a number";
+    } else if (formValues.email.trim() === "") {
+      tempError.email = "invalid email";
+    }
+    setProfileError(tempError);
+    return Object.keys(tempError).length === 0;
   };
 
   //Form submit of username and email
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setProfileError({});
     const userData = {
       _id: uid,
       username: formValues.username,
       email: formValues.email,
     };
-    try {
-      const { user } = await updateUserData(userData);
-      console.log("success", user);
-      setFormValues({
-        username: user.username,
-        email: user.email,
-      });
-      dispatch(setUser({ uid, username: user.username, email: user.email, isVerified: true }));
-      toast.success("Your profile has been successfully updated!");
-    } catch (error) {
-      console.log(error);
+    if (profileValidate()) {
+      try {
+        const { user } = await updateUserData(userData);
+        console.log("success", user);
+        setFormValues({
+          username: user.username,
+          email: user.email,
+        });
+        dispatch(
+          setUser({
+            uid,
+            username: user.username,
+            email: user.email,
+            isVerified: true,
+          })
+        );
+        toast.success("Your profile has been successfully updated!");
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 
   //Password form validation
-  const validate = () => {
+  const passwordValidate = () => {
     if (passwordData.currentPassword.length < 6) {
       setError("Incorrect Password");
       return false;
@@ -109,7 +133,7 @@ const Settings = () => {
       newPassword: passwordData.newPassword,
       _id: uid,
     };
-    if (validate()) {
+    if (passwordValidate()) {
       await changePassword(data);
       setPasswordData({
         currentPassword: "",
@@ -145,8 +169,11 @@ const Settings = () => {
                   name="username"
                   value={formValues.username}
                   onChange={handleInputChange}
-                  class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                  className={`block w-full rounded-md border ${
+                    profileError.username ? "border-red-500" : "border-black"
+                  }  px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm`}
                 />
+                <p className="text-red-500 text-sm">{profileError.username}</p>
               </div>
 
               <div class="relative">
@@ -162,8 +189,11 @@ const Settings = () => {
                   name="email"
                   value={formValues.email}
                   onChange={handleInputChange}
-                  class="block w-full rounded-md border border-black px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                  className={`block w-full rounded-md border ${
+                    profileError.email ? "border-red-500" : "border-black"
+                  }  px-3 py-2 text-gray-900 shadow-sm focus:border-black focus:ring-black sm:text-sm`}
                 />
+                <p className="text-red-500 text-sm">{profileError.email}</p>
               </div>
 
               <label htmlFor="">Password</label>
@@ -173,7 +203,10 @@ const Settings = () => {
                   value={"123456789"}
                   className="border-none focus:border-none active:border-none disabled"
                 />
-                <h3 className="underline font-bold cursor-pointer" onClick={openModal}>
+                <h3
+                  className="underline font-bold cursor-pointer"
+                  onClick={openModal}
+                >
                   Edit
                 </h3>
               </div>

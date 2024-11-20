@@ -150,7 +150,7 @@ const verifyCouponCode = async (req, res) => {
       return res.status(400).json({ message: "Coupon code is not valid." });
     }
 
-    // Check if the user ID is already in the usedBy array
+    //checking for user used or not
     const isUsedByUser = coupon.usedBy.some(
       (userId) => userId.toString() === uid
     );
@@ -158,7 +158,7 @@ const verifyCouponCode = async (req, res) => {
     if (isUsedByUser) {
       return res
         .status(400)
-        .json({ message: "You Already Userd This Coupon." });
+        .json({ message: "You Already Used This Coupon." });
     }
 
     res.status(200).json({

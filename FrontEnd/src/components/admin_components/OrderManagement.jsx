@@ -43,7 +43,6 @@ const OrderManagement = () => {
   useEffect(() => {
     const getAllOrders = async () => {
       setLoading(true);
-      // const { allOrders } = await getOrders();
       const { allOrders, totalOrders } = await orderLimit(
         currentPage,
         entriesPerPage
@@ -97,7 +96,7 @@ const OrderManagement = () => {
     setReRender(true);
   };
 
-  //calcel order
+  //cancel order
   const handleCancelOrder = async (orderId, uid) => {
     await cancelOrder(orderId, uid);
     toggleModal();

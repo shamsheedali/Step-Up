@@ -1,6 +1,7 @@
 import users from "../modal/userModal.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import HttpStatus from "../utils/httpStatus.js";
 
 //USER-- SIGNUP
 const signUp = async (req, res) => {
@@ -9,7 +10,7 @@ const signUp = async (req, res) => {
 
     const user = await users.findOne({ email });
     if (user) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(HttpStatus.BAD_REQUEST).json({ message: "User already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -34,11 +35,11 @@ const signUp = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    res.status(201).json({ message: "Signup Successful", token, newUser });
+    res.status(HttpStatus.CREATED).json({ message: "Signup Successful", token, newUser });
     console.log("New User Signed In");
   } catch (error) {
     console.error(error);
-    res.status(500).json(error);
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
   }
 };
 
@@ -49,12 +50,12 @@ const login = async (req, res) => {
 
     const user = await users.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: "User Not Available" });
+      return res.status(HttpStatus.BAD_REQUEST).json({ message: "User Not Available" });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(400).json({ message: "Invalid Password" });
+      return res.status(HttpStatus.BAD_REQUEST).json({ message: "Invalid Password" });
     }
 
     const token = jwt.sign(
@@ -68,10 +69,10 @@ const login = async (req, res) => {
 
     //updating isVerified
     await users.findOneAndUpdate({ email }, { $set: { isVerified: true } });
-    return res.status(200).json({ message: "Login Successful", token, user });
+    return res.status(HttpStatus.OK).json({ message: "Login Successful", token, user });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Server error" });
   }
 };
 
@@ -84,7 +85,7 @@ const storeGoogleUser = async (req, res) => {
 
     if (user) {
       console.log("Existing user logged in:", user);
-      return res.status(200).json({
+      return res.status(HttpStatus.OK).json({
         success: true,
         message: "User logged in successfully",
         user: {
@@ -105,7 +106,7 @@ const storeGoogleUser = async (req, res) => {
 
       await newUser.save();
       console.log("New Google user created and logged in.");
-      return res.status(201).json({
+      return res.status(HttpStatus.CREATED).json({
         success: true,
         message: "New user registered and logged in",
         user: {
@@ -130,7 +131,7 @@ const updateUserData = async (req, res) => {
   try {
     const user = await users.findOne({ _id });
 
-    if (!user) return res.status(400).json({ message: "User not found!" });
+    if (!user) return res.status(HttpStatus.BAD_REQUEST).json({ message: "User not found!" });
 
     const updatedUser = await users.findByIdAndUpdate(
       _id,
@@ -143,14 +144,14 @@ const updateUserData = async (req, res) => {
       { new: true }
     );
 
-    res.status(200).json({
+    res.status(HttpStatus.OK).json({
       success: true,
       message: "Your profile has been successfully updated!",
       user: updatedUser,
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json(error);
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
   }
 };
 
@@ -162,13 +163,13 @@ const changePassword = async (req, res) => {
     const user = await users.findById(_id);
     
     if (!user) {
-      return res.status(404).send("User not found");
+      return res.status(HttpStatus.NOT_FOUND).send("User not found");
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     
     if (!isMatch) {
-      return res.status(400).send("Current password is incorrect");
+      return res.status(HttpStatus.BAD_REQUEST).send("Current password is incorrect");
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -180,7 +181,7 @@ const changePassword = async (req, res) => {
       { new: true }
     );
 
-    res.status(200).json({
+    res.status(HttpStatus.OK).json({
       success: true,
       message: "Password changed successfully",
       user: updatedUser,
@@ -188,7 +189,7 @@ const changePassword = async (req, res) => {
     
   } catch (error) {
     console.log(error);
-    return res.status(500).send('Error saving the new password');
+    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send('Error saving the new password');
   }
 };
 

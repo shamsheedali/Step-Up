@@ -103,14 +103,14 @@ const SalesReport = () => {
       align: "center",
     });
 
-    const rupeeSymbol = String.fromCharCode(8377); 
+    // const rupeeSymbol = String.fromCharCode(8377); 
 
     doc.setFontSize(12);
     doc.setFont("Helvetica", "normal");
     const summaryData = [
       `Total Sales Count: ${reports?.overallSummary?.orderCount || 0} Orders`,
-      `Overall Order Amount: ${rupeeSymbol}${(reports?.overallSummary?.totalRevenue || 0).toFixed(2)}`,
-      `Overall Discount: ${rupeeSymbol}${(reports?.overallSummary?.totalDiscount || 0).toFixed(2)}`,
+      `Overall Order Amount: ${(reports?.overallSummary?.totalRevenue || 0).toFixed(2)}`,
+      `Overall Discount: ${(reports?.overallSummary?.totalDiscount || 0).toFixed(2)}`,
     ];
 
     summaryData.forEach((text, index) => {
@@ -135,9 +135,9 @@ const SalesReport = () => {
         .forEach((report) => {
           const reportData = [
             new Date(report._id).toLocaleDateString("en-GB"),
-            `${rupeeSymbol}${report.totalRevenue.toFixed(2)}`,
-            `${rupeeSymbol}${report.totalDiscount.toFixed(2)}`,
-            `${rupeeSymbol}${report.netSales.toFixed(2)}`,
+            `${report.totalRevenue.toFixed(2)}`,
+            `${report.totalDiscount.toFixed(2)}`,
+            `${report.netSales.toFixed(2)}`,
             report.orderCount.toString(),
             report.itemsSold.toString(),
           ];
@@ -186,11 +186,11 @@ const SalesReport = () => {
             .reverse()
             .map((report) => [
               new Date(report._id).toLocaleDateString("en-GB"),
-              `₹${report.totalRevenue.toFixed(2)}`, // Format as currency
-              `₹${report.totalDiscount.toFixed(2)}`, // Format as currency
-              `₹${report.netSales.toFixed(2)}`, // Format as currency
-              report.orderCount.toString(), // Ensure this is a string
-              report.itemsSold.toString()   // Ensure this is a string
+              `₹${report.totalRevenue.toFixed(2)}`, 
+              `₹${report.totalDiscount.toFixed(2)}`, 
+              `₹${report.netSales.toFixed(2)}`, 
+              report.orderCount.toString(),
+              report.itemsSold.toString()   
             ])
         : []),
     ];
@@ -375,19 +375,19 @@ const SalesReport = () => {
         <div className="p-5 rounded-md text-md text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <h1>Total Sales Count</h1>
           <h2 className="text-white">
-            {reports?.overallSummary?.orderCount || 0} Orders
+            {Math.round(reports?.overallSummary?.orderCount) || 0} Orders
           </h2>
         </div>
         <div className="p-5 rounded-md text-md text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <h1>Overall Order Amount</h1>
           <h2 className="text-white">
-            ₹{reports?.overallSummary?.totalRevenue || 0}
+            ₹{Math.round(reports?.overallSummary?.totalRevenue) || 0}
           </h2>
         </div>
         <div className="p-5 rounded-md text-md text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <h1>Overall Discount</h1>
           <h2 className="text-white">
-            ₹{reports?.overallSummary?.totalDiscount || 0}
+            ₹{Math.round(reports?.overallSummary?.totalDiscount) || 0}
           </h2>
         </div>
       </div>

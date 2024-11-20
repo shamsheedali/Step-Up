@@ -43,7 +43,7 @@ const CheckoutForm = ({ getDiscountApplied }) => {
 
   const [promo, setPromo] = useState("");
   const [disableVerify, setDisableVerify] = useState(false);
-  const [disableRemove, setDisableRemove] = useState(false);
+  const [disableRemove, setDisableRemove] = useState(true);
   const [discountApplied, setDiscountApplied] = useState(0);
 
   const [disableButton, setDisableButton] = useState(true);
@@ -216,7 +216,6 @@ const CheckoutForm = ({ getDiscountApplied }) => {
   //SUBMITTING PLACE ORDER
   const handlePlaceOrder = async () => {
     const productIds = Object.keys(itemsIds);
-    const quantities = Object.values(itemsIds);
     const { products } = await productCheckout(productIds);
     setCheckoutProducts(products);
 
@@ -235,13 +234,12 @@ const CheckoutForm = ({ getDiscountApplied }) => {
       console.log("validated");
 
       if (selectedPaymentMethod === "razorPay") {
-        // try {
         const orderDetails = {
           user: uid,
-          items: products.map((product, index) => ({
+          items: products.map((product) => ({
             product: product._id,
             price: product.price,
-            quantity: quantities[index],
+            quantity: itemsIds[product._id] || 0,
           })),
           totalAmount: calculatedSubtotal + 100,
           paymentMethod: selectedPaymentMethod,
@@ -250,6 +248,8 @@ const CheckoutForm = ({ getDiscountApplied }) => {
           paymentStatus: "Pending",
           promo,
         };
+
+        console.log("orderDetails", orderDetails);
         await handlePayment(
           username,
           email,
@@ -293,10 +293,10 @@ const CheckoutForm = ({ getDiscountApplied }) => {
 
         const orderDetails = {
           user: uid,
-          items: products.map((product, index) => ({
+          items: products.map((product) => ({
             product: product._id,
             price: product.price,
-            quantity: quantities[index],
+            quantity: itemsIds[product._id] || 0,
           })),
           totalAmount: calculatedSubtotal + 100,
           paymentMethod: selectedPaymentMethod,
@@ -321,15 +321,11 @@ const CheckoutForm = ({ getDiscountApplied }) => {
     let newSubtotal;
 
     if (calculatedSubtotal >= coupon.minimumPurchase) {
-      if (coupon.discountType === "percentage") {
-        const percentageDiscount =
-          (calculatedSubtotal * coupon.discountValue) / 100;
-        const discountAmount = Math.min(percentageDiscount, coupon.maxDiscount);
+      const percentageDiscount =
+        (calculatedSubtotal * coupon.discountPercentage) / 100;
+      const discountAmount = Math.min(percentageDiscount, coupon.maxDiscount);
 
-        newSubtotal = calculatedSubtotal - discountAmount;
-      } else {
-        newSubtotal = calculatedSubtotal - coupon.discountValue;
-      }
+      newSubtotal = calculatedSubtotal - discountAmount;
 
       dispatch(storeSubtotal({ userId: uid, subtotal: newSubtotal }));
       setDiscountApplied(oldSubtotal - newSubtotal);
@@ -352,6 +348,8 @@ const CheckoutForm = ({ getDiscountApplied }) => {
     setPromo("");
     setDisableRemove(true);
     setDisableVerify(false);
+    //to parent
+    getDiscountApplied(0);
   };
 
   return (

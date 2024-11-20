@@ -5,15 +5,12 @@ const API_URL = "http://localhost:3000/wallet";
 const getUserWallet = async (userId, page, limit) => {
   const token = localStorage.getItem("userToken");
   try {
-    const response = await axios.get(
-      `${API_URL}/${userId}`,
-      { params: { page, limit } },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await axios.get(`${API_URL}/${userId}`, {
+      params: { page, limit },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     console.log(response);
     return response.data.walletDetails[0];
   } catch (error) {

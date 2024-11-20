@@ -2,6 +2,7 @@ import admins from "../modal/adminModal.js";
 import users from "../modal/userModal.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import HttpStatus from "../utils/httpStatus.js";
 
 //ADMIN--LOGIN
 const login = async (req, res) => {
@@ -10,12 +11,12 @@ const login = async (req, res) => {
     const admin = await admins.findOne({ email });
 
     if (!admin) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(HttpStatus.UNAUTHORIZED).json({ message: "Invalid credentials" });
     }
 
     const isPasswordValid = await bcrypt.compare(password, admin.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid Password" });
+      return res.status(HttpStatus.UNAUTHORIZED).json({ message: "Invalid Password" });
     }
 
     const token = jwt.sign(
@@ -27,10 +28,10 @@ const login = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    return res.status(200).json({ message: "Admin Login Successful", token });
+    return res.status(HttpStatus.OK).json({ message: "Admin Login Successful", token });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error While Admin Login" });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Error While Admin Login" });
   }
 };
 
@@ -40,7 +41,7 @@ const fetchUsers = async (req, res) => {
     const allUsers = await users.find();
     res.json(allUsers);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching users", error });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Error fetching users", error });
   }
 };
 
@@ -55,12 +56,12 @@ const blockUser = async (req, res) => {
     );
 
     if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(HttpStatus.NOT_FOUND).json({ message: "User not found" });
     }
 
     res.json(updatedUser);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message });
   }
 };
 
@@ -75,12 +76,12 @@ const unBlockUser = async (req, res) => {
     );
 
     if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(HttpStatus.NOT_FOUND).json({ message: "User not found" });
     }
 
     res.json(updatedUser);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message });
   }
 };
 

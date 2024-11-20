@@ -1,5 +1,6 @@
 import Bag from "../modal/bagModal.js";
 import Product from "../modal/productModal.js";
+import HttpStatus from "../utils/httpStatus.js";
 
 //ADDING ITEMS TO BAG
 const addToBag = async (req, res) => {
@@ -9,7 +10,7 @@ const addToBag = async (req, res) => {
     const product = await Product.findById(productId);
     
     if (!product) {
-      return res.status(404).json({ message: "Product Not Found!" });
+      return res.status(HttpStatus.NOT_FOUND).json({ message: "Product Not Found!" });
     }
 
     //finding bag of user
@@ -38,10 +39,10 @@ const addToBag = async (req, res) => {
     // Save the bag
     await bag.save();
 
-    res.status(200).json({ message: "Product added to bag", bag });
+    res.status(HttpStatus.OK).json({ message: "Product added to bag", bag });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error adding product to bag" });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Error adding product to bag" });
   }
 };
 
@@ -56,7 +57,7 @@ const fetchBag = async (req, res) => {
     );
 
     if (!bag) {
-      return res.status(404).json({ message: "Bag not found" });
+      return res.status(HttpStatus.NOT_FOUND).json({ message: "Bag not found" });
     }
 
     
@@ -78,10 +79,10 @@ const fetchBag = async (req, res) => {
       (total, item) => total + item.subtotal,
       0
     );
-    res.status(200).json({ bagItems: bagDetails, totalAmount });
+    res.status(HttpStatus.OK).json({ bagItems: bagDetails, totalAmount });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error fetching bag" });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Error fetching bag" });
   }
 };
 
@@ -99,7 +100,7 @@ const deleteProductFromBag = async (req, res) => {
     );
 
     if (!bag) {
-      return res.status(404).json({ message: "Bag not found" });
+      return res.status(HttpStatus.NOT_FOUND).json({ message: "Bag not found" });
     }
 
     const updatedBag = await Bag.findOne({ userId }).populate(
@@ -121,10 +122,10 @@ const deleteProductFromBag = async (req, res) => {
       (total, item) => total + item.subtotal,
       0
     );
-    res.status(200).json({ bagItems: bagDetails, totalAmount });
+    res.status(HttpStatus.OK).json({ bagItems: bagDetails, totalAmount });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Server error", error: error.message });
   }
 };
 

@@ -24,7 +24,7 @@ const OrderDetails = ({ id }) => {
     const getOrders = async () => {
       try {
         setLoading(true);
-        const allOrders = await getUserOrders(uid);
+        const {allOrders} = await getUserOrders(uid);
         const { data: categoryData } = await fetchCategories();
         setCategories(categoryData);
         const ordersWithProducts = await Promise.all(
@@ -117,7 +117,7 @@ const OrderDetails = ({ id }) => {
       `${(item.quantity * item.price).toFixed(2)}`,
     ]);
 
-    const discount = order.discount || 50; 
+    const discount = order.discountApplied || 0; 
     const deliveryCharge = 100; 
 
     if (discount > 0) {
@@ -135,10 +135,10 @@ const OrderDetails = ({ id }) => {
     }
 
     
-    const totalAmount = Math.round(
-      order.totalAmount - discount + deliveryCharge
-    );
-    tableData.push(["", "Total", "", "", `${totalAmount.toFixed(2)}`]);
+    // const totalAmount = Math.round(
+    //   order.totalAmount - discount + deliveryCharge
+    // );
+    tableData.push(["", "Total", "", "", `${order.totalAmount.toFixed(2)}`]);
 
     doc.autoTable({
       startY: 130,
@@ -166,6 +166,7 @@ const OrderDetails = ({ id }) => {
 
 
   const order = orders.find((order) => order._id === id);
+  console.log("order", order);
 
   if (loading)
     return (
@@ -194,7 +195,7 @@ const OrderDetails = ({ id }) => {
               <p>{order.shippingAddress.phonenumber}</p>
             </div>
           </div>
-          <h1 className="mt-3">Total Amount: {order.totalAmount}</h1>
+          <h1 className="mt-3">Total Amount: ₹{order.totalAmount}</h1>
           <p className="flex items-center">
                       Payment Method: {order.paymentMethod}
                       {" - "}
@@ -289,7 +290,7 @@ const OrderDetails = ({ id }) => {
           </div>
           <div className="flex justify-between px-4 pt-3">
             <h1>Grand Total :</h1>
-            <h1>₹{order.totalAmount}</h1>
+            <h1 className="font-bold">₹{order.totalAmount}</h1>
           </div>
 
           <button

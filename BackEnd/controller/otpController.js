@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import users from "../modal/userModal.js";
 import dotenv from "dotenv";
+import HttpStatus from "../utils/httpStatus.js";
 
 dotenv.config();
 
@@ -47,12 +48,12 @@ const verifyOtp = async (req, res) => {
         { $set: { isVerified: true } },
         {new: true}
       );
-      res.status(200).json({ message: "OTP Matched", user });
+      res.status(HttpStatus.OK).json({ message: "OTP Matched", user });
     } else {
-      res.status(400).jsonc({ message: "Invalid OTP" });
+      res.status(HttpStatus.BAD_REQUEST).jsonc({ message: "Invalid OTP" });
     }
   } catch (error) {
-    res.status(500).json({ message: "Error While matching OTP" });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Error While matching OTP" });
   }
 };
 

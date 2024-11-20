@@ -22,14 +22,18 @@ const createOrder = async (orderDetails) => {
   }
 };
 
-const getUserOrders = async (userId) => {
+const getUserOrders = async (userId, page, limit) => {
   try {
     const token = localStorage.getItem("userToken");
-    const response = await axios.get(`${API_URL}/orders/${userId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await axios.get(
+      `${API_URL}/orders/${userId}`,
+      {
+        params: { page, limit },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     return response.data;
   } catch (error) {
@@ -73,7 +77,7 @@ const cancelOrder = async (orderId, uid) => {
   }
 };
 
-//get all orders 
+//get all orders
 const getOrders = async () => {
   try {
     const response = await axios.get(`${API_URL}/getallorders`);
@@ -91,13 +95,13 @@ const orderLimit = async (page, limit) => {
       params: {
         page,
         limit,
-      }
-    })
+      },
+    });
     return response.data;
   } catch (error) {
     console.log(error);
   }
-}
+};
 
 //change status
 const changeStatus = async (orderId, status) => {

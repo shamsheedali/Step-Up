@@ -120,6 +120,9 @@ const CouponManagement = () => {
     } else if(addCouponData.couponCode.trim() === ""){
       toast.error("Invalid coupon code");
       return false;
+    }else if(addCouponData.maxDiscount.length === 0){
+      toast.error("MaxDiscount is Required");
+      return false;
     } else if(new Date(addCouponData.expiryDate) < new Date()){
       toast.error("Invalid Date");
       return false;
@@ -394,6 +397,7 @@ const CouponManagement = () => {
                     name="description"
                     value={addCouponData.description}
                     onChange={handleChange}
+                    placeholder="Minimum 25000 Purchase"
                     required
                     className="border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                   />
@@ -555,7 +559,6 @@ const CouponManagement = () => {
                     name="couponName"
                     value={addCouponData.couponName}
                     onChange={handleChange}
-                    required
                     className="border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                   />
                 </div>
@@ -572,7 +575,6 @@ const CouponManagement = () => {
                     name="couponCode"
                     value={addCouponData.couponCode}
                     onChange={handleChange}
-                    required
                     className="border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                   />
                 </div>
@@ -589,6 +591,7 @@ const CouponManagement = () => {
                     name="description"
                     value={addCouponData.description}
                     onChange={handleChange}
+                    placeholder="Minimum 25000 Purchase"
                     required
                     className="border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                   />

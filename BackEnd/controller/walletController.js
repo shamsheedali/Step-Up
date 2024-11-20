@@ -1,4 +1,5 @@
 import Wallet from "../modal/walletModal.js";
+import HttpStatus from "../utils/httpStatus.js";
 
 const getUserWalletDetails = async (req, res) => {
     const uid = req.params.userId;
@@ -10,7 +11,7 @@ const getUserWalletDetails = async (req, res) => {
       const wallet = await Wallet.findOne({ userId: uid });
   
       if (!wallet) {
-        return res.status(404).json({ message: "Wallet not found!" });
+        return res.status(HttpStatus.NOT_FOUND).json({ message: "Wallet not found!" });
       }
   
       const paginatedTransactions = wallet.transactions.slice(skip, skip + limit);
@@ -26,7 +27,7 @@ const getUserWalletDetails = async (req, res) => {
 
       const totalTransactions = wallet.transactions.length;
   
-      res.status(200).json({
+      res.status(HttpStatus.OK).json({
         walletDetails: [
           {
             _id: wallet._id,
@@ -41,7 +42,7 @@ const getUserWalletDetails = async (req, res) => {
       });
     } catch (error) {
       console.log(error);
-      res.status(500).json({ message: "Error fetching wallet!" });
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Error fetching wallet!" });
     }
   };
   

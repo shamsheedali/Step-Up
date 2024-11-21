@@ -78,7 +78,7 @@ const SingleProductPage = () => {
   const { id } = useParams();
 
   const { uid } = useSelector((state) => state.user);
-  // Fetch discount from Redux for the current product ID
+  // Fetching discount from Redux for the current product ID
   const productOffer = useSelector((state) => state.offers[id]);
   const discount = productOffer ? productOffer.discount : 0;
 
@@ -160,7 +160,7 @@ const SingleProductPage = () => {
 
   // Calculate discounted price
   const getDiscountedPrice = (price) => {
-    return price - price * (discount / 100);
+    return price - discount;
   };
 
   return (
@@ -251,7 +251,7 @@ const SingleProductPage = () => {
               <p className="text-3xl tracking-tight text-gray-900">
                 {loading ? (
                   <div className="skeleton animate-pulse bg-gray-300 w-[100px] h-7"></div>
-                ) : discount > 0 ? (
+                ) : discount ? (
                   <>
                     ₹{getDiscountedPrice(product.price).toFixed(0)}{" "}
                     <span className="text-lg line-through text-gray-500">

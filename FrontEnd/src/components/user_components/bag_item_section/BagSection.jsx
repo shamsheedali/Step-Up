@@ -18,7 +18,7 @@ const BagSection = ({
 }) => {
   const userId = useSelector((state) => state.user.uid);
 
-  // Fetch discount from Redux for the current product ID
+  // Fetching discount from Redux for the current product ID
   const productOffer = useSelector((state) => state.offers[productId]);
   const discount = productOffer ? productOffer.discount : 0;
 
@@ -79,7 +79,7 @@ const BagSection = ({
 
   // Calculate discounted price
   const getDiscountedPrice = (price) => {
-    return price - price * (discount / 100);
+    return price - discount;
   };
 
   return (
@@ -139,7 +139,7 @@ const BagSection = ({
         <div className="flex">
           <h1>
             {discount > 0 ? (
-              <>₹{getDiscountedPrice(price).toFixed(0)}</>
+              <>Offer Price : ₹{getDiscountedPrice(price).toFixed(0)}</>
             ) : (
               <>
                 MRP : ₹ <span>{price}</span>

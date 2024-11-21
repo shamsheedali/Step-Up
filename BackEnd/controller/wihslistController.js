@@ -1,5 +1,6 @@
 import Wishlist from "../modal/wishlistModal.js";
 import Product from "../modal/productModal.js";
+import HttpStatus from '../utils/httpStatus.js';
 
 //Adding Product to Wishlist
 const addToWishlist = async (req, res) => {
@@ -9,7 +10,7 @@ const addToWishlist = async (req, res) => {
     const product = await Product.findById(productId);
 
     if (!product) {
-      return res.status(404).json({ message: "Product Not Found!" });
+      return res.status(HttpStatus.NOT_FOUND).json({ message: "Product Not Found!" });
     }
 
     //finding wihslist of user
@@ -25,7 +26,7 @@ const addToWishlist = async (req, res) => {
 
     if (existingProductIndex > -1) {
       // Product is already in the wishlist
-      return res.status(400).json({ message: "Product already in wishlist!" });
+      return res.status(HttpStatus.BAD_REQUEST).json({ message: "Product already in wishlist!" });
     } else {
       wishlist.products.push({
         productId: product._id,
@@ -34,10 +35,10 @@ const addToWishlist = async (req, res) => {
 
     await wishlist.save();
 
-    res.status(200).json({ message: "Product added to Wishlist", wishlist });
+    res.status(HttpStatus.OK).json({ message: "Product added to Wishlist", wishlist });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error adding product to wishlist" });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Error adding product to wishlist" });
   }
 };
 
@@ -68,11 +69,11 @@ const fetchWishlist = async (req, res) => {
         quantity: item.quantity,
         subtotal: item.productId.price * item.quantity,
       }));
-      res.status(200).json({ wishlistItems: wishlistDetails });
+      res.status(HttpStatus.OK).json({ wishlistItems: wishlistDetails });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error fetching bag" });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Error fetching bag" });
   }
 };
 
@@ -86,12 +87,12 @@ const removeFromWishlist = async (req, res) => {
       { new: true }
     );
 
-    res.status(200).json({
+    res.status(HttpStatus.OK).json({
       message: "Product removed from wishlist successfully",
       wishlist: updatedWishlist,
     });
   } catch (error) {
-    res.status(500).json({ message: "Failed to remove product", error });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Failed to remove product", error });
   }
 };
 

@@ -1,4 +1,5 @@
 import Coupon from "../modal/couponModal.js";
+import HttpStatus from '../utils/httpStatus.js';
 
 const createCoupon = async (req, res) => {
   try {
@@ -15,7 +16,7 @@ const createCoupon = async (req, res) => {
 
     const existingCoupon = await Coupon.findOne({ code });
     if (existingCoupon) {
-      return res.status(400).json({ message: "Coupon code already exists." });
+      return res.status(HttpStatus.BAD_REQUEST).json({ message: "Coupon code already exists." });
     }
 
     // Create the coupon
@@ -34,23 +35,23 @@ const createCoupon = async (req, res) => {
     // Save the coupon to the database
     await newCoupon.save();
 
-    res.status(201).json({
+    res.status(HttpStatus.CREATED).json({
       message: "Coupon created successfully!",
       coupon: newCoupon,
     });
   } catch (error) {
     console.error("Error creating coupon:", error);
-    res.status(500).json({ message: "Server error while creating coupon." });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Server error while creating coupon." });
   }
 };
 
 const getCoupons = async (req, res) => {
   try {
     const coupons = await Coupon.find();
-    res.status(200).json({ coupons });
+    res.status(HttpStatus.OK).json({ coupons });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Error Fetching Coupons!" });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Error Fetching Coupons!" });
   }
 };
 
@@ -64,9 +65,9 @@ const getLimitCoupons = async (req, res) => {
     const totalCoupons = await Coupon.countDocuments({});
     const coupons = await Coupon.find({}).skip(skip).limit(limit);
 
-    res.status(200).json({ coupons, totalCoupons });
+    res.status(HttpStatus.OK).json({ coupons, totalCoupons });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching Coupons", error });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Error fetching Coupons", error });
   }
 };
 
@@ -98,12 +99,12 @@ const editCoupon = async (req, res) => {
       new: true,
     });
 
-    if (!coupon) return res.status(404).json({ message: "coupon not found!" });
+    if (!coupon) return res.status(HttpStatus.NOT_FOUND).json({ message: "coupon not found!" });
 
-    res.status(200).json({ coupon });
+    res.status(HttpStatus.OK).json({ coupon });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Error while updating coupon", error });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Error while updating coupon", error });
   }
 };
 
@@ -113,7 +114,7 @@ const toggleCouponStatus = async (req, res) => {
   try {
     const coupon = await Coupon.findById({ _id: couponId });
 
-    if (!coupon) return res.status(404).json({ message: "coupon not found" });
+    if (!coupon) return res.status(HttpStatus.NOT_FOUND).json({ message: "coupon not found" });
 
     const newStatus = !coupon.status;
 
@@ -127,7 +128,7 @@ const toggleCouponStatus = async (req, res) => {
       updatedCoupon,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message });
   }
 };
 
@@ -138,16 +139,16 @@ const verifyCouponCode = async (req, res) => {
     const coupon = await Coupon.findOne({ code });
 
     if (!coupon) {
-      return res.status(404).json({ message: "Coupon code not found." });
+      return res.status(HttpStatus.NOT_FOUND).json({ message: "Coupon code not found." });
     }
 
     const currentDate = new Date();
     if (coupon.expiryDate && coupon.expiryDate < currentDate) {
-      return res.status(400).json({ message: "Coupon code has expired." });
+      return res.status(HttpStatus.BAD_REQUEST).json({ message: "Coupon code has expired." });
     }
 
     if (!coupon.status) {
-      return res.status(400).json({ message: "Coupon code is not valid." });
+      return res.status(HttpStatus.BAD_REQUEST).json({ message: "Coupon code is not valid." });
     }
 
     //checking for user used or not
@@ -161,13 +162,13 @@ const verifyCouponCode = async (req, res) => {
         .json({ message: "You Already Used This Coupon." });
     }
 
-    res.status(200).json({
+    res.status(HttpStatus.OK).json({
       message: "Coupon code is valid.",
       coupon,
     });
   } catch (error) {
     console.error("Error verifying coupon:", error);
-    res.status(500).json({ message: "Server error. Please try again later." });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Server error. Please try again later." });
   }
 };
 
@@ -176,10 +177,10 @@ const deleteCoupon = async (req, res) => {
   try {
     await Coupon.findByIdAndDelete({ _id: id });
 
-    res.status(200).json({ message: "Coupon Deleted!!" });
+    res.status(HttpStatus.OK).json({ message: "Coupon Deleted!!" });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Error!!", error });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Error!!", error });
   }
 };
 

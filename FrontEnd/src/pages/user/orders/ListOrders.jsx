@@ -252,7 +252,7 @@ const ListOrders = () => {
               ))
             )}
 
-            {!orders.length === 0 && (
+            {orders.length !== 0 && (
               <Pagination
                 className="mx-auto"
                 currentPage={currentPage}

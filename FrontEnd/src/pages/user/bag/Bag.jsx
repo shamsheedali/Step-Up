@@ -57,15 +57,10 @@ const Bag = () => {
       const productOffer = offers[product.productId];
       const discount = productOffer ? productOffer.discount : 0;
 
-      // Calculate item total with discount applied, if any
-      const priceAfterDiscount =
-        discount > 0 ? product.price * (1 - discount / 100) : product.price;
+      // calculating discount
+      const priceAfterDiscount = discount > 0 ? product.price - discount : product.price;
 
       const itemTotal = priceAfterDiscount * quantity;
-
-      console.log(
-        `Product ID: ${product.productId}, Original Price: ${product.price}, Discount: ${discount}, Quantity: ${quantity}, Item Total: ${itemTotal}`
-      );
       return acc + itemTotal;
     }, 0);
 
@@ -81,7 +76,7 @@ const Bag = () => {
           const discount = productOffer ? productOffer.discount : 0;
 
           const priceAfterDiscount =
-            discount > 0 ? product.price * (1 - discount / 100) : product.price;
+            discount > 0 ? product.price - discount : product.price;
 
           return { ...product, quantity: newQuantity, priceAfterDiscount };
         }

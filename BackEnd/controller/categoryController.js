@@ -1,15 +1,16 @@
 import Category from '../modal/categoryModal.js'; 
 import Product from "../modal/productModal.js";
 import Order from "../modal/orderModal.js";
+import HttpStatus from '../utils/httpStatus.js';
 
 // ADD CATEGORY
 const addCategory = async (req, res) => {
   try {
     const newCategory = new Category(req.body); //sending { name, description } in req.body
     await newCategory.save();
-    res.status(201).json({message: "New Category Added", newCategory});
+    res.status(HttpStatus.CREATED).json({message: "New Category Added", newCategory});
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message });
   }
 };
 
@@ -19,7 +20,7 @@ const getCategories = async (req, res) => {
     const categories = await Category.find();
     res.json({ data: categories });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message });
   }
 };
 
@@ -34,12 +35,12 @@ const editCategory = async (req, res) => {
     );
 
     if (!updatedCategory) {
-      return res.status(404).json({ message: "Category not found" });
+      return res.status(HttpStatus.NOT_FOUND).json({ message: "Category not found" });
     }
 
     res.json(updatedCategory);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message });
   }
 };
 
@@ -51,7 +52,7 @@ const toggleCategoryStatus = async (req, res) => {
     const category = await Category.findById({_id: categoryId});
 
     if (!category) {
-      return res.status(404).json({ message: "Category not found" });
+      return res.status(HttpStatus.NOT_FOUND).json({ message: "Category not found" });
     }
 
     // Toggle the isDeleted field
@@ -69,7 +70,7 @@ const toggleCategoryStatus = async (req, res) => {
       updatedCategory
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message });
   }
 };
 
@@ -97,10 +98,10 @@ const getTopSellingCategories = async (req, res) => {
       { $limit: 3 }, 
     ]);
 
-    res.status(200).json({ categories: topCategories });
+    res.status(HttpStatus.OK).json({ categories: topCategories });
   } catch (error) {
     console.error("Error fetching top-selling categories:", error);
-    res.status(500).json({ error: "Failed to fetch top-selling categories" });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: "Failed to fetch top-selling categories" });
   }
 };
 

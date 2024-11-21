@@ -1,4 +1,5 @@
 import Offer from "../modal/offerModal.js";
+import HttpStatus from '../utils/httpStatus.js';
 
 //CREATING OFFER
 const createOffer = async (req, res) => {
@@ -15,6 +16,7 @@ const createOffer = async (req, res) => {
 
   
   try {
+    if(req.body.isActive) await Offer.updateMany({isActive: false});
     const offer = new Offer({
       title,
       description,
@@ -25,13 +27,11 @@ const createOffer = async (req, res) => {
       endDate,
       isActive,
     });
-    console.log(offer);
-
     await offer.save();
-    res.status(201).json({ message: "Offer created", offer });
+    res.status(HttpStatus.CREATED).json({ message: "Offer created", offer });
   } catch (error) {
     console.log(error)
-    res.status(500).json({ message: "Error creating offer", error });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Error creating offer", error });
   }
 };
 
@@ -39,17 +39,18 @@ const createOffer = async (req, res) => {
 const editOffer = async(req, res) => {
   const offerId = req.params.id;
   try {
+    if(req.body.isActive) await Offer.updateMany({isActive: false});
+    
     const offer = await Offer.findById({_id : offerId});
     
-    if(!offer) return res.status(404).json({message: "offer not found!"});
+    if(!offer) return res.status(HttpStatus.NOT_FOUND).json({message: "offer not found!"});
 
     const updatedOffer = await Offer.findByIdAndUpdate(offerId, req.body, {new: true});
 
-    console.log(updatedOffer);
-    return res.status(200).json({updatedOffer});
+    return res.status(HttpStatus.OK).json({updatedOffer});
   } catch (error) {
     console.log(error);
-    res.status(500).json({message : "Error while Updating offer!"});
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message : "Error while Updating offer!"});
   }
 }
 
@@ -59,10 +60,10 @@ const deleteOffer = async(req, res) => {
   try {
     await Offer.findByIdAndDelete({_id: offerId})
 
-    res.status(200).json({message: "Offer Deleted"})
+    res.status(HttpStatus.OK).json({message: "Offer Deleted"})
   } catch (error) {
     console.log(error);
-    res.status(500).json({message: "Error While Deleting Offer!", error});
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message: "Error While Deleting Offer!", error});
   }
 }
 
@@ -71,7 +72,7 @@ const getOffers = async (req, res) => {
     try {
         const allOffers = await Offer.find();
 
-        res.status(200).json({allOffers});
+        res.status(HttpStatus.OK).json({allOffers});
     } catch (error) {
         console.log(error);
     }
@@ -83,13 +84,13 @@ const getActiveOffer = async (req, res) => {
       const activeOffer = await Offer.findOne({ isActive: true });
 
       if (!activeOffer || activeOffer.endDate < new Date()) {
-          return res.status(404).json({ message: "No active offer available" });
+          return res.status(HttpStatus.NOT_FOUND).json({ message: "No active offer available" });
       }
 
-      res.status(200).json({ activeOffer });
+      res.status(HttpStatus.OK).json({ activeOffer });
   } catch (error) {
       console.log(error);
-      res.status(500).json({ message: "Server error" });
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Server error" });
   }
 };
 

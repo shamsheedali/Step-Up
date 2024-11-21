@@ -7,8 +7,6 @@ const API_URL = "http://localhost:3000/user";
 const signUp = async (userData) => {
   try {
     const response = await axios.post(`${API_URL}/signup`, userData);
-    console.log(response);
-
 
     if (response.status === 201) {
       localStorage.setItem("userToken", response.data.token);

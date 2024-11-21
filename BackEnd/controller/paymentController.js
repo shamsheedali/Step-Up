@@ -1,4 +1,5 @@
-import razorpayInstance from '../razorpay/razorpay.js'
+import razorpayInstance from '../razorpay/razorpay.js';
+import HttpStatus from '../utils/httpStatus.js';
 
 const createTransaction = async (req, res) => {
   const { amount, currency } = req.body;
@@ -11,10 +12,10 @@ const createTransaction = async (req, res) => {
 
   try {
     const order = await razorpayInstance.orders.create(options);
-    res.status(200).json(order);
+    res.status(HttpStatus.OK).json(order);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ error: error.message });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: error.message });
   }
 };
 

@@ -32,7 +32,7 @@ const sentOtpEmail = async (email, otp) => {
       console.log("Email sent: " + info.response);
     });
     givenOtp = otp;
-    console.log(givenOtp);
+    console.log("OTP", givenOtp);
   } catch (error) {
     console.log(error);
   }

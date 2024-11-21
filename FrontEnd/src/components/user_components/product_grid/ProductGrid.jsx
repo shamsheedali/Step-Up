@@ -8,24 +8,22 @@ import { toast } from "react-toastify";
 import { setOffer } from "../../../features/offers/OfferSlice";
 
 const ProductGrid = ({ products, loading, offers }) => {
-
-
-  const dispatch = useDispatch();
-    useEffect(() => {
-      if (offers && offers.isActive && offers.endDate < new Date()) {
-        console.log("this should not work")
-        offers.productsIncluded.forEach((productId) => {
-          dispatch(
-            setOffer({
-              productId,
-              discount: offers.discount, 
-            })
-          );
-        });
-      }
-    }, [dispatch, offers]);
-
   const { uid } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (offers && offers.isActive) {
+      offers.productsIncluded.forEach((productId) => {
+        dispatch(
+          setOffer({
+            productId,
+            discount: offers.offerPrice,
+          })
+        );
+      });
+    }
+  }, [dispatch, offers]);
+
 
   const navigate = useNavigate();
 
@@ -52,7 +50,7 @@ const ProductGrid = ({ products, loading, offers }) => {
 
   // Function to calculate the discounted price
   const getDiscountedPrice = (price, discount) => {
-    return price - (price * (discount / 100));
+    return price - discount;
   };
 
   return (
@@ -69,9 +67,10 @@ const ProductGrid = ({ products, loading, offers }) => {
             products
               .filter((product) => !product.isDeleted)
               .map((product) => {
-                // Check if the product has an active offer
-                const isOnOffer = offers && offers.productsIncluded.includes(product._id);
-                const discount = isOnOffer ? offers.discount : 0;
+                // Checking product has an active offer
+                const isOnOffer =
+                  offers && offers.productsIncluded.includes(product._id);
+                const discount = isOnOffer ? offers.offerPrice : 0;
                 const discountedPrice = isOnOffer
                   ? getDiscountedPrice(product.price, discount)
                   : product.price;
@@ -84,7 +83,7 @@ const ProductGrid = ({ products, loading, offers }) => {
                     <div onClick={() => handleCardClick(product._id)}>
                       <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-h-8 xl:aspect-w-7">
                         <img
-                          src={`data:image/jpeg;base64,${product.images[0]}`} // Display the first image
+                          src={`data:image/jpeg;base64,${product.images[0]}`} 
                           alt={product.productName}
                           className="h-full w-full object-cover object-center group-hover:opacity-75"
                         />

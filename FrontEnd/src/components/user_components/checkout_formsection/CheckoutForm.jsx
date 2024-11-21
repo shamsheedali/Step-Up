@@ -24,9 +24,19 @@ const CheckoutForm = ({ getDiscountApplied }) => {
   const itemsIds = useSelector(
     (state) => state.bag.bags[uid]?.quantities || {}
   );
+
+  //Getting offer
+  const offers = useSelector((state) => state.offers);
+
   const { calculatedSubtotal } = useSelector(
     (state) => state.bag.bags[uid] || { calculatedSubtotal: 0 }
   );
+
+  //For disable cod button
+  const [disableCOD, setDisableCOD] = useState(false);
+  useEffect(() => {
+    if (calculatedSubtotal >= 5000) setDisableCOD(true);
+  }, []);
 
   const [oldSubtotal, setOldSubtotal] = useState(calculatedSubtotal);
 
@@ -236,11 +246,19 @@ const CheckoutForm = ({ getDiscountApplied }) => {
       if (selectedPaymentMethod === "razorPay") {
         const orderDetails = {
           user: uid,
-          items: products.map((product) => ({
-            product: product._id,
-            price: product.price,
-            quantity: itemsIds[product._id] || 0,
-          })),
+          items: products.map((product) => {
+            const isOnOffer = offers && offers.hasOwnProperty(product._id);
+            const discount = isOnOffer ? offers[product._id].discount : 0;
+            const discountedPrice = isOnOffer
+              ? getDiscountedPrice(product.price, discount)
+              : product.price;
+
+            return {
+              product: product._id,
+              price: discountedPrice,
+              quantity: itemsIds[product._id] || 0,
+            };
+          }),
           totalAmount: calculatedSubtotal + 100,
           paymentMethod: selectedPaymentMethod,
           shippingAddress: selectedAddress,
@@ -284,26 +302,35 @@ const CheckoutForm = ({ getDiscountApplied }) => {
             }
           });
       } else if (selectedPaymentMethod === "cashOnDelivery") {
-        if (calculatedSubtotal >= 6000) {
+        if (calculatedSubtotal >= 5000) {
           toast.error(
-            "Cash on Delivery is not available for orders above Rs 6000."
+            "Cash on Delivery is not available for orders above Rs 5000."
           );
           return;
         }
 
         const orderDetails = {
           user: uid,
-          items: products.map((product) => ({
-            product: product._id,
-            price: product.price,
-            quantity: itemsIds[product._id] || 0,
-          })),
+          items: products.map((product) => {
+            const isOnOffer = offers && offers.hasOwnProperty(product._id);
+            const discount = isOnOffer ? offers[product._id].discount : 0;
+            const discountedPrice = isOnOffer
+              ? getDiscountedPrice(product.price, discount)
+              : product.price;
+
+            return {
+              product: product._id,
+              price: discountedPrice,
+              quantity: itemsIds[product._id] || 0,
+            };
+          }),
           totalAmount: calculatedSubtotal + 100,
           paymentMethod: selectedPaymentMethod,
           shippingAddress: selectedAddress,
           discountApplied,
           promo,
         };
+
         const response = await createOrder(orderDetails);
         if (response) {
           navigate("/bag/checkout/order-success");
@@ -350,6 +377,11 @@ const CheckoutForm = ({ getDiscountApplied }) => {
     setDisableVerify(false);
     //to parent
     getDiscountApplied(0);
+  };
+
+  // Function to calculate the discounted price
+  const getDiscountedPrice = (price, discount) => {
+    return price - discount;
   };
 
   return (
@@ -458,10 +490,12 @@ const CheckoutForm = ({ getDiscountApplied }) => {
           {/* Cash on Delivery */}
           <div
             onClick={() => handlePaymentSelect("cashOnDelivery")}
-            className={`w-[200px] p-4 rounded-lg border cursor-pointer flex items-center gap-2 ${
+            className={`w-[200px] p-4 rounded-lg border flex items-center gap-2 ${
               selectedPaymentMethod === "cashOnDelivery"
                 ? "bg-black text-white"
                 : "border-gray-300"
+            } ${
+              disableCOD ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
             }`}
           >
             <IoCashOutline />

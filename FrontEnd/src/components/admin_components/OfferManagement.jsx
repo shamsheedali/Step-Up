@@ -154,6 +154,7 @@ const OfferManagement = () => {
       const { offer } = await createOffer(offerData);
       toggleModal();
       setOffers((prev) => [...prev, offer]);
+      setReRender(!reRender);
       setAddOfferData({});
     }
   };

@@ -1,10 +1,10 @@
 import address from "../modal/addressModal.js";
+import HttpStatus from '../utils/httpStatus.js';
 
 //ADD NEW ADDRESS
 const addAddress = async (req, res) => {
   try {
     const userId = req.params.id;
-    console.log(userId);
     const newAddress = new address({
       ...req.body,  
       userId: userId 
@@ -15,7 +15,7 @@ const addAddress = async (req, res) => {
     await newAddress.save();
     res.status(201).json({ message: "New Address Added", newAddress });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message });
   }
 };
 
@@ -24,10 +24,10 @@ const fetchAddress = async (req, res) => {
   try {
     const userId = req.params.id;
     const allAddress = await address.find({userId});
-    res.status(200).json({ allAddress });
+    res.status(HttpStatus.OK).json({ allAddress });
   } catch (error) {
     console.log(error);
-    res.status(500).json(error);
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
   }
 };
 
@@ -40,12 +40,12 @@ const editAddress = async (req, res) => {
     });
 
     if (!updatedAddress) {
-      return res.status(400).json({ message: "No Address Found!" });
+      return res.status(HttpStatus.BAD_REQUEST).json({ message: "No Address Found!" });
     }
 
-    res.status(200).json(updatedAddress);
+    res.status(HttpStatus.OK).json(updatedAddress);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message });
   }
 };
 
@@ -55,9 +55,9 @@ const deleteAddress = async (req, res) => {
         const id = req.params.id;
         const deleteAddress = await address.findByIdAndDelete(id);
         if(!deleteAddress) {
-            return res.status(400).json({message: "No Address Found!"});
+            return res.status(HttpStatus.BAD_REQUEST).json({message: "No Address Found!"});
         }
-        res.status(200).json({message: "Address Successfully Deleted!"});
+        res.status(HttpStatus.OK).json({message: "Address Successfully Deleted!"});
     } catch (error) {
         console.log(error);
     }
@@ -68,10 +68,10 @@ const getDefault = async (req, res) => {
   try {
     const userId = req.params.id;
     const defaultAddress = await address.find({userId, defaultAddress : true});
-    res.status(200).json({defaultAddress})
+    res.status(HttpStatus.OK).json({defaultAddress})
   } catch (error) {
     console.log(error);
-    res.status(500).json({message: "Server error"})
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message: "Server error"})
   }
 }
 

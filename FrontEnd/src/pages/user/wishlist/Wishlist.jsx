@@ -11,6 +11,9 @@ import { RiDeleteBinLine } from "react-icons/ri";
 
 const Wishlist = () => {
   const { uid } = useSelector((state) => state.user);
+
+  const offers = useSelector((state) => state.offers);
+
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState([]);
 
@@ -69,6 +72,12 @@ const Wishlist = () => {
     }
   };
 
+  // Calculate discounted price
+  const getDiscountedPrice = (price, discount) => {
+
+    return price - discount;
+  };
+
   return (
     <div className="min-h-screen h-auto">
       <Navbar />
@@ -87,47 +96,62 @@ const Wishlist = () => {
               <h1 className="text-2xl">Your Wishlist Is Empty!</h1>
             </div>
           ) : (
-            products.map((product) => (
-              <div
-                key={product.productId}
-                className="group cursor-pointer transition duration-500 ease-in-out hover:translate-y-[-10px] relative"
-              >
-                <div onClick={() => handleCardClick(product.productId)}>
-                  <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-h-8 xl:aspect-w-7">
-                    <img
-                      src={`data:image/jpeg;base64,${product.productImage}`} 
-                      alt={product.productName}
-                      className="h-full w-full object-cover object-center group-hover:opacity-75"
-                    />
-                  </div>
-                  <h3 className="mt-4 text-sm text-gray-700">
-                    {product.productName}
-                  </h3>
-                  <p className="mt-1 text-lg font-medium text-gray-900">
-                    ₹{product.price}
-                  </p>
-                </div>
+            products.map((product) => {
+              const isOnOffer = offers && offers.hasOwnProperty(product.productId);
+              const discount = isOnOffer ? offers[product.productId].discount : 0;
+              const discountedPrice = isOnOffer
+                ? getDiscountedPrice(product.price, discount)
+                : product.price;
 
-                {/* wishlist remove button */}
+              return (
                 <div
-                  className="btn w-fit bg-black text-white p-3 text-xl absolute right-12 cursor-pointer transition duration-500 ease-in-out opacity-0 group-hover:opacity-100 group-hover:translate-y-[-20px] hover:scale-90 rounded-md"
-                  onClick={() => handleRemoveProduct(product.productId)}
+                  key={product.productId}
+                  className="group cursor-pointer transition duration-500 ease-in-out hover:translate-y-[-10px] relative"
                 >
-                  <RiDeleteBinLine />
+                  <div onClick={() => handleCardClick(product.productId)}>
+                    <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-h-8 xl:aspect-w-7">
+                      <img
+                        src={`data:image/jpeg;base64,${product.productImage}`}
+                        alt={product.productName}
+                        className="h-full w-full object-cover object-center group-hover:opacity-75"
+                      />
+                    </div>
+                    <h3 className="mt-4 text-sm text-gray-700">
+                      {product.productName}
+                    </h3>
+                    <p className="mt-1 text-lg font-medium text-gray-900">
+                      {isOnOffer ? (
+                        <>
+                          ₹{discountedPrice.toFixed(0)}{" "}
+                          <span className="text-lg line-through text-gray-500">
+                            ₹{product.price}
+                          </span>
+                        </>
+                      ) : (
+                        `₹${product.price}`
+                      )}
+                    </p>
+                  </div>
+
+                  {/* Wishlist remove button */}
+                  <div
+                    className="btn w-fit bg-black text-white p-3 text-xl absolute right-12 cursor-pointer transition duration-500 ease-in-out opacity-0 group-hover:opacity-100 group-hover:translate-y-[-20px] hover:scale-90 rounded-md"
+                    onClick={() => handleRemoveProduct(product.productId)}
+                  >
+                    <RiDeleteBinLine />
+                  </div>
+                  <div
+                    className="btn w-fit bg-black text-white p-3 text-xl absolute right-0 cursor-pointer transition duration-500 delay-150 ease-in-out opacity-0 group-hover:opacity-100 group-hover:translate-y-[-20px] hover:scale-90 rounded-md"
+                    onClick={() => handleAddToBag(product.productId)}
+                  >
+                    <HiOutlineShoppingBag />
+                  </div>
                 </div>
-                <div
-                  className="btn w-fit bg-black text-white p-3 text-xl absolute right-0 cursor-pointer transition duration-500 delay-150 ease-in-out opacity-0 group-hover:opacity-100 group-hover:translate-y-[-20px] hover:scale-90 rounded-md"
-                  onClick={() => handleAddToBag(product.productId)}
-                >
-                  <HiOutlineShoppingBag />
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>
-
-      {/* <Footer /> */}
     </div>
   );
 };

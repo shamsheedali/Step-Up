@@ -67,8 +67,7 @@ const getActiveOffer = async() => {
   try {
     const response = await axios.get(`${API_URL}/get-activeOffer`);
 
-    console.log(response);
-    return response;
+    return response.data;
   } catch (error) {
     console.log(error)
     return error;

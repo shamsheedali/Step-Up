@@ -153,7 +153,7 @@ const cancelOrder = async (req, res) => {
       );
     }
 
-    if (order.paymentMethod === "razorPay") {
+    if (order.paymentMethod === "razorPay" && (order.paymentStatus === 'Completed' || order.paymentStatus === 'Refunded')) {
       const transaction = {
         description: "Amount Returned Due to Order Cancellation",
         type: "Credit",

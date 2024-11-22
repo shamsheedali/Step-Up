@@ -20,7 +20,7 @@ const Wallet = () => {
         await getUserWallet(uid, currentPage, entriesPerPage);
       setBalance(totalBalance);
       setTotalTransactions(totalTransactions);
-      setWallet(transactions.reverse());
+      setWallet(transactions);
     };
     getWallet();
   }, [currentPage]);

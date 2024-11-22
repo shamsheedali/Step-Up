@@ -10,7 +10,9 @@ const signUp = async (req, res) => {
 
     const user = await users.findOne({ email });
     if (user) {
-      return res.status(HttpStatus.BAD_REQUEST).json({ message: "User already exists" });
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: "User already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -35,7 +37,9 @@ const signUp = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    res.status(HttpStatus.CREATED).json({ message: "Signup Successful", token, newUser });
+    res
+      .status(HttpStatus.CREATED)
+      .json({ message: "Signup Successful", token, newUser });
     console.log("New User Signed In");
   } catch (error) {
     console.error(error);
@@ -50,12 +54,20 @@ const login = async (req, res) => {
 
     const user = await users.findOne({ email });
     if (!user) {
-      return res.status(HttpStatus.BAD_REQUEST).json({ message: "User Not Available" });
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: "User Not Available" });
+    }
+
+    if(user.status === 'blocked'){
+      return res.status(HttpStatus.FORBIDDEN).json({message: "Your Account is Blocked!"});
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(HttpStatus.BAD_REQUEST).json({ message: "Invalid Password" });
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: "Invalid Password" });
     }
 
     const token = jwt.sign(
@@ -69,10 +81,14 @@ const login = async (req, res) => {
 
     //updating isVerified
     await users.findOneAndUpdate({ email }, { $set: { isVerified: true } });
-    return res.status(HttpStatus.OK).json({ message: "Login Successful", token, user });
+    return res
+      .status(HttpStatus.OK)
+      .json({ message: "Login Successful", token, user });
   } catch (error) {
     console.error(error);
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Server error" });
+    res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: "Server error" });
   }
 };
 
@@ -85,10 +101,22 @@ const storeGoogleUser = async (req, res) => {
 
     if (user) {
       console.log("Existing user logged in:", user);
+       //New User Token While Login
+       const token = jwt.sign(
+        {
+          id: user._id,
+          email: user.email,
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "1d" }
+      );
+
       return res.status(HttpStatus.OK).json({
         success: true,
         message: "User logged in successfully",
+        token,
         user: {
+          uid: user._id,
           googleID: user.googleID || undefined,
           username: user.username,
           email: user.email,
@@ -106,10 +134,24 @@ const storeGoogleUser = async (req, res) => {
 
       await newUser.save();
       console.log("New Google user created and logged in.");
+      //Finding this _id and sending to frontend
+      const user = await users.findOne({ email });
+      //New User Token While Signup
+      const token = jwt.sign(
+        {
+          id: user._id,
+          email: user.email,
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "1d" }
+      );
+
       return res.status(HttpStatus.CREATED).json({
         success: true,
         message: "New user registered and logged in",
+        token,
         user: {
+          uid: user._id,
           googleID: newUser.googleID,
           username: newUser.username,
           email: newUser.email,
@@ -131,7 +173,10 @@ const updateUserData = async (req, res) => {
   try {
     const user = await users.findOne({ _id });
 
-    if (!user) return res.status(HttpStatus.BAD_REQUEST).json({ message: "User not found!" });
+    if (!user)
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: "User not found!" });
 
     const updatedUser = await users.findByIdAndUpdate(
       _id,
@@ -158,18 +203,20 @@ const updateUserData = async (req, res) => {
 //CHANGE USER PASSWORD
 const changePassword = async (req, res) => {
   const { password, newPassword, _id } = req.body;
-  
+
   try {
     const user = await users.findById(_id);
-    
+
     if (!user) {
       return res.status(HttpStatus.NOT_FOUND).send("User not found");
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    
+
     if (!isMatch) {
-      return res.status(HttpStatus.BAD_REQUEST).send("Current password is incorrect");
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .send("Current password is incorrect");
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -186,12 +233,12 @@ const changePassword = async (req, res) => {
       message: "Password changed successfully",
       user: updatedUser,
     });
-    
   } catch (error) {
     console.log(error);
-    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send('Error saving the new password');
+    return res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .send("Error saving the new password");
   }
 };
-
 
 export { signUp, login, storeGoogleUser, updateUserData, changePassword };

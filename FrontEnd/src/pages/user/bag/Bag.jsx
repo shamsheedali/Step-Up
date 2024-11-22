@@ -100,7 +100,7 @@ const Bag = () => {
 
   const total = calculatedSubtotal + DELIVERY_FEE;
 
-  //handle bag product deletation from child component with calback function
+  //handle bag product deleteation from child component with callback function
   const handleDeleteProduct = async (productId) => {
     try {
       await delFromBag(uid, productId);

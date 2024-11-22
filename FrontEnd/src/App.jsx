@@ -22,40 +22,53 @@ import Coupons from "./pages/user/coupons/Coupons";
 import OrderSuccessPage from "./pages/user/order_success/OrderSuccessPage";
 import Wallet from "./pages/user/wallet/Wallet";
 import OrderDetailsPage from "./pages/user/orderDetails/OrderDetailsPage";
+import AdminProtectedRoute from "../src/protectedRoutes/adminProtectedRoute";
 
 const App = () => {
   return (
     <div className="bg-white text-black font-clash-display">
-        <ToastContainer theme="dark" />
-        <Routes>
-          {/* USER--ROUTES */}
-          <Route path="/" element={<Homepage />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/otp" element={<OtpPage />} />
-          <Route path="/products" element={<AllProduct />} />
-          <Route path="/products/:id" element={<SingleProductPage />} />
-          <Route path="/bag" element={<Bag />} />
-          <Route path="/wishlist" element={<Wishlist />} />
-          <Route path="/wishlist/:id" element={<SingleProductPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/profile/settings" element={<Settings />} />
-          <Route path="/profile/settings/delivery-addresses" element={<DeliveryAddresses />} />
-          <Route path="/profile/orders" element={<ListOrders />} />
-          <Route path="/profile/orders/:id" element={<OrderDetailsPage />} />
-          <Route path="/profile/coupons" element={<Coupons />} />
-          <Route path="/profile/wallet" element={<Wallet />} />
-          <Route path="/bag/checkout" element={<Checkout />} />
-          <Route path="/bag/checkout/order-success" element={<OrderSuccessPage />} />
+      <ToastContainer theme="dark" />
+      <Routes>
+        {/* USER--ROUTES */}
+        <Route path="/" element={<Homepage />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/otp" element={<OtpPage />} />
+        <Route path="/products" element={<AllProduct />} />
+        <Route path="/products/:id" element={<SingleProductPage />} />
+        <Route path="/bag" element={<Bag />} />
+        <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/wishlist/:id" element={<SingleProductPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/profile/settings" element={<Settings />} />
+        <Route
+          path="/profile/settings/delivery-addresses"
+          element={<DeliveryAddresses />}
+        />
+        <Route path="/profile/orders" element={<ListOrders />} />
+        <Route path="/profile/orders/:id" element={<OrderDetailsPage />} />
+        <Route path="/profile/coupons" element={<Coupons />} />
+        <Route path="/profile/wallet" element={<Wallet />} />
+        <Route path="/bag/checkout" element={<Checkout />} />
+        <Route
+          path="/bag/checkout/order-success"
+          element={<OrderSuccessPage />}
+        />
 
-          {/* ADMIN--ROUTES */}
-          <Route path="/dashboard/*" element={<Dashboard />} />
-          <Route path="/admin_login" element={<AdminLogin />} />
+        {/* ADMIN--ROUTES */}
+        <Route
+          path="/dashboard/*"
+          element={
+            <AdminProtectedRoute>
+              <Dashboard />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route path="/admin_login" element={<AdminLogin />} />
 
-
-          {/* 404 PAGE */}
-          <Route path="*" element={<Page404 />} />
-        </Routes>
+        {/* 404 PAGE */}
+        <Route path="*" element={<Page404 />} />
+      </Routes>
     </div>
   );
 };

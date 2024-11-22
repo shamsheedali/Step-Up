@@ -1,6 +1,6 @@
 import Product from "../modal/productModal.js";
 import Order from "../modal/orderModal.js";
-import HttpStatus from '../utils/httpStatus.js';
+import HttpStatus from "../utils/httpStatus.js";
 
 const addProduct = async (req, res) => {
   try {
@@ -17,12 +17,16 @@ const addProduct = async (req, res) => {
     } = req.body;
 
     if (!name || !price || !category || !brand || !stock) {
-      return res.status(HttpStatus.BAD_REQUEST).json({ error: "Missing required fields" });
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ error: "Missing required fields" });
     }
 
     // Check if any files were uploaded
     if (!req.files || req.files.length === 0) {
-      return res.status(HttpStatus.BAD_REQUEST).json({ error: "No images uploaded" });
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ error: "No images uploaded" });
     }
 
     // Convert image buffers to base64
@@ -53,7 +57,9 @@ const addProduct = async (req, res) => {
       .json({ message: "Product uploaded successfully!", product: newProduct });
   } catch (err) {
     console.error(err);
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: "Error uploading product: " + err.message });
+    res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json({ error: "Error uploading product: " + err.message });
   }
 };
 
@@ -61,10 +67,12 @@ const fetchProducts = async (req, res) => {
   try {
     const allProducts = await Product.find();
     res
-      .status(200)
+      .status(HttpStatus.OK)
       .json({ message: "Successfully fetched Products", allProducts });
   } catch (error) {
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "error fetching products", error });
+    res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: "error fetching products", error });
   }
 };
 
@@ -80,7 +88,9 @@ const fetchProductsWithLimit = async (req, res) => {
 
     res.status(HttpStatus.OK).json({ products, totalProducts });
   } catch (error) {
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Error fetching products", error });
+    res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: "Error fetching products", error });
   }
 };
 
@@ -90,7 +100,9 @@ const getProduct = async (req, res) => {
   try {
     const singleProduct = await Product.findById({ _id: id });
     if (!singleProduct) {
-      return res.status(HttpStatus.BAD_REQUEST).json({ message: "Product Not Found!" });
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: "Product Not Found!" });
     }
 
     const relatedProductsData = await Product.find({
@@ -102,7 +114,9 @@ const getProduct = async (req, res) => {
       .json({ message: "Product Found", singleProduct, relatedProductsData });
   } catch (error) {
     console.log(error);
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Error While Fecthing Product" });
+    res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: "Error While Fecthing Product" });
   }
 };
 
@@ -115,12 +129,16 @@ const editProduct = async (req, res) => {
     });
 
     if (!singleProduct) {
-      return res.status(HttpStatus.NOT_FOUND).json({ message: "Product not found" });
+      return res
+        .status(HttpStatus.NOT_FOUND)
+        .json({ message: "Product not found" });
     }
 
     res.json(singleProduct);
   } catch (error) {
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message });
+    res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: error.message });
   }
 };
 
@@ -131,7 +149,9 @@ const toggleProductStatus = async (req, res) => {
     const singleProduct = await Product.findById({ _id: productID });
 
     if (!singleProduct) {
-      return res.status(HttpStatus.BAD_REQUEST).json({ message: "Product not found" });
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: "Product not found" });
     }
 
     const newStatus = !singleProduct.isDeleted;
@@ -147,7 +167,9 @@ const toggleProductStatus = async (req, res) => {
       updatedProduct,
     });
   } catch (error) {
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message });
+    res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: error.message });
   }
 };
 
@@ -157,21 +179,27 @@ const productCheckout = async (req, res) => {
     const productIds = req.body;
 
     if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
-      return res.status(HttpStatus.BAD_REQUEST).json({ message: "Invalid product IDs" });
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: "Invalid product IDs" });
     }
 
     // Finding products with the specified IDs
     const products = await Product.find({ _id: { $in: productIds } });
 
     if (!products || products.length === 0) {
-      return res.status(HttpStatus.NOT_FOUND).json({ message: "Products not found" });
+      return res
+        .status(HttpStatus.NOT_FOUND)
+        .json({ message: "Products not found" });
     }
 
     // Send back the products with necessary details
     res.status(HttpStatus.OK).json({ products });
   } catch (error) {
     console.error("Error fetching products:", error);
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Server error" });
+    res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: "Server error" });
   }
 };
 
@@ -182,21 +210,23 @@ const getTopSellingProducts = async (req, res) => {
       { $unwind: "$items" },
       {
         $group: {
-          _id: "$items.product", 
+          _id: "$items.product",
           totalQuantitySold: { $sum: "$items.quantity" },
         },
       },
       { $sort: { totalQuantitySold: -1 } },
-      { $limit: 3 } 
+      { $limit: 3 },
     ]);
 
     const productIds = topProducts.map((product) => product._id);
     const products = await Product.find({ _id: { $in: productIds } })
-      .select("productName price category images") // Select required fields
-      .lean(); // Use lean to get plain JavaScript objects
+      .select("productName price category images") 
+      .lean(); 
 
     const populatedProducts = topProducts.map((topProduct) => {
-      const product = products.find((p) => p._id.toString() === topProduct._id.toString());
+      const product = products.find(
+        (p) => p._id.toString() === topProduct._id.toString()
+      );
       return {
         ...product,
         totalQuantitySold: topProduct.totalQuantitySold,
@@ -206,7 +236,9 @@ const getTopSellingProducts = async (req, res) => {
     res.status(HttpStatus.OK).json({ products: populatedProducts });
   } catch (error) {
     console.error("Error fetching top-selling products:", error);
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: "Failed to fetch top-selling products" });
+    res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json({ error: "Failed to fetch top-selling products" });
   }
 };
 

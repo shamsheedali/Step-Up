@@ -10,6 +10,7 @@ import { fetchProducts } from "../../api/product";
 import { fetchUsers } from "../../api/admin";
 import Pagination from "../user_components/pagination/Pagination";
 import { toast } from "react-toastify";
+import { fetchCategories } from "../../api/category";
 
 const OrderManagement = () => {
   const [loading, setLoading] = useState(false);
@@ -17,6 +18,7 @@ const OrderManagement = () => {
   const [orders, setOrders] = useState([]);
   const [users, setUsers] = useState([]);
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [openDropdowns, setOpenDropdowns] = useState({});
 
   //pagination
@@ -60,6 +62,8 @@ const OrderManagement = () => {
   useEffect(() => {
     const getAllProducts = async () => {
       const { allProducts } = await fetchProducts();
+      const {data} = await fetchCategories();
+      setCategories(data);
       setProducts(allProducts);
     };
     getAllProducts();
@@ -222,7 +226,7 @@ const OrderManagement = () => {
                       <button
                         onClick={() => toggleDropdown(order._id)}
                         className={`text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 ${
-                          order.isCancelled && "hidden"
+                          (order.isCancelled || order.status === 'Delivered') ? "hidden" : ""
                         }`}
                         type="button"
                       >
@@ -316,7 +320,7 @@ const OrderManagement = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto h-full w-full bg-black bg-opacity-50">
           <div className="relative p-4 w-full max-w-2xl">
             {/* Modal container */}
-            <div className="bg-white rounded-lg shadow dark:bg-gray-700 h-fit overflow-y-auto">
+            <div className="bg-white rounded-lg shadow dark:bg-gray-700 h-fit max-h-[80vh] overflow-y-auto">
               {/* Modal header with close button */}
               <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -371,7 +375,7 @@ const OrderManagement = () => {
                             {item.productName || "No product name"}
                           </h3>
                           <p className="text-sm text-gray-500">
-                            {item.category || "No category"}
+                            {categories.find(category => category._id === item.category)?. name || "No category"}
                           </p>
                         </div>
                       </div>

@@ -1,14 +1,23 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import SignupImg from "../../../assets/images/auth/nike.png";
 import { adminlogin } from "../../../api/admin";
 import { useNavigate } from "react-router-dom";
 
 const AdminLogin = () => {
+  const navigate = useNavigate();
+  //Checking admin loggedIn or not
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    if(token){
+      console.log("admin already exists");
+      navigate('/dashboard/overview')
+    }
+  }, []);
+
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
-  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

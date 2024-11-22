@@ -235,6 +235,25 @@ const ProductManagement = () => {
     if(addProductData.name.trim() === ""){
       toast.error("Give Proper Product Name");
       return false;
+    }else if(products.some(product => product.productName === addProductData.name)){
+      toast.error("Product Name already exists!");
+      return false;
+    }
+    if (addProductData.price <= 500){
+      toast.error("price should be greater than 500");
+      return false;
+    }else if(addProductData.stock <= 0) {
+      toast.error("invalid stock");
+      return false;
+    }
+    return true;
+  };
+
+  //Edit product validate
+  const editValidate = () => {
+    if(addProductData.name.trim() === ""){
+      toast.error("Give Proper Product Name");
+      return false;
     }
     if (addProductData.price <= 500){
       toast.error("price should be greater than 500");
@@ -289,7 +308,7 @@ const ProductManagement = () => {
   //edit Product
   const handleEditProductSubmit = async (e) => {
     e.preventDefault();
-    if (validate()) {
+    if (editValidate()) {
       try {
         addProductData.images = previewImages;
         await editProduct(productID, addProductData);
@@ -531,7 +550,6 @@ const ProductManagement = () => {
                           id="name"
                           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                           placeholder="Type product name"
-                          required
                         />
                       </div>
 

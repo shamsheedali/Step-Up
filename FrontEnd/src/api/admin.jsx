@@ -1,4 +1,5 @@
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const API_URL = "http://localhost:3000/admin";
 
@@ -63,4 +64,10 @@ const unblockUser = async (userId) => {
   }
 };
 
-export { adminlogin, fetchUsers, blockUser, unblockUser };
+//ADMIN LOGOUT
+const adminLogoutFunction = async () => {
+  localStorage.removeItem('adminToken');
+  toast.success("You have successfully logged out!");
+}
+
+export { adminlogin, fetchUsers, blockUser, unblockUser, adminLogoutFunction };

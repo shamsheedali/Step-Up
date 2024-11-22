@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { FaUser } from "react-icons/fa";
 import { HiMenuAlt3, HiX } from "react-icons/hi";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { logout as logoutFunction } from "../../../api/users";
@@ -17,6 +17,7 @@ const Navbar = () => {
   const [logout, setLogout] = useState(false);
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   useEffect(() => {
     gsap.fromTo(
@@ -39,11 +40,13 @@ const Navbar = () => {
     setIsOpen(!isOpen);
   };
 
+  //User Logout
   const handleLogout = async (e) => {
     e.preventDefault();
     await logoutFunction();
     console.log("Logging out..."); 
     dispatch(logoutUser());
+    navigate("/login");
     console.log("User logged out."); 
     persistor.purge();
   };

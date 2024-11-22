@@ -52,7 +52,7 @@ const blockUser = async (req, res) => {
     const updatedUser = await users.findByIdAndUpdate(
       userId,
       { status: "blocked" },
-      { new: true } // Return the updated document
+      { new: true } 
     );
 
     if (!updatedUser) {
@@ -71,7 +71,7 @@ const unBlockUser = async (req, res) => {
     const userId = req.params.id;
     const updatedUser = await users.findByIdAndUpdate(
       userId,
-      { status: "active" }, // Update the status to 'active'
+      { status: "active" }, 
       { new: true }
     );
 

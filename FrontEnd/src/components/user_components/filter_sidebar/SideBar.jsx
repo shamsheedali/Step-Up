@@ -131,13 +131,6 @@ const SideBar = () => {
         setTotalProducts(totalProducts);
         const { data } = await fetchCategories();
         const {activeOffer} = await getActiveOffer();
-        // if (activeOffer.response) {
-        //   const { status } = activeOffer.response;
-        //   if (status === 400 || status === 404 || status === 500) {
-        //     console.log("server error");
-        //     dispatch(clearOffers());
-        //   }
-        // }
         setOffers(activeOffer);
         setCategories(data.filter((item) => item.isDeleted !== true));
         setLoading(false);

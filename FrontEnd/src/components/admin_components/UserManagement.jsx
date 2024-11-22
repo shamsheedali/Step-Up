@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { fetchUsers, blockUser, unblockUser } from "../../api/admin";
+import { logout as logoutFunction } from "../../../src/api/users";
+import { logoutUser } from "../../features/users/UserSlice";
+import { useDispatch } from "react-redux";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const getUsers = async () => {
@@ -17,6 +22,11 @@ const UserManagement = () => {
 
   const handleBlockUser = async (userId) => {
     const updatedUser = await blockUser(userId);
+
+    localStorage.removeItem('userToken');
+    dispatch(logoutUser());
+    persistor.purge();
+
     if (updatedUser) {
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
@@ -72,7 +82,7 @@ const UserManagement = () => {
               users.map((user) => (
                 <tr key={user._id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                   <th scope="row" className="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white">
-                    <img className="w-10 h-10 rounded-full" src="/docs/images/people/profile-picture-1.jpg" alt="User profile" />
+                    {/* <img className="w-10 h-10 rounded-full" src="/docs/images/people/profile-picture-1.jpg" alt="User profile" /> */}
                     <div className="ps-3">
                       <div className="text-base font-semibold">{user.username}</div>
                       <div className="font-normal text-gray-500">{user.email}</div>

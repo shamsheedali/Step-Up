@@ -17,7 +17,7 @@ import { useSelector } from "react-redux";
 import { getOrders } from "../../api/order";
 import img from "../../assets/images/homepage/check.webp";
 import { getTopSellingProducts } from "../../api/product";
-import { getTopSellingCategories } from "../../api/category";
+import { fetchCategories, getTopSellingCategories } from "../../api/category";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { Link } from "react-router-dom";
@@ -48,43 +48,69 @@ const Overview = () => {
     const fetchOrders = async () => {
       try {
         const { allOrders } = await getOrders();
+        const {data} = await fetchCategories();
         const { products } = await getTopSellingProducts();
         const { categories } = await getTopSellingCategories();
         setTopProducts(products);
-        setTopCategories(categories);
-  
+
+        const filteredCategories = data.map(category => {
+          const categoryDetails = categories.find(c => c._id === category._id);
+          
+          if (categoryDetails) {
+            return {
+              name: category.name, 
+              totalQuantitySold: categoryDetails.totalQuantitySold
+            };
+          }
+          return null; 
+        }).filter(category => category !== null);
+
+        setTopCategories(filteredCategories.sort((a, b) => b.totalQuantitySold - a.totalQuantitySold));
+
         const totalCount = allOrders.length;
-        const totalAmount = allOrders.reduce((acc, order) => acc + order.totalAmount, 0);
-        const totalDiscount = allOrders.reduce((acc, order) => acc + order.discountApplied, 0);
-  
+        const totalAmount = allOrders.reduce(
+          (acc, order) => acc + order.totalAmount,
+          0
+        );
+        const totalDiscount = allOrders.reduce(
+          (acc, order) => acc + order.discountApplied,
+          0
+        );
+
         setTotalSalesCount(totalCount);
         setOverallOrderAmount(totalAmount);
         setOverallDiscount(totalDiscount);
-  
+
         const dailyData = allOrders.reduce((acc, order) => {
           let key;
           if (timeframe === "Weekly") {
-            key = new Date(order.placedAt).toLocaleString("default", { weekday: "long" });
+            key = new Date(order.placedAt).toLocaleString("default", {
+              weekday: "long",
+            });
           } else if (timeframe === "Monthly") {
-            key = new Date(order.placedAt).toLocaleString("default", { month: "long" });
+            key = new Date(order.placedAt).toLocaleString("default", {
+              month: "long",
+            });
           } else {
             key = new Date(order.placedAt).getFullYear().toString();
           }
-  
+
           if (!acc[key]) {
             acc[key] = { revenue: 0, cost: 0 };
           }
-  
+
           acc[key].revenue += order.totalAmount;
           acc[key].cost += 100; // Adjust as necessary
-  
+
           return acc;
         }, {});
-  
+
         const chartLabels = Object.keys(dailyData);
-        const chartRevenueData = chartLabels.map(day => dailyData[day].revenue);
-        const chartCostData = chartLabels.map(day => dailyData[day].cost);
-  
+        const chartRevenueData = chartLabels.map(
+          (day) => dailyData[day].revenue
+        );
+        const chartCostData = chartLabels.map((day) => dailyData[day].cost);
+
         setLabels(chartLabels);
         setRevenueData(chartRevenueData);
         setCostData(chartCostData);
@@ -92,10 +118,10 @@ const Overview = () => {
         console.error("Error fetching orders:", error);
       }
     };
-  
+
     fetchOrders();
   }, [timeframe]);
-  
+
   const updateTimeframe = (newTimeframe) => {
     setTimeframe(newTimeframe);
   };
@@ -138,12 +164,12 @@ const Overview = () => {
     scales: {
       x: {
         grid: {
-          display: false, 
+          display: false,
         },
       },
       y: {
         grid: {
-          display: false, 
+          display: false,
         },
       },
     },
@@ -179,59 +205,69 @@ const Overview = () => {
           </div>
 
           {/* Chart */}
-<div className="relative flex justify-center items-center w-full h-full bg-white p-5 rounded-lg shadow-md">
-  <Line data={lineChartData} options={chartOptions} />
-  {/* Dropdown */}
-  <div className="absolute right-3 top-3">
-    <Menu as="div" className="relative inline-block text-left">
-      <div>
-        <Menu.Button className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-          {timeframe} <ChevronDownIcon aria-hidden="true" className="-mr-1 h-5 w-5 text-gray-400" />
-        </Menu.Button>
-      </div>
-      <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">
-        <div className="py-1">
-          <Menu.Item>
-            {({ active }) => (
-              <button
-                className={`${
-                  active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                } block px-4 py-2 text-sm`}
-                onClick={() => updateTimeframe("Weekly")}
-              >
-                Weekly
-              </button>
-            )}
-          </Menu.Item>
-          <Menu.Item>
-            {({ active }) => (
-              <button
-                className={`${
-                  active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                } block px-4 py-2 text-sm`}
-                onClick={() => updateTimeframe("Monthly")}
-              >
-                Monthly
-              </button>
-            )}
-          </Menu.Item>
-          <Menu.Item>
-            {({ active }) => (
-              <button
-                className={`${
-                  active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                } block px-4 py-2 text-sm`}
-                onClick={() => updateTimeframe("Yearly")}
-              >
-                Yearly
-              </button>
-            )}
-          </Menu.Item>
-        </div>
-      </Menu.Items>
-    </Menu>
-  </div>
-</div>
+          <div className="relative flex justify-center items-center w-full h-full bg-white p-5 rounded-lg shadow-md">
+            <Line data={lineChartData} options={chartOptions} />
+            {/* Dropdown */}
+            <div className="absolute right-3 top-3">
+              <Menu as="div" className="relative inline-block text-left">
+                <div>
+                  <Menu.Button className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                    {timeframe}{" "}
+                    <ChevronDownIcon
+                      aria-hidden="true"
+                      className="-mr-1 h-5 w-5 text-gray-400"
+                    />
+                  </Menu.Button>
+                </div>
+                <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">
+                  <div className="py-1">
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          className={`${
+                            active
+                              ? "bg-gray-100 text-gray-900"
+                              : "text-gray-700"
+                          } block px-4 py-2 text-sm`}
+                          onClick={() => updateTimeframe("Weekly")}
+                        >
+                          Weekly
+                        </button>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          className={`${
+                            active
+                              ? "bg-gray-100 text-gray-900"
+                              : "text-gray-700"
+                          } block px-4 py-2 text-sm`}
+                          onClick={() => updateTimeframe("Monthly")}
+                        >
+                          Monthly
+                        </button>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          className={`${
+                            active
+                              ? "bg-gray-100 text-gray-900"
+                              : "text-gray-700"
+                          } block px-4 py-2 text-sm`}
+                          onClick={() => updateTimeframe("Yearly")}
+                        >
+                          Yearly
+                        </button>
+                      )}
+                    </Menu.Item>
+                  </div>
+                </Menu.Items>
+              </Menu>
+            </div>
+          </div>
         </div>
         <div className="bg-blue-500 w-[30%]">{/* Right side content */}</div>
       </div>
@@ -246,13 +282,13 @@ const Overview = () => {
             {topProducts.map((product) => (
               <div className="flex justify-between items-center border-b border-black py-4">
                 <div className="flex items-center gap-4">
-                  {/* <img
+                  <img
                     src={
                       `data:image/jpeg;base64,${product.images[0]}` ||
                       "https://via.placeholder.com/150"
                     }
                     className="w-20 h-20 object-cover rounded-lg"
-                  /> */}
+                  />
                   <div>
                     <h3 className="text-md w-[190px] font-medium">
                       {product.productName || "No product found"}
@@ -286,7 +322,7 @@ const Overview = () => {
                   />
                   <div>
                     <h3 className="text-md w-[190px] font-medium">
-                      {category._id || "No Category"}
+                      {category.name || "No Category"}
                     </h3>
                   </div>
                 </div>

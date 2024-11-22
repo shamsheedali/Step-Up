@@ -49,9 +49,9 @@ const OrderDetails = ({ id }) => {
   }, [uid, reRender]);
 
   //Cancel Order
-  const handleCancelOrder = async (orderId, totalAmount, paymentMethod) => {
+  const handleCancelOrder = async (orderId, totalAmount, paymentMethod, paymentStatus) => {
     await cancelOrder(orderId, uid);
-    if (paymentMethod === "razorPay") {
+    if (paymentMethod === "razorPay" && (paymentStatus === 'Completed' || paymentStatus === 'Refunded')) {
       toast.success(`${Math.round(totalAmount)} Refunded to Your Wallet`);
     }
     setReRender(true);
@@ -301,12 +301,13 @@ const OrderDetails = ({ id }) => {
               handleCancelOrder(
                 order._id,
                 order.totalAmount,
-                order.paymentMethod
+                order.paymentMethod,
+                order.paymentStatus
               )
             }
             disabled={order.isCancelled}
           >
-            {order.isCancelled ? "Order Cancelled" : "Cancel Order"}
+            {order.status === 'Delivered' ? ("Return") : (order.isCancelled ? "Order Cancelled" : "Cancel Order") }
           </button>
         </div>
       </div>

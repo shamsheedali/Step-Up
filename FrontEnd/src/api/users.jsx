@@ -30,20 +30,26 @@ const login = async (userData) => {
       throw new Error("Login failed");
     }
   } catch (error) {
-    throw error;
+    console.log(error);
+    if(error.response.status === 403){
+      toast.error(error.response.data.message);
+    }
   }
 };
 
 //Storing user google info
 const storeGoogleInfo = async(userData) => {
   try {
-    await axios.post(`${API_URL}/googleUser`, userData);
+    const response = await axios.post(`${API_URL}/googleUser`, userData);
+    //Saving Google user token
+    localStorage.setItem("userToken", response.data.token);
+    return response.data;
   } catch (error) {
     console.log(error);
   }
 }
 
-//upadte username and email
+//update username and email
 const updateUserData = async(userData) => {
   const token = localStorage.getItem('userToken');
   try {

@@ -36,23 +36,32 @@ const createOffer = async (req, res) => {
 };
 
 //EDIT OFFER 
-const editOffer = async(req, res) => {
+const editOffer = async (req, res) => {
   const offerId = req.params.id;
   try {
-    if(req.body.isActive) await Offer.updateMany({isActive: false});
-    
-    const offer = await Offer.findById({_id : offerId});
-    
-    if(!offer) return res.status(HttpStatus.NOT_FOUND).json({message: "offer not found!"});
+    if (req.body.isActive) {
+      await Offer.updateMany({ isActive: false });
+    }
 
-    const updatedOffer = await Offer.findByIdAndUpdate(offerId, req.body, {new: true});
+    const offer = await Offer.findById({ _id: offerId });
+    if (!offer) {
+      return res.status(HttpStatus.NOT_FOUND).json({ message: "Offer not found!" });
+    }
 
-    return res.status(HttpStatus.OK).json({updatedOffer});
+    const updatedOfferData = {
+      ...req.body,
+      productsIncluded: req.body.selectedProducts || [],
+      categoryIncluded: req.body.selectedCategories || [],
+    };
+
+    const updatedOffer = await Offer.findByIdAndUpdate(offerId, updatedOfferData, { new: true });
+    return res.status(HttpStatus.OK).json({ updatedOffer });
   } catch (error) {
-    console.log(error);
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message : "Error while Updating offer!"});
+    console.error(error);
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Error while updating offer!" });
   }
-}
+};
+
 
 //DELETE OFFER
 const deleteOffer = async(req, res) => {

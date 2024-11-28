@@ -37,14 +37,26 @@ const Checkout = () => {
             <div className="w-full flex flex-col gap-3">
               <h1 className="text-2xl mb-5">Order Summary</h1>
 
-              <div className="flex justify-between">
-                <h1>Subtotal</h1>
-                <h1>₹{calculatedSubtotal.toFixed(2)}</h1>
-              </div>
-              {discountApplied !== 0 && (
+              {discountApplied !== 0 ? (
+                <>
+                  <div className="flex justify-between">
+                    <h1>Subtotal</h1>
+                    <h1>
+                      ₹
+                      {(
+                        Number(calculatedSubtotal) + Number(discountApplied)
+                      ).toFixed(2)}
+                    </h1>
+                  </div>
+                  <div className="flex justify-between">
+                    <h1>Coupon Discount</h1>
+                    <h1>₹{discountApplied.toFixed(2)}</h1>
+                  </div>
+                </>
+              ) : (
                 <div className="flex justify-between">
-                  <h1>Coupon Discount</h1>
-                  <h1>₹{discountApplied.toFixed(2)}</h1>
+                  <h1>Subtotal</h1>
+                  <h1>₹{calculatedSubtotal.toFixed(2)}</h1>
                 </div>
               )}
               <div className="flex justify-between">

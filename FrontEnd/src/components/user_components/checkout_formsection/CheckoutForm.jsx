@@ -267,7 +267,6 @@ const CheckoutForm = ({ getDiscountApplied }) => {
           promo,
         };
 
-        console.log("orderDetails", orderDetails);
         await handlePayment(
           username,
           email,
@@ -275,7 +274,6 @@ const CheckoutForm = ({ getDiscountApplied }) => {
           selectedAddress.phonenumber
         )
           .then(async (res) => {
-            console.log("Success", res);
             const updatedOrderDetails = {
               ...orderDetails,
               paymentStatus: "Completed",
@@ -289,12 +287,11 @@ const CheckoutForm = ({ getDiscountApplied }) => {
             }
           })
           .catch(async (err) => {
-            console.log("pending", err);
             if (err.error !== "closed") {
               // Creating order for pending payment (if payment failed)
               const response = await createOrder(orderDetails);
               if (response) {
-                navigate("/bag/checkout/order-success");
+                navigate("/bag/checkout/order-pending");
                 toast.warn("Your Payment is Pending");
                 dispatch(emptyBag({ userId: uid }));
                 await clearBag(uid);

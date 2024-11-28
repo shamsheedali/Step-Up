@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { createOffer, deleteOffer, getAllOffers, updateOffer } from "../../api/offer";
+import {
+  createOffer,
+  deleteOffer,
+  getAllOffers,
+  updateOffer,
+} from "../../api/offer";
 import { fetchCategories } from "../../api/category";
 import { fetchProducts } from "../../api/product";
 import { toast } from "react-toastify";
@@ -96,8 +101,8 @@ const OfferManagement = () => {
         offerPrice: offer.offerPrice,
         endDate: offer.endDate,
         isActive: offer.isActive,
-        selectedProducts: offer.selectedProducts,
-        selectedCategories: offer.selectedCategories,
+        selectedProducts: offer.productsIncluded,
+        selectedCategories: offer.categoryIncluded,
       });
     } else {
       setAddOfferData({});
@@ -122,13 +127,13 @@ const OfferManagement = () => {
     ) {
       toast.error(`Please select at least one ${addOfferData.associatedFor}.`);
       return false;
-    } else if(new Date(addOfferData.endDate) < new Date()){
+    } else if (new Date(addOfferData.endDate) < new Date()) {
       toast.error("Invalid date");
       return false;
-    } else if(addOfferData.title.trim() === ""){
+    } else if (addOfferData.title.trim() === "") {
       toast.error("Invalid Offer Title");
       return false;
-    } else if(addOfferData.offerPrice > 5000) {
+    } else if (addOfferData.offerPrice > 5000) {
       toast.error("Maximum offer price is ₹5000");
       return false;
     }
@@ -174,7 +179,7 @@ const OfferManagement = () => {
     await deleteOffer(id);
     setOffers(offers.filter((offer) => offer._id !== id));
     toggleOptionModal();
-  }
+  };
 
   return (
     <div className="absolute top-14 right-0 w-[1110px]">
@@ -300,7 +305,6 @@ const OfferManagement = () => {
           // totalEntries={totalCoupons}
           entriesPerPage={entriesPerPage}
         />
-
       </div>
 
       {/* Add Offer Modal */}
@@ -616,12 +620,20 @@ const OfferManagement = () => {
                       id="allProducts"
                       name="selectedProducts"
                       multiple
-                      value={addOfferData.selectedProducts}
+                      value={addOfferData.productsIncluded}
                       onChange={handleChange}
                       className="border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                     >
                       {products.map((product) => (
-                        <option key={product._id} value={product._id}>
+                        <option
+                          key={product._id}
+                          value={product._id}
+                          className={`${
+                            addOfferData.selectedProducts.includes(product._id)
+                              ? "bg-blue-100 text-black" 
+                              : ""
+                          }`}
+                        >
                           {product.productName}
                         </option>
                       ))}
@@ -722,7 +734,7 @@ const OfferManagement = () => {
                   type="submit"
                   className="text-white bg-green-600 hover:bg-green-700 rounded-lg px-5 py-2.5 text-sm dark:bg-green-600 dark:hover:bg-green-700"
                 >
-                  Update Coupon
+                  Update Offer
                 </button>
               </div>
             </form>

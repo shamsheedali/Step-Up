@@ -23,6 +23,7 @@ import OrderSuccessPage from "./pages/user/order_success/OrderSuccessPage";
 import Wallet from "./pages/user/wallet/Wallet";
 import OrderDetailsPage from "./pages/user/orderDetails/OrderDetailsPage";
 import AdminProtectedRoute from "../src/protectedRoutes/adminProtectedRoute";
+import OrderPendingPage from "./pages/user/orderPending/OrderPendingPage";
 
 const App = () => {
   return (
@@ -53,6 +54,10 @@ const App = () => {
         <Route
           path="/bag/checkout/order-success"
           element={<OrderSuccessPage />}
+        />
+        <Route
+          path="/bag/checkout/order-pending"
+          element={<OrderPendingPage />}
         />
 
         {/* ADMIN--ROUTES */}

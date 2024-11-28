@@ -54,10 +54,10 @@ app.use('/wallet', walletRouter);
 
 
 
+//DATABASE--CONNECTION
+connectDB();
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log("Server Started...");
 });
-
-//DATABASE--CONNECTION
-connectDB();

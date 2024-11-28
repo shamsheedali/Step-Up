@@ -3,14 +3,17 @@ import Navbar from "../../../components/user_components/navbar/Navbar";
 import ProfileNavbar from "../../../components/user_components/profile_navbar/ProfileNavbar";
 import { fetchCoupons } from "../../../api/coupons";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 
 const Coupons = () => {
+  const {uid} = useSelector((state) => state.user);
   const [coupons, setCoupons] = useState([]);
 
   useEffect(() => {
     const getCoupons = async () => {
       const allCoupons = await fetchCoupons();
-      setCoupons(allCoupons.filter((coupon) => coupon.status));
+      console.log(allCoupons);
+      setCoupons(allCoupons.filter((coupon) => coupon.status && !coupon.usedBy.includes(uid)));
     };
     getCoupons();
   }, []);

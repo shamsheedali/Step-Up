@@ -25,6 +25,7 @@ import { fetchCategories } from "../../../api/category";
 import { getActiveOffer } from "../../../api/offer";
 import { useDispatch } from "react-redux";
 import Pagination from "../pagination/Pagination";
+import gsap from 'gsap';
 import { toast } from "react-toastify";
 import { clearOffers } from "../../../features/offers/OfferSlice";
 
@@ -49,6 +50,9 @@ function classNames(...classes) {
 }
 
 const SideBar = () => {
+
+  
+
   const dispatch = useDispatch();
   const [categories, setCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);

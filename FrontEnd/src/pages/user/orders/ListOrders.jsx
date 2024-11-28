@@ -87,7 +87,7 @@ const ListOrders = () => {
   return (
     <div className="text-black min-h-screen h-fit">
       <Navbar />
-      <ProfileNavbar />
+      <ProfileNavbar totalOrders={totalOrders} />
 
       <div className="pt-8 px-36 pb-5">
         <h1 className="text-2xl font-bold">Your Orders</h1>

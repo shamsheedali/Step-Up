@@ -5,7 +5,7 @@ import { HiOutlineShoppingBag } from "react-icons/hi2";
 import { addToBag } from "../../../api/bag";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { setOffer } from "../../../features/offers/OfferSlice";
+import { clearOffers, setOffer } from "../../../features/offers/OfferSlice";
 
 const ProductGrid = ({ products, loading, offers }) => {
   const { uid } = useSelector((state) => state.user);
@@ -21,6 +21,8 @@ const ProductGrid = ({ products, loading, offers }) => {
           })
         );
       });
+    }else {
+      dispatch(clearOffers())
     }
   }, [dispatch, offers]);
 

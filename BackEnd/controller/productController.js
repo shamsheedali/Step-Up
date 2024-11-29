@@ -1,10 +1,70 @@
 import Product from "../modal/productModal.js";
 import Order from "../modal/orderModal.js";
 import HttpStatus from "../utils/httpStatus.js";
+import uploadImageToS3 from '../aws/awsConfig.js'
+
+// const addProduct = async (req, res) => {
+//   try {
+//     const {
+//       name,
+//       description,
+//       price,
+//       category,
+//       brand,
+//       sizes,
+//       newArrival,
+//       stock,
+//     } = req.body;
+
+//     if (!name || !price || !category || !brand || !stock) {
+//       return res
+//         .status(HttpStatus.BAD_REQUEST)
+//         .json({ error: "Missing required fields" });
+//     }
+
+//     // Check if any files were uploaded
+//     if (!req.files || req.files.length === 0) {
+//       return res
+//         .status(HttpStatus.BAD_REQUEST)
+//         .json({ error: "No images uploaded" });
+//     }
+
+//     // Convert image buffers to base64
+//     const imagesBuffer = req.files.map((file) =>
+//       file.buffer.toString("base64")
+//     );
+
+//     const parsedSizes = JSON.parse(sizes);
+
+//     const newProduct = new Product({
+//       productName: name,
+//       description,
+//       price,
+//       category,
+//       brand,
+//       sizes: parsedSizes,
+//       newArrival: newArrival === "true",
+//       stock,
+//       images: imagesBuffer, // Store as an array of base64 strings
+//     });
+
+//     // Save the product in the database
+//     await newProduct.save();
+
+//     // Return success response
+//     res
+//       .status(201)
+//       .json({ message: "Product uploaded successfully!", product: newProduct });
+//   } catch (err) {
+//     console.error(err);
+//     res
+//       .status(HttpStatus.INTERNAL_SERVER_ERROR)
+//       .json({ error: "Error uploading product: " + err.message });
+//   }
+// };
 
 const addProduct = async (req, res) => {
   try {
-    console.log(req.files);
     const {
       name,
       description,
@@ -29,13 +89,15 @@ const addProduct = async (req, res) => {
         .json({ error: "No images uploaded" });
     }
 
-    // Convert image buffers to base64
-    const imagesBuffer = req.files.map((file) =>
-      file.buffer.toString("base64")
+    // Upload images to S3 and get URLs
+    const uploadedImagesUrls = await Promise.all(
+      req.files.map((file) => uploadImageToS3(file, 'products'))
     );
 
+    // Parse sizes if it's a JSON string
     const parsedSizes = JSON.parse(sizes);
 
+    // Create a new product with the image URLs instead of base64
     const newProduct = new Product({
       productName: name,
       description,
@@ -45,7 +107,7 @@ const addProduct = async (req, res) => {
       sizes: parsedSizes,
       newArrival: newArrival === "true",
       stock,
-      images: imagesBuffer, // Store as an array of base64 strings
+      images: uploadedImagesUrls, //URLs of the uploaded images
     });
 
     // Save the product in the database
@@ -62,6 +124,7 @@ const addProduct = async (req, res) => {
       .json({ error: "Error uploading product: " + err.message });
   }
 };
+
 
 const fetchProducts = async (req, res) => {
   try {

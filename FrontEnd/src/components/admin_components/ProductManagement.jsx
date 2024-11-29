@@ -424,9 +424,9 @@ const ProductManagement = () => {
                         className="w-10 h-10 rounded-full"
                         src={
                           product.images.length > 0
-                            ? `data:image/jpeg;base64,${product.images[0]}`
+                            ? `${product.images[0]}`
                             : ""
-                        } // Display the first image or a placeholder if no images are available
+                        } 
                         alt={product.productName}
                       />
                       <div className="ps-3">

@@ -70,6 +70,27 @@ const editProduct = async (id, data) => {
   }
 };
 
+//STORE EDITED IMAGE IN S3
+const uploadImageToStorage = async (file) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    // Assuming you have an endpoint to handle file uploads
+    const response = await axios.post(`${API_URL}/upload`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    console.log(response);
+    return response.data.url; // Assuming the server returns the URL of the uploaded image
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    throw new Error("Image upload failed");
+  }
+};
+
 //TOGGLE--PRODUCT--ISDELETED
 const toggleProductState = async (id) => {
   const token = localStorage.getItem("adminToken");
@@ -137,4 +158,5 @@ export {
   productCheckout,
   fetchProductsLimit,
   getTopSellingProducts,
+  uploadImageToStorage,
 };

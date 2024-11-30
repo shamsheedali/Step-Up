@@ -85,7 +85,7 @@ const ProductGrid = ({ products, loading, offers }) => {
                     <div onClick={() => handleCardClick(product._id)}>
                       <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-h-8 xl:aspect-w-7">
                         <img
-                          src={`data:image/jpeg;base64,${product.images[0]}`} 
+                          src={product.images[0]} 
                           alt={product.productName}
                           className="h-full w-full object-cover object-center group-hover:opacity-75"
                         />

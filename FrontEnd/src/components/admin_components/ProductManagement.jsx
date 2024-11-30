@@ -5,6 +5,7 @@ import {
   fetchProducts,
   fetchProductsLimit,
   toggleProductState,
+  uploadImageToStorage,
 } from "../../api/product";
 import { fetchCategories } from "../../api/category";
 import { toast } from "react-toastify";
@@ -66,18 +67,14 @@ const ProductManagement = () => {
       reader.onloadend = () => {
         setPreviewImages((prevImages) => {
           const updatedImages = [...prevImages];
-          updatedImages[index] = reader.result.replace(
-            /^data:image\/\w+;base64,/,
-            ""
-          );
+          updatedImages[index] = reader.result; // Base64 for preview
           return updatedImages;
         });
       };
-
-      // Read the file as a data URL (base64) for preview
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(file); // Converts file to Base64 for preview
     }
-  };
+  };  
+  
 
   const getProducts = async () => {
     try {
@@ -305,21 +302,50 @@ const ProductManagement = () => {
     } else setLoading(false);
   };
 
+
+
+  const dataURLtoFile = (dataurl) => {
+  const arr = dataurl.split(",");
+  const mime = arr[0].match(/:(.*?);/)[1];
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new File([u8arr], "image.jpg", { type: mime });
+};
+
+
   //edit Product
   const handleEditProductSubmit = async (e) => {
-    e.preventDefault();
-    if (editValidate()) {
-      try {
-        addProductData.images = previewImages;
-        await editProduct(productID, addProductData);
-        resetForm();
-        toggleEditModal();
-        setIsChanged(!isChanged);
-      } catch (error) {
-        console.log(error);
+  e.preventDefault();
+
+  if (editValidate()) {
+    try {
+      const updatedImages = [];
+
+      for (const img of previewImages) {
+        if (img.startsWith("data:image/")) {
+          const file = dataURLtoFile(img);
+          const uploadedUrl = await uploadImageToStorage(file); 
+          updatedImages.push(uploadedUrl); 
+        } else {
+          updatedImages.push(img); 
+        }
       }
+
+      addProductData.images = updatedImages; 
+
+      await editProduct(productID, addProductData); 
+      resetForm();
+      toggleEditModal();
+      setIsChanged(!isChanged);
+    } catch (error) {
+      console.error("Error editing product:", error);
     }
-  };
+  }
+};
 
   //Delete Product
   const handleProductDelete = async (productID) => {
@@ -963,7 +989,7 @@ const ProductManagement = () => {
                                 <div className="mt-4 flex flex-wrap gap-2">
                                   <div className="relative">
                                     <img
-                                      src={`data:image/jpeg;base64,${img}`}
+                                      src={img}
                                       alt="Preview"
                                       className="w-20 h-20 object-cover rounded-md"
                                     />

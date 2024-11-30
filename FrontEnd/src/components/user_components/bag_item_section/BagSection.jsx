@@ -87,7 +87,7 @@ const BagSection = ({
       <div className=" w-[720px] flex justify-between items-start py-3 border-b border-gray-400">
         <div className="flex flex-col gap-5">
           <img
-            src={`data:image/jpeg;base64,${img}`} // Display the first image
+            src={img}
             className="w-[150px] h-auto"
           />
 

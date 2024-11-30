@@ -1,7 +1,7 @@
 import Product from "../modal/productModal.js";
 import Order from "../modal/orderModal.js";
 import HttpStatus from "../utils/httpStatus.js";
-import uploadImageToS3 from '../aws/awsConfig.js'
+import uploadImageToS3 from '../aws/awsConfig.js';
 
 // const addProduct = async (req, res) => {
 //   try {
@@ -125,7 +125,6 @@ const addProduct = async (req, res) => {
   }
 };
 
-
 const fetchProducts = async (req, res) => {
   try {
     const allProducts = await Product.find();
@@ -202,6 +201,30 @@ const editProduct = async (req, res) => {
     res
       .status(HttpStatus.INTERNAL_SERVER_ERROR)
       .json({ message: error.message });
+  }
+};
+
+//STORE EDIT IMAGE IN S3
+const uploadEditImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ error: "No image uploaded" });
+    }
+
+    // Upload the image to S3 and get the URL
+    const uploadedImageUrl = await uploadImageToS3(req.file, 'products');
+
+    res.status(HttpStatus.OK).json({
+      message: "Image uploaded successfully",
+      url: uploadedImageUrl, 
+    });
+  } catch (err) {
+    console.error(err);
+    res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json({ error: "Error uploading image: " + err.message });
   }
 };
 
@@ -314,4 +337,5 @@ export {
   productCheckout,
   fetchProductsWithLimit,
   getTopSellingProducts,
+  uploadEditImage,
 };

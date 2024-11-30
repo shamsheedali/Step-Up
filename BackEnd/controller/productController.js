@@ -82,7 +82,6 @@ const addProduct = async (req, res) => {
         .json({ error: "Missing required fields" });
     }
 
-    // Check if any files were uploaded
     if (!req.files || req.files.length === 0) {
       return res
         .status(HttpStatus.BAD_REQUEST)
@@ -94,10 +93,8 @@ const addProduct = async (req, res) => {
       req.files.map((file) => uploadImageToS3(file, 'products'))
     );
 
-    // Parse sizes if it's a JSON string
     const parsedSizes = JSON.parse(sizes);
 
-    // Create a new product with the image URLs instead of base64
     const newProduct = new Product({
       productName: name,
       description,
@@ -110,10 +107,8 @@ const addProduct = async (req, res) => {
       images: uploadedImagesUrls, //URLs of the uploaded images
     });
 
-    // Save the product in the database
     await newProduct.save();
 
-    // Return success response
     res
       .status(201)
       .json({ message: "Product uploaded successfully!", product: newProduct });

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const API_URL = "http://localhost:3000/wishlist";
+const API_URL = `${import.meta.env.VITE_API_URL}/wishlist`;
 
 //Add product to wishlist
 const addToWishlist = async (data) => {

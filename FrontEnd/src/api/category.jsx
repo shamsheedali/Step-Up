@@ -1,7 +1,7 @@
 import axios from 'axios';
 import {toast} from 'react-toastify'
 
-const API_URL = 'http://localhost:3000/category';
+const API_URL = `${import.meta.env.VITE_API_URL}/category`;
 
 // FETCH CATEGORIES
 const fetchCategories = async () => {

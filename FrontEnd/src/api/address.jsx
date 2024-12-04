@@ -1,7 +1,7 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const API_URL = "http://localhost:3000/address";
+const API_URL = `${import.meta.env.VITE_API_URL}/address`;
 
 //add new address
 const addAddress = async (data, userId) => {

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const API_URL = "http://localhost:3000/bag";
+const API_URL = `${import.meta.env.VITE_API_URL}/bag`;
 
 //Add product to bag
 const addToBag = async (data) => {

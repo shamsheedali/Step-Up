@@ -1,7 +1,7 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const API_URL = "http://localhost:3000/offer";
+const API_URL = `${import.meta.env.VITE_API_URL}/offer`;
 
 const getAllOffers = async () => {
   try {

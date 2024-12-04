@@ -1,7 +1,8 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const API_URL = "http://localhost:3000/product";
+
+const API_URL = `${import.meta.env.VITE_API_URL}/product`;
 
 const addProduct = async (formData) => {
   const token = localStorage.getItem("adminToken");
@@ -25,9 +26,10 @@ const addProduct = async (formData) => {
 const fetchProducts = async () => {
   try {
     const response = await axios.get(`${API_URL}/fetchProducts`);
+    console.log('product response', `${API_URL}/fetchProducts`);
     return response.data;
   } catch (error) {
-    console.error("Error fetching categories:", error);
+    console.error("Error fetching products:", error);
   }
 };
 

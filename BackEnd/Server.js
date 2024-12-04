@@ -26,31 +26,31 @@ app.use(express.json({ limit: '10mb' }));
 app.use(cors());
 
 //USER-ROUTE
-app.use('/user', userRouter);
+app.use('/api/user', userRouter);
 //OTP-ROUTE
 app.use('/api/otp', otpRouter);
 //ADMIN-ROUTE
-app.use('/admin', adminRouter);
+app.use('/api/admin', adminRouter);
 //CATEGORY-ROUTE
-app.use('/category', categoryRouter);
+app.use('/api/category', categoryRouter);
 //PRODUCT-ROUTE
-app.use('/product', productRouter);
+app.use('/api/product', productRouter);
 //ADDRESS-ROUTE
-app.use('/address', addressRouter);
+app.use('/api/address', addressRouter);
 //BAG-ROUTE
-app.use('/bag', bagRouter);
+app.use('/api/bag', bagRouter);
 //WISHLIST-ROUTE
-app.use('/wishlist', wishlistRouter);
+app.use('/api/wishlist', wishlistRouter);
 //ORDER-ROUTE
-app.use('/order', orderRouter);
+app.use('/api/order', orderRouter);
 //PAYMENT-ROUTE
-app.use('/payment', paymentRouter);
+app.use('/api/payment', paymentRouter);
 //COUPON-ROUTE
-app.use('/coupon', couponRouter);
+app.use('/api/coupon', couponRouter);
 //OFFER-ROUTE
-app.use('/offer', offerRouter);
+app.use('/api/offer', offerRouter);
 //WALLET-ROUTE
-app.use('/wallet', walletRouter);
+app.use('/api/wallet', walletRouter);
 
 
 

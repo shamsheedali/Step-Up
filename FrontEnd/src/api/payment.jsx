@@ -6,7 +6,8 @@ const API_URL = `${import.meta.env.VITE_API_URL}/payment`;
 const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
 const handlePayment = async (username, email, totalAmount, phonenumber) => {
-  console.log(username, email, totalAmount, phonenumber);
+  let isPaymentClosed = false; 
+  let paymentFailed = false; 
   try {
     const { data } = await axios.post(`${API_URL}/createTransaction`, {
       amount: totalAmount,
@@ -45,7 +46,19 @@ const handlePayment = async (username, email, totalAmount, phonenumber) => {
         modal: {
           ondismiss: function () {
             console.log("Checkout form closed by the user");
-            reject({ success: false, error: "closed" });
+            isPaymentClosed = true; 
+            console.log("status", paymentFailed)
+            if(paymentFailed){
+              reject({
+                success: false,
+                error: "redirect",
+              });
+            } else {
+              reject({
+                success: false,
+                error: "noRedirect",
+              });
+            }
           },
         },
       };
@@ -56,18 +69,19 @@ const handlePayment = async (username, email, totalAmount, phonenumber) => {
       razorpay.on("payment.failed", function (response) {
         console.log("Error in HandlePayment");
         toast.error(response.error.description);
-
-        // window.location.href = "/bag/checkout/order-success";
-        reject({
-          success: false,
-          error: response.error,
-        });
+        paymentFailed = true;  // Mark payment as failed
       });
+    }).finally(() => {
+      // Ensure that if the modal was closed without a decision, we don't trigger a redirect
+      if (isPaymentClosed) {
+        console.log("Payment form closed without action, staying on checkout.");
+      }
     });
   } catch (error) {
     console.error("Payment Error: ", error);
-    return { success: false, error: "Payment initialization failed" };
   }
 };
+
+
 
 export { handlePayment };

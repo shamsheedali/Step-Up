@@ -96,11 +96,13 @@ const SingleProductPage = () => {
       try {
         setLoading(true);
         const { singleProduct, relatedProductsData } = await getProduct(id);
-        const { wishlistItems } = await fetchWishlist(uid);
-        const exists = wishlistItems.some(
-          (wishlist) => wishlist.productId === id
-        );
-        if (exists) setWishlistIcon(<GoHeartFill />);
+        if(uid){
+          const { wishlistItems } = await fetchWishlist(uid);
+          const exists = wishlistItems.some(
+            (wishlist) => wishlist.productId === id
+          );
+          if (exists) setWishlistIcon(<GoHeartFill />);
+        }
         //Only setting is Deleted false product
         if (!singleProduct.isDeleted) {
           setProduct(singleProduct);

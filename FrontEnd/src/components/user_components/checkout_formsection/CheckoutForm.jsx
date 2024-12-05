@@ -274,23 +274,27 @@ const CheckoutForm = ({ getDiscountApplied }) => {
           selectedAddress.phonenumber
         )
           .then(async (res) => {
+            // Payment was successful
             const updatedOrderDetails = {
               ...orderDetails,
               paymentStatus: "Completed",
             };
-
+        
             const response = await createOrder(updatedOrderDetails);
             if (response) {
+              // Redirect to order success page
               navigate("/bag/checkout/order-success");
               dispatch(emptyBag({ userId: uid }));
               await clearBag(uid);
             }
           })
           .catch(async (err) => {
-            if (err.error !== "closed") {
-              // Creating order for pending payment (if payment failed)
+            if (err.error === "redirect") {
+              // Only redirect for actual payment failures
+        
               const response = await createOrder(orderDetails);
               if (response) {
+                // Redirect to order-pending page
                 navigate("/bag/checkout/order-pending");
                 toast.warn("Your Payment is Pending");
                 dispatch(emptyBag({ userId: uid }));
@@ -298,6 +302,8 @@ const CheckoutForm = ({ getDiscountApplied }) => {
               }
             }
           });
+        
+        
       } else if (selectedPaymentMethod === "cashOnDelivery") {
         if (calculatedSubtotal >= 5000) {
           toast.error(

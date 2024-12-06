@@ -34,12 +34,14 @@ const OrderManagement = () => {
   const [userId, setUserId] = useState("");
 
   const [orderCancelDisable, setOrderCancelDisable] = useState(false);
+  const [orderStatus, setOrderStatus] = useState("");
 
-  const toggleModal = (orderId, userId, isCancelled) => {
+  const toggleModal = (orderId, userId, isCancelled, orderStatus) => {
     setIsOpen(!isOpen);
     setOrderId(orderId);
     setUserId(userId);
     setOrderCancelDisable(isCancelled);
+    setOrderStatus(orderStatus);
   };
 
   useEffect(() => {
@@ -179,7 +181,7 @@ const OrderManagement = () => {
                           {username}
                         </div>
                         <div className="font-normal text-gray-500">
-                          {order?.user}
+                          {order._id}
                         </div>
                       </div>
                     </th>
@@ -215,7 +217,7 @@ const OrderManagement = () => {
                       <h1
                         className="underline text-green-400 cursor-pointer"
                         onClick={() => {
-                          toggleModal(order._id, order.user, order.isCancelled);
+                          toggleModal(order._id, order.user, order.isCancelled, order.status);
                           handleShowDetails(order);
                         }}
                       >
@@ -396,7 +398,7 @@ const OrderManagement = () => {
                   onClick={() => handleCancelOrder(orderId, userId)}
                   disabled={orderCancelDisable}
                 >
-                  Cancel Order
+                  {orderStatus === 'Delivered' ? "Return Order" : "Cancel Order"} 
                 </button>
               </div>
             </div>

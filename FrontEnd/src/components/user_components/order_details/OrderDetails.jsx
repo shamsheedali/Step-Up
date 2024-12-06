@@ -50,6 +50,10 @@ const OrderDetails = ({ id }) => {
 
   //Cancel Order
   const handleCancelOrder = async (orderId, totalAmount, paymentMethod, paymentStatus) => {
+    if(order.status === 'Delivered') {
+      toast.success("Requested to Return Order");
+      return
+    }
     await cancelOrder(orderId, uid);
     if (paymentMethod === "razorPay" && (paymentStatus === 'Completed' || paymentStatus === 'Refunded')) {
       toast.success(`${Math.round(totalAmount)} Refunded to Your Wallet`);
@@ -294,7 +298,7 @@ const OrderDetails = ({ id }) => {
           </div>
 
           <button
-            className={`btn py-2 absolute bottom-5 w-[94%] ${
+            className={`btn py-2 absolute bottom-5 w-[94%] tracking-widest ${
               order.isCancelled ? "text-black" : "text-white"
             } bg-black rounded-lg transition`}
             onClick={() =>
@@ -307,7 +311,7 @@ const OrderDetails = ({ id }) => {
             }
             disabled={order.isCancelled}
           >
-            {order.status === 'Delivered' ? ("Return") : (order.isCancelled ? "Order Cancelled" : "Cancel Order") }
+            {order.status === 'Delivered' ? ("Request Return") : (order.isCancelled ? "Order Cancelled" : "Cancel Order") }
           </button>
         </div>
       </div>

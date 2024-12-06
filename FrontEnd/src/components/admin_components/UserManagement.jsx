@@ -3,6 +3,7 @@ import { fetchUsers, blockUser, unblockUser } from "../../api/admin";
 import { logout as logoutFunction } from "../../../src/api/users";
 import { logoutUser } from "../../features/users/UserSlice";
 import { useDispatch } from "react-redux";
+import { persistor } from "../../app/Store";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -22,6 +23,7 @@ const UserManagement = () => {
 
   const handleBlockUser = async (userId) => {
     const updatedUser = await blockUser(userId);
+    console.log(updatedUser)
 
     localStorage.removeItem('userToken');
     dispatch(logoutUser());

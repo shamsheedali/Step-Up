@@ -73,8 +73,7 @@ const ProductManagement = () => {
       };
       reader.readAsDataURL(file); // Converts file to Base64 for preview
     }
-  };  
-  
+  };
 
   const getProducts = async () => {
     try {
@@ -83,7 +82,7 @@ const ProductManagement = () => {
       setLoading(false);
       if (allProducts.products) {
         setProducts(allProducts.products);
-        setTotalProducts(allProducts.totalProducts)
+        setTotalProducts(allProducts.totalProducts);
         setFilteredProducts(allProducts.products);
         setLoading(false);
       } else {
@@ -229,17 +228,19 @@ const ProductManagement = () => {
 
   //Add product validate
   const validate = () => {
-    if(addProductData.name.trim() === ""){
+    if (addProductData.name.trim() === "") {
       toast.error("Give Proper Product Name");
       return false;
-    }else if(products.some(product => product.productName === addProductData.name)){
+    } else if (
+      products.some((product) => product.productName === addProductData.name)
+    ) {
       toast.error("Product Name already exists!");
       return false;
     }
-    if (addProductData.price <= 500){
+    if (addProductData.price <= 500) {
       toast.error("price should be greater than 500");
       return false;
-    }else if(addProductData.stock <= 0) {
+    } else if (addProductData.stock <= 0) {
       toast.error("invalid stock");
       return false;
     }
@@ -248,14 +249,14 @@ const ProductManagement = () => {
 
   //Edit product validate
   const editValidate = () => {
-    if(addProductData.name.trim() === ""){
+    if (addProductData.name.trim() === "") {
       toast.error("Give Proper Product Name");
       return false;
     }
-    if (addProductData.price <= 500){
+    if (addProductData.price <= 500) {
       toast.error("price should be greater than 500");
       return false;
-    }else if(addProductData.stock <= 0) {
+    } else if (addProductData.stock <= 0) {
       toast.error("invalid stock");
       return false;
     }
@@ -281,10 +282,10 @@ const ProductManagement = () => {
       formData.append("images", image);
     });
 
-    console.log("formData",formData);
+    console.log("formData", formData);
 
     if (validate()) {
-      if(selectedImages.length < 3 || selectedImages.length > 4){
+      if (selectedImages.length < 3 || selectedImages.length > 4) {
         toast.error("Minimum 3 image Maximum 5 image");
         setLoading(false);
         return false;
@@ -302,50 +303,49 @@ const ProductManagement = () => {
     } else setLoading(false);
   };
 
-
-
   const dataURLtoFile = (dataurl) => {
-  const arr = dataurl.split(",");
-  const mime = arr[0].match(/:(.*?);/)[1];
-  const bstr = atob(arr[1]);
-  let n = bstr.length;
-  const u8arr = new Uint8Array(n);
-  while (n--) {
-    u8arr[n] = bstr.charCodeAt(n);
-  }
-  return new File([u8arr], "image.jpg", { type: mime });
-};
-
+    const arr = dataurl.split(",");
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], "image.jpg", { type: mime });
+  };
 
   //edit Product
   const handleEditProductSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (editValidate()) {
-    try {
-      const updatedImages = [];
+    if (editValidate()) {
+      try {
+        const updatedImages = [];
 
-      for (const img of previewImages) {
-        if (img.startsWith("data:image/")) {
-          const file = dataURLtoFile(img);
-          const uploadedUrl = await uploadImageToStorage(file); 
-          updatedImages.push(uploadedUrl); 
-        } else {
-          updatedImages.push(img); 
+        for (const img of previewImages) {
+          if (img.startsWith("data:image/")) {
+            const file = dataURLtoFile(img);
+            const uploadedUrl = await uploadImageToStorage(file);
+            updatedImages.push(uploadedUrl);
+          } else {
+            updatedImages.push(img);
+          }
         }
+
+        addProductData.images = updatedImages;
+        addProductData.productName = addProductData.name;
+        delete addProductData.name;
+
+        await editProduct(productID, addProductData);
+        resetForm();
+        toggleEditModal();
+        setIsChanged(!isChanged);
+      } catch (error) {
+        console.error("Error editing product:", error);
       }
-
-      addProductData.images = updatedImages; 
-
-      await editProduct(productID, addProductData); 
-      resetForm();
-      toggleEditModal();
-      setIsChanged(!isChanged);
-    } catch (error) {
-      console.error("Error editing product:", error);
     }
-  }
-};
+  };
 
   //Delete Product
   const handleProductDelete = async (productID) => {
@@ -452,7 +452,7 @@ const ProductManagement = () => {
                           product.images.length > 0
                             ? `${product.images[0]}`
                             : ""
-                        } 
+                        }
                         alt={product.productName}
                       />
                       <div className="ps-3">
@@ -497,11 +497,11 @@ const ProductManagement = () => {
                     <td className="px-6 py-4">
                       <span
                         className={`font-medium ${
-                          product.isDeleted ? "text-green-600" : "text-red-600"
+                          product.isDeleted ? "text-green-600" : "text-red-500"
                         } cursor-pointer hover:underline`}
                         onClick={() => handleProductDelete(product._id)}
                       >
-                        {product.isDeleted ? "Recover" : "Delete"}
+                        {product.isDeleted ? "Recover" : "Unpublish"}
                       </span>
                     </td>
                   </tr>
@@ -514,7 +514,7 @@ const ProductManagement = () => {
             className="mx-auto"
             currentPage={currentPage}
             setCurrentPage={setCurrentPage}
-            totalEntries={totalProducts} 
+            totalEntries={totalProducts}
             entriesPerPage={entriesPerPage}
           />
 
@@ -1013,7 +1013,6 @@ const ProductManagement = () => {
               </div>
             </div>
           )}
-
         </div>
       </div>
     </div>

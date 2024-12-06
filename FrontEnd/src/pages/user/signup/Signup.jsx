@@ -97,7 +97,7 @@ const Signup = () => {
       }
       const googleUser = await storeGoogleInfo(userDetails);
       dispatch(setUser({uid: googleUser.user.uid, username: user.displayName, email: user.email, isVerified: true}));
-      dispatch(initializeBag({ userId: user.uid }))
+      dispatch(initializeBag({ userId: googleUser.user.uid }))
 
       // Redirect to homepage
       navigate("/"); 

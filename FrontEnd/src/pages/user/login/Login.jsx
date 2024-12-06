@@ -91,7 +91,7 @@ const Login = () => {
           isVerified: true,
         })
       );
-      dispatch(initializeBag({ userId: user.uid }));
+      dispatch(initializeBag({ userId: googleUser.user.uid }));
 
       navigate("/");
     } catch (error) {

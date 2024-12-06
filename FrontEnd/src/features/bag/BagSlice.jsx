@@ -27,7 +27,7 @@ const bagSlice = createSlice({
     },
     updateQuantity: (state, action) => {
       const { userId, productId, quantity } = action.payload;
-      if (!state.bags[userId]) return; // Ensure the user's bag exists
+      if (!state.bags[userId]) return; 
 
       if (quantity > 0) {
         state.bags[userId].quantities[productId] = quantity;
@@ -37,7 +37,7 @@ const bagSlice = createSlice({
     },
     removeProduct: (state, action) => {
       const { userId, productId } = action.payload;
-      if (!state.bags[userId]) return; // Ensure the user's bag exists
+      if (!state.bags[userId]) return; 
       delete state.bags[userId].quantities[productId];
     },
     storeSubtotal: (state, action) => {

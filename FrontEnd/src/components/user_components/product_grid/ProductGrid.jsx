@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { fetchProducts } from "../../../api/product";
 import { useNavigate } from "react-router-dom";
 import { HiOutlineShoppingBag } from "react-icons/hi2";
 import { addToBag } from "../../../api/bag";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { clearOffers, setOffer } from "../../../features/offers/OfferSlice";
+import { addToBagQty } from "../../../features/bag/BagSlice";
 
 const ProductGrid = ({ products, loading, offers }) => {
   const { uid } = useSelector((state) => state.user);
+  const { bags } = useSelector((state) => state.bag);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const [disableBtnState, setDisableBtnState] = useState({});
 
   useEffect(() => {
     if (offers && offers.isActive) {
@@ -21,32 +25,57 @@ const ProductGrid = ({ products, loading, offers }) => {
           })
         );
       });
-    }else {
-      dispatch(clearOffers())
+    } else {
+      dispatch(clearOffers());
     }
   }, [dispatch, offers]);
-
-
-  const navigate = useNavigate();
 
   const handleCardClick = (productID) => {
     navigate(`/products/${productID}`);
   };
 
+  // Check if a product is already in the bag
+  const isProductInBag = (productId) => {
+    return bags[uid]?.quantities?.hasOwnProperty(productId);
+  };
+
   // Add to bag function
   const handleAddToBag = async (productId) => {
-    const product = products.find((product) => product._id === productId);
-    if (product.stock < 2) {
+    setDisableBtnState((prevState) => ({
+      ...prevState,
+      [productId]: true,
+    }));
+
+    // Find the product and its stock
+    const productIndex = products.findIndex((product) => product._id === productId);
+    const product = products[productIndex];
+
+    if (product.stock <= 0) {
+      // Re-enable the button if the product is out of stock
+      setDisableBtnState((prevState) => ({
+        ...prevState,
+        [productId]: false,
+      }));
       return toast.warning("Product Out Of Stock");
     }
+
     const data = {
       userId: uid,
       productId,
     };
+
     try {
       await addToBag(data);
+      dispatch(addToBagQty({userId: uid, productId}));
+      toast.success("Product added to bag");
     } catch (error) {
-      console.log(error);
+      console.error("Error adding to bag:", error);
+      toast.error("Failed to add product to bag");
+      // Re-enable the button in case of failure
+      setDisableBtnState((prevState) => ({
+        ...prevState,
+        [productId]: false,
+      }));
     }
   };
 
@@ -85,7 +114,7 @@ const ProductGrid = ({ products, loading, offers }) => {
                     <div onClick={() => handleCardClick(product._id)}>
                       <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-h-8 xl:aspect-w-7">
                         <img
-                          src={product.images[0]} 
+                          src={product.images[0]}
                           alt={product.productName}
                           className="h-full w-full object-cover object-center group-hover:opacity-75"
                         />
@@ -114,6 +143,7 @@ const ProductGrid = ({ products, loading, offers }) => {
                     <div
                       className="btn w-fit bg-black text-white p-3 text-xl absolute right-0 cursor-pointer transition duration-500 ease-in-out opacity-0 group-hover:opacity-100 group-hover:translate-y-[-20px] hover:scale-90 rounded-md"
                       onClick={() => handleAddToBag(product._id)}
+                      disabled={isProductInBag(product._id) || disableBtnState[product._id]} 
                     >
                       <HiOutlineShoppingBag />
                     </div>

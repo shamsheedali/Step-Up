@@ -24,7 +24,7 @@ const OrderDetails = ({ id }) => {
     const getOrders = async () => {
       try {
         setLoading(true);
-        const {allOrders} = await getUserOrders(uid);
+        const { allOrders } = await getUserOrders(uid);
         const { data: categoryData } = await fetchCategories();
         setCategories(categoryData);
         const ordersWithProducts = await Promise.all(
@@ -49,13 +49,21 @@ const OrderDetails = ({ id }) => {
   }, [uid, reRender]);
 
   //Cancel Order
-  const handleCancelOrder = async (orderId, totalAmount, paymentMethod, paymentStatus) => {
-    if(order.status === 'Delivered') {
+  const handleCancelOrder = async (
+    orderId,
+    totalAmount,
+    paymentMethod,
+    paymentStatus
+  ) => {
+    if (order.status === "Delivered") {
       toast.success("Requested to Return Order");
-      return
+      return;
     }
     await cancelOrder(orderId, uid);
-    if (paymentMethod === "razorPay" && (paymentStatus === 'Completed' || paymentStatus === 'Refunded')) {
+    if (
+      ["razorPay", "Wallet"].includes(order.paymentMethod) &&
+      ["Completed", "Refunded"].includes(order.paymentStatus)
+    ) {
       toast.success(`${Math.round(totalAmount)} Refunded to Your Wallet`);
     }
     setReRender(true);
@@ -111,7 +119,7 @@ const OrderDetails = ({ id }) => {
     const items = order.items || [
       { product: { productName: "Item 1" }, quantity: 1, price: 500 },
       { product: { productName: "Item 2" }, quantity: 2, price: 750 },
-    ]; 
+    ];
 
     const tableData = items.map((item, index) => [
       index + 1,
@@ -121,8 +129,8 @@ const OrderDetails = ({ id }) => {
       `${(item.quantity * item.price).toFixed(2)}`,
     ]);
 
-    const discount = order.discountApplied || 0; 
-    const deliveryCharge = 100; 
+    const discount = order.discountApplied || 0;
+    const deliveryCharge = 100;
 
     if (discount > 0) {
       tableData.push(["", "Discount", "", "", `-${discount.toFixed(2)}`]);
@@ -138,7 +146,6 @@ const OrderDetails = ({ id }) => {
       ]);
     }
 
-    
     // const totalAmount = Math.round(
     //   order.totalAmount - discount + deliveryCharge
     // );
@@ -166,8 +173,6 @@ const OrderDetails = ({ id }) => {
 
     doc.save(`Invoice-${orderId}.pdf`);
   };
-
-
 
   const order = orders.find((order) => order._id === id);
   console.log("order", order);
@@ -201,32 +206,32 @@ const OrderDetails = ({ id }) => {
           </div>
           <h1 className="mt-3">Total Amount: ₹{order.totalAmount}</h1>
           <p className="flex items-center">
-                      Payment Method: {order.paymentMethod}
-                      {" - "}
-                      {order.paymentMethod === "razorPay" && (
-                        <span
-                          className={`px-3 py-1 rounded flex items-center gap-1 ${
-                            order.paymentStatus === "Pending"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-green-100 text-green-700"
-                          }`}
-                        >
-                          {"  "}
-                          {order.paymentStatus === "Pending" ? (
-                            <>
-                              <BiTimeFive /> Pending
-                            </>
-                          ) : (
-                            <>
-                              <IoIosCheckmarkCircle /> {order.paymentStatus}
-                            </>
-                          )}
-                        </span>
-                      )}
-                    </p>
+            Payment Method: {order.paymentMethod}
+            {" - "}
+            {(order.paymentMethod === "razorPay" || order.paymentMethod === "Wallet") && (
+              <span
+                className={`px-3 py-1 rounded flex items-center gap-1 ${
+                  order.paymentStatus === "Pending"
+                    ? "bg-red-100 text-red-700"
+                    : "bg-green-100 text-green-700"
+                }`}
+              >
+                {"  "}
+                {order.paymentStatus === "Pending" ? (
+                  <>
+                    <BiTimeFive /> Pending
+                  </>
+                ) : (
+                  <>
+                    <IoIosCheckmarkCircle /> {order.paymentStatus}
+                  </>
+                )}
+              </span>
+            )}
+          </p>
 
           <h1 className="flex items-center">
-            Status: 
+            Status:
             <div
               className={`h-2.5 w-2.5 rounded-full ${
                 order.status === "Delivered"
@@ -268,7 +273,7 @@ const OrderDetails = ({ id }) => {
                 <div className="flex items-center gap-4">
                   <img
                     src={
-                      item.product?.images[0]||
+                      item.product?.images[0] ||
                       "https://via.placeholder.com/150"
                     }
                     alt={item.product?.productName || "Product Image"}
@@ -311,7 +316,11 @@ const OrderDetails = ({ id }) => {
             }
             disabled={order.isCancelled}
           >
-            {order.status === 'Delivered' ? ("Request Return") : (order.isCancelled ? "Order Cancelled" : "Cancel Order") }
+            {order.status === "Delivered"
+              ? "Request Return"
+              : order.isCancelled
+              ? "Order Cancelled"
+              : "Cancel Order"}
           </button>
         </div>
       </div>

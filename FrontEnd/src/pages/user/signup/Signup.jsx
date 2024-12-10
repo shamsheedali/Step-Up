@@ -206,14 +206,14 @@ const Signup = () => {
           {/* Divider and social icons */}
           <div className="w-80 h-[2px] bg-gray-500"></div>
           <div className="flex space-x-4 relative bottom-2">
-            <div className="w-fit px-3 flex gap-2 items-center justify-center h-12 border-2 border-black rounded cursor-pointer" onClick={handleGoogleSignup}>
+            <div className="w-fit px-3 flex gap-8 items-center justify-evenly h-12 border-2 border-black rounded cursor-pointer" onClick={handleGoogleSignup}>
               <FaGoogle className="text-black text-xl" />
               Sign in with Google
             </div>
-            <div className="w-fit px-3 flex gap-2 items-center justify-center h-12 border-2 border-black rounded cursor-pointer">
+            {/* <div className="w-fit px-3 flex gap-2 items-center justify-center h-12 border-2 border-black rounded cursor-pointer">
               <FaFacebookF className="text-black text-xl" />
               Sign in with facebook
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

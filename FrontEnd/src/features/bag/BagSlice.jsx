@@ -10,7 +10,6 @@ const bagSlice = createSlice({
   reducers: {
     initializeBag: (state, action) => {
       const { userId } = action.payload;
-      console.log(userId);
 
       // Ensure bags object is defined
       if (!state.bags) {
@@ -24,6 +23,11 @@ const bagSlice = createSlice({
         };
         console.log(state.bags);
       }
+    },
+    addToBagQty: (state, action) => {
+      const { userId, productId } = action.payload;
+
+      state.bags[userId].quantities[productId] = 1;
     },
     updateQuantity: (state, action) => {
       const { userId, productId, quantity } = action.payload;
@@ -58,7 +62,7 @@ const bagSlice = createSlice({
   },
 });
 
-export const { initializeBag, updateQuantity, removeProduct, storeSubtotal, emptyBag } =
+export const { initializeBag, addToBagQty, updateQuantity, removeProduct, storeSubtotal, emptyBag } =
   bagSlice.actions;
 
 export default bagSlice.reducer;

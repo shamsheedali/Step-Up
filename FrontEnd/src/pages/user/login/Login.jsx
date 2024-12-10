@@ -193,7 +193,7 @@ const Login = () => {
           <div className="flex space-x-4 relative bottom-2">
             {/* Google Icon */}
             <div
-              className="flex gap-2 items-center justify-center w-fit px-3 h-12 border-2 border-black rounded cursor-pointer"
+              className="flex gap-8 items-center justify-center w-fit px-3 h-12 border-2 border-black rounded cursor-pointer"
               onClick={handleGoogleSignIn}
             >
               <FaGoogle className="text-black text-xl" />
@@ -201,10 +201,10 @@ const Login = () => {
             </div>
 
             {/* Facebook Icon */}
-            <div className="flex gap-2 items-center justify-center w-fit h-12 border-2 px-3 border-black rounded cursor-pointer">
+            {/* <div className="flex gap-2 items-center justify-center w-fit h-12 border-2 px-3 border-black rounded cursor-pointer">
               <FaFacebookF className="text-black text-xl" />
               Continue With facebook
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

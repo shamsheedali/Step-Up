@@ -81,8 +81,8 @@ const Wallet = () => {
                             {new Date(data.date).toDateString()}
                           </td>
                           <td className="px-6 py-4">{data.type}</td>
-                          <td className="px-6 py-4">
-                            ₹{Math.round(data.amount)}
+                          <td className={`px-6 py-4 ${data.type === "Debit" ? "text-red-400" : "text-green-400"}`}>
+                           {data.type === "Debit" ? `- ₹${Math.round(data.amount)}` : `+ ₹${Math.round(data.amount)}`}
                           </td>
                         </tr>
                       ))}

@@ -11,7 +11,6 @@ const getUserWallet = async (userId, page, limit) => {
         Authorization: `Bearer ${token}`,
       },
     });
-    console.log(response);
     return response.data.walletDetails[0];
   } catch (error) {
     console.log(error);

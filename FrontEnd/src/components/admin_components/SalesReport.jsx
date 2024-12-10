@@ -288,6 +288,7 @@ const SalesReport = () => {
               id="startDate"
               name="startDate"
               value={startDate}
+              max={new Date().toISOString().split("T")[0]}
               onChange={handleStartDateChange}
               className="px-2 bg-black py-1 border border-black rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-white"
             />
@@ -296,6 +297,7 @@ const SalesReport = () => {
               id="endDate"
               name="endDate"
               value={endDate}
+              max={new Date().toISOString().split("T")[0]}
               onChange={handleEndDateChange}
               className="px-2 py-1 border border-black rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-black bg-black text-white"
             />

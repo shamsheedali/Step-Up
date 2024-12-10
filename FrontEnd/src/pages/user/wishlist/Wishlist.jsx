@@ -2,18 +2,22 @@ import React, { useEffect, useState } from "react";
 import { fetchWishlist, removeProduct } from "../../../api/wishlist";
 import Navbar from "../../../components/user_components/navbar/Navbar";
 import { HiOutlineShoppingBag } from "react-icons/hi2";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { addToBag } from "../../../api/bag";
 import { useNavigate } from "react-router-dom";
 import { GoHeartFill } from "react-icons/go";
 import { RiDeleteBinLine } from "react-icons/ri";
+import { addToBagQty } from "../../../features/bag/BagSlice";
 
 const Wishlist = () => {
   const { uid } = useSelector((state) => state.user);
 
   const offers = useSelector((state) => state.offers);
+  const { bags } = useSelector((state) => state.bag);
+  const dispatch = useDispatch();
 
+  const [disableBtnState, setDisableBtnState] = useState({});
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState([]);
 
@@ -41,23 +45,52 @@ const Wishlist = () => {
     navigate(`/wishlist/${productID}`);
   };
 
+
+  // Check if a product is already in the bag
+  const isProductInBag = (productId) => {
+    return bags[uid]?.quantities?.hasOwnProperty(productId);
+  };
+
   //add to bag
   const handleAddToBag = async (productId) => {
-    const product = products.find((product) => product.productId === productId);
-    console.log(product);
-    if (product.stock < 2) {
+    setDisableBtnState((prevState) => ({
+      ...prevState,
+      [productId]: true,
+    }));
+
+    // Find the product and its stock
+    const productIndex = products.findIndex((product) => product.productId === productId);
+    const product = products[productIndex];
+
+    if (product.stock <= 0) {
+      // Re-enable the button if the product is out of stock
+      setDisableBtnState((prevState) => ({
+        ...prevState,
+        [productId]: false,
+      }));
       return toast.warning("Product Out Of Stock");
     }
+
     const data = {
       userId: uid,
       productId,
     };
+
     try {
       await addToBag(data);
+      dispatch(addToBagQty({userId: uid, productId}));
+      toast.success("Product added to bag");
     } catch (error) {
-      console.log(error);
+      console.error("Error adding to bag:", error);
+      toast.error("Failed to add product to bag");
+      // Re-enable the button in case of failure
+      setDisableBtnState((prevState) => ({
+        ...prevState,
+        [productId]: false,
+      }));
     }
   };
+
 
   //Remove Product from wishlist
   const handleRemoveProduct = async (productId) => {
@@ -143,6 +176,7 @@ const Wishlist = () => {
                   <div
                     className="btn w-fit bg-black text-white p-3 text-xl absolute right-0 cursor-pointer transition duration-500 delay-150 ease-in-out opacity-0 group-hover:opacity-100 group-hover:translate-y-[-20px] hover:scale-90 rounded-md"
                     onClick={() => handleAddToBag(product.productId)}
+                    disabled={isProductInBag(product.productId) || disableBtnState[product.productId]}
                   >
                     <HiOutlineShoppingBag />
                   </div>

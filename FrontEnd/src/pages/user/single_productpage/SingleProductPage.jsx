@@ -9,12 +9,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import { getProduct } from "../../../api/product";
 import Zoom from "react-medium-image-zoom";
 import "react-medium-image-zoom/dist/styles.css";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addToBag } from "../../../api/bag";
 import { toast } from "react-toastify";
 import { GoHeart, GoHeartFill } from "react-icons/go";
 import { addToWishlist, fetchWishlist } from "../../../api/wishlist";
 import { HiOutlineShoppingBag } from "react-icons/hi";
+import { addToBagQty } from "../../../features/bag/BagSlice";
 
 // const product = {
 //   name: "Basic Tee 6-Pack",
@@ -82,6 +83,10 @@ const SingleProductPage = () => {
   const productOffer = useSelector((state) => state.offers[id]);
   const discount = productOffer ? productOffer.discount : 0;
 
+  const { bags } = useSelector((state) => state.bag);
+
+  const dispatch = useDispatch();
+
   const navigate = useNavigate();
 
   const [product, setProduct] = useState({});
@@ -96,7 +101,7 @@ const SingleProductPage = () => {
       try {
         setLoading(true);
         const { singleProduct, relatedProductsData } = await getProduct(id);
-        if(uid){
+        if (uid) {
           const { wishlistItems } = await fetchWishlist(uid);
           const exists = wishlistItems.some(
             (wishlist) => wishlist.productId === id
@@ -120,21 +125,41 @@ const SingleProductPage = () => {
     fetchProduct();
   }, [id]);
 
+  //For checking is product in bag or not
+  const [isInBag, setIsInBag] = useState(false);
+
+  useEffect(() => {
+    // Check if the product is already in the bag
+    if (bags[uid]?.quantities[product._id]) {
+      console.log("Already")
+      setIsInBag(true);
+    }
+  }, [bags, product._id, uid]);
+
   //add to bag
   const handleAddToBag = async (e, productId) => {
     e.preventDefault();
-    console.log(product);
-    if (product.stock < 2) {
+  
+    if (product.stock < 1) {
       return toast.warning("Product Out Of Stock");
     }
+  
     const data = {
       userId: uid,
       productId,
     };
+  
     try {
+      // Call API to add product to bag
       await addToBag(data);
+      dispatch(addToBagQty({userId: uid, productId}))
+  
+      // Update the state and show a success toast
+      setIsInBag(true);
+      toast.success("Product added to bag");
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      toast.error("Failed to add product to bag. Please try again.");
     }
   };
 
@@ -425,9 +450,10 @@ const SingleProductPage = () => {
                   <button
                     type="submit"
                     onClick={(e) => handleAddToBag(e, product._id)}
-                    className="mt-10 flex w-full items-center justify-center rounded-md border border-transparent bg-black px-8 py-3 text-base font-medium text-white hover:bg-[#000000d6] focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+                    className={`mt-10 flex w-full items-center justify-center rounded-md border border-transparent ${isInBag ? "bg-[#000000a1]" : "bg-black"}  px-8 py-3 text-base font-medium text-white hover:bg-[#000000d6] focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2`}
+                    disabled={isInBag || product.stock < 1}
                   >
-                    Add to bag
+                    {isInBag ? "Already in Bag" : "Add to Bag"}
                   </button>
                   <button
                     type="submit"

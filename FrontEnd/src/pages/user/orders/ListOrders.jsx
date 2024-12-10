@@ -142,7 +142,7 @@ const ListOrders = () => {
                   <div>
                     <p className="flex items-center">
                       Payment Method: {order.paymentMethod}
-                      {order.paymentMethod === "razorPay" && (
+                      {(order.paymentMethod === "razorPay" || order.paymentMethod === "Wallet") && (
                         <span
                           className={`px-3 py-1 rounded flex items-center gap-1 ${
                             order.paymentStatus === "Pending"

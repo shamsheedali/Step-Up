@@ -54,6 +54,20 @@ const createOrder = async (req, res) => {
       { $push: { usedBy: user } }
     );
 
+    if (newOrder.paymentMethod === "Wallet") {
+      const transaction = {
+        description: "Amount debited due to payment",
+        type: "Debit",
+        amount: newOrder.totalAmount,
+      };
+
+      await Wallet.findOneAndUpdate(
+        { userId: user },
+        { $push: { transactions: transaction } },
+        { upsert: true, new: true }
+      );
+    }
+
     res
       .status(HttpStatus.CREATED)
       .json({ message: "Order created successfully", order: savedOrder });
@@ -153,7 +167,10 @@ const cancelOrder = async (req, res) => {
       );
     }
 
-    if (order.paymentMethod === "razorPay" && (order.paymentStatus === 'Completed' || order.paymentStatus === 'Refunded')) {
+    if (
+      ["razorPay", "Wallet"].includes(order.paymentMethod) &&
+      ["Completed", "Refunded"].includes(order.paymentStatus)
+    ) {
       const transaction = {
         description: "Amount Returned Due to Order Cancellation",
         type: "Credit",
@@ -176,7 +193,7 @@ const cancelOrder = async (req, res) => {
     console.log(error);
     res
       .status(HttpStatus.INTERNAL_SERVER_ERROR)
-      .json({ messsage: "Error While Deleting order" });
+      .json({ message: "Error While Deleting order" });
   }
 };
 

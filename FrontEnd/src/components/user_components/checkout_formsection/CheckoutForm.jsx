@@ -18,6 +18,7 @@ import { handlePayment } from "../../../api/payment";
 import { fetchCoupons, verifyCouponCode } from "../../../api/coupons";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { getUserWallet } from "../../../api/wallet";
 
 const CheckoutForm = ({ getDiscountApplied }) => {
   const { uid, username, email } = useSelector((state) => state.user);
@@ -37,6 +38,28 @@ const CheckoutForm = ({ getDiscountApplied }) => {
   useEffect(() => {
     if (calculatedSubtotal >= 5000) setDisableCOD(true);
   }, []);
+
+  //For disable Wallet button
+  const [walletBalance, setWalletBalance] = useState(0);
+const [disableWallet, setDisableWallet] = useState(false);
+
+useEffect(() => {
+  const getWalletDetails = async () => {
+    try {
+      const { totalBalance } = await getUserWallet(uid); 
+      setWalletBalance(totalBalance); 
+    } catch (error) {
+      console.error("Failed to fetch wallet details:", error);
+    }
+  };
+  getWalletDetails();
+}, [uid]); 
+
+useEffect(() => {
+  setDisableWallet(walletBalance < calculatedSubtotal);
+}, [walletBalance, calculatedSubtotal]); 
+
+
 
   const [oldSubtotal, setOldSubtotal] = useState(calculatedSubtotal);
 
@@ -340,6 +363,44 @@ const CheckoutForm = ({ getDiscountApplied }) => {
           dispatch(emptyBag({ userId: uid }));
           await clearBag(uid);
         }
+      } else {
+        if (walletBalance < calculatedSubtotal) {
+          toast.error(
+            "Insufficient balance in your wallet!"
+          );
+          return;
+        }
+
+        const orderDetails = {
+          user: uid,
+          items: products.map((product) => {
+            const isOnOffer = offers && offers.hasOwnProperty(product._id);
+            const discount = isOnOffer ? offers[product._id].discount : 0;
+            const discountedPrice = isOnOffer
+              ? getDiscountedPrice(product.price, discount)
+              : product.price;
+
+            return {
+              product: product._id,
+              price: discountedPrice,
+              quantity: itemsIds[product._id] || 0,
+            };
+          }),
+          totalAmount: calculatedSubtotal + 100,
+          paymentMethod: selectedPaymentMethod,
+          paymentStatus: "Completed",
+          shippingAddress: selectedAddress,
+          discountApplied,
+          promo,
+        };
+
+        const response = await createOrder(orderDetails);
+        toast.success("Payment successful. The amount has been debited from your wallet");
+        if (response) {
+          navigate("/bag/checkout/order-success");
+          dispatch(emptyBag({ userId: uid }));
+          await clearBag(uid);
+        }
       }
     }
   };
@@ -520,16 +581,19 @@ const CheckoutForm = ({ getDiscountApplied }) => {
 
           {/* Wallet */}
           <div
-            onClick={() => handlePaymentSelect("wallet")}
+            onClick={() => handlePaymentSelect("Wallet")}
             className={`w-[200px] p-4 rounded-lg border cursor-pointer flex items-center gap-2 ${
-              selectedPaymentMethod === "wallet"
+              selectedPaymentMethod === "Wallet"
                 ? "bg-black text-white"
                 : "border-gray-300"
+            } ${
+              disableWallet ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
             }`}
           >
             <LuWallet />
             <h1>Wallet</h1>
           </div>
+          {disableWallet && <p className="text-sm text-red-500 absolute right-[75px] bottom-[70px]">Insufficient balance</p> }
         </div>
         <p className="text-sm text-red-500">{mainError.paymentMethod}</p>
 

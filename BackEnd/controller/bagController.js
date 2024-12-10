@@ -72,7 +72,6 @@ const fetchBag = async (req, res) => {
       quantity: item.quantity,
       subtotal: item.productId.price * item.quantity,
     }));
-    console.log("bag", bagDetails);
 
     // Calculate the total bag value
     const totalAmount = bagDetails.reduce(
@@ -92,7 +91,6 @@ const deleteProductFromBag = async (req, res) => {
     const userId = req.params.userId;
     const productId = req.params.productId;
 
-    // Use $pull to remove the product directly from the array in MongoDB
     const bag = await Bag.findOneAndUpdate(
       { userId },
       { $pull: { products: { productId: productId } } },
@@ -135,8 +133,6 @@ const clearBag = async (req, res) => {
     const userId = req.params.id;
 
     const cleared = await Bag.findOneAndDelete({userId});
-
-    console.log("bag cleared",cleared);
 
   } catch (error) {
     console.log(error);

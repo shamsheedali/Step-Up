@@ -13,7 +13,7 @@ const sendOtp = async (userData) => {
   userDetails = userData
   try {
     const otpResponse = await axios.post(
-      `https://mystepup.store/api/otp/send_otp`,
+      `${import.meta.env.VITE_API_URL}/otp/send_otp`,
       userData
     );
     if (otpResponse.status === 200) {
@@ -69,7 +69,7 @@ const OtpPage = () => {
     e.preventDefault();
     const otpValue = Number(otp.join(""));
     try {
-     const response = await axios.post(`https://mystepup.store/api/otp/verify_otp`, {otpValue, userDetails});
+     const response = await axios.post(`${import.meta.env.VITE_API_URL}/otp/verify_otp`, {otpValue, userDetails});
      if(response.status === 200){
       const {username, email, _id} = response.data.user;
       dispatch(setUser({uid :_id, username, email, isVerified: true}));

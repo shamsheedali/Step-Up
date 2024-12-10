@@ -11,6 +11,9 @@ import { fetchUsers } from "../../api/admin";
 import Pagination from "../user_components/pagination/Pagination";
 import { toast } from "react-toastify";
 import { fetchCategories } from "../../api/category";
+import { IoMdDownload, IoMdRefresh } from "react-icons/io";
+import { BiTimeFive } from "react-icons/bi";
+import { IoIosCheckmarkCircle } from "react-icons/io";
 
 const OrderManagement = () => {
   const [loading, setLoading] = useState(false);
@@ -64,7 +67,7 @@ const OrderManagement = () => {
   useEffect(() => {
     const getAllProducts = async () => {
       const { allProducts } = await fetchProducts();
-      const {data} = await fetchCategories();
+      const { data } = await fetchCategories();
       setCategories(data);
       setProducts(allProducts);
     };
@@ -192,7 +195,15 @@ const OrderManagement = () => {
                       {order.totalAmount.toFixed(2)}
                     </td>
                     <td className="px-6 py-4 text-center text-black">
-                      <h1 className={`${order.paymentStatus === "Pending" ? "bg-red-500" : "bg-green-500"}`}>{order.paymentMethod}</h1>
+                      <h1
+                        className={`${
+                          order.paymentStatus === "Pending"
+                            ? "bg-red-500"
+                            : "bg-green-500"
+                        }`}
+                      >
+                        {order.paymentMethod}
+                      </h1>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center">
@@ -217,7 +228,12 @@ const OrderManagement = () => {
                       <h1
                         className="underline text-green-400 cursor-pointer"
                         onClick={() => {
-                          toggleModal(order._id, order.user, order.isCancelled, order.status);
+                          toggleModal(
+                            order._id,
+                            order.user,
+                            order.isCancelled,
+                            order.status
+                          );
                           handleShowDetails(order);
                         }}
                       >
@@ -228,7 +244,9 @@ const OrderManagement = () => {
                       <button
                         onClick={() => toggleDropdown(order._id)}
                         className={`text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 ${
-                          (order.isCancelled || order.status === 'Delivered') ? "hidden" : ""
+                          order.isCancelled || order.status === "Delivered"
+                            ? "hidden"
+                            : ""
                         }`}
                         type="button"
                       >
@@ -317,20 +335,95 @@ const OrderManagement = () => {
         />
       </div>
 
-      {/* Modal */}
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto h-full w-full bg-black bg-opacity-50">
-          <div className="relative p-4 w-full max-w-2xl">
-            {/* Modal container */}
-            <div className="bg-white rounded-lg shadow dark:bg-gray-700 h-fit max-h-[80vh] overflow-y-auto">
-              {/* Modal header with close button */}
-              <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  Order Details
-                </h3>
+      {/* New Modal */}
+{isOpen && (
+  <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+    <div
+      className="bg-transparent w-[80%] md:w-[60%] lg:w-[50%] h-[80%] rounded-lg overflow-hidden shadow-lg relative"
+      style={{ width: "75%" }}
+    >
+      <div className="flex h-full">
+        {/* Left section */}
+
+        {(() => {
+          const order = orders.find((order) => order._id === orderId);
+          return (
+            <>
+              <div className="bg-gray-700 text-[#cccccc] w-[50%] h-full p-10 text-md relative rounded-s-lg overflow-auto">
+                <h1 className="text-2xl mb-3">Order Details</h1>
+                <h1>OrderId: {order._id}</h1>
+                <h1>
+                  Order Date:{" "}
+                  {new Date(order.placedAt).toLocaleDateString()}
+                </h1>
+                <div>
+                  <h1>Delivery Address:</h1>
+                  <div className="pl-5 border-b border-black w-fit">
+                    <p>
+                      {order.shippingAddress.postcode},{" "}
+                      {order.shippingAddress.street}
+                    </p>
+                    <p>{order.shippingAddress.town}</p>
+                    <p>{order.shippingAddress.phonenumber}</p>
+                  </div>
+                </div>
+                <h1 className="mt-3">
+                  Total Amount: ₹{order.totalAmount}
+                </h1>
+                <p className="flex items-center">
+                  Payment Method: {order.paymentMethod}
+                  {" - "}
+                  {(order.paymentMethod === "razorPay" ||
+                    order.paymentMethod === "Wallet") && (
+                    <span
+                      className={`px-3 py-1 rounded flex items-center gap-1 ${
+                        order.paymentStatus === "Pending"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-green-100 text-green-700"
+                      }`}
+                    >
+                      {"  "}
+                      {order.paymentStatus === "Pending" ? (
+                        <>
+                          <BiTimeFive /> Pending
+                        </>
+                      ) : (
+                        <>
+                          <IoIosCheckmarkCircle /> {order.paymentStatus}
+                        </>
+                      )}
+                    </span>
+                  )}
+                </p>
+
+                <h1 className="flex items-center">
+                  Status:
+                  <div
+                    className={`h-2.5 w-2.5 rounded-full ${
+                      order.status === "Delivered"
+                        ? "bg-green-500"
+                        : order.status === "Cancelled"
+                        ? "bg-red-500"
+                        : order.status === "Shipped"
+                        ? "bg-yellow-500"
+                        : order.status === "Processing"
+                        ? "bg-blue-500"
+                        : ""
+                    } ms-2 me-1`}
+                  ></div>{" "}
+                  {order.status}
+                </h1>
+              </div>
+
+              {/* Line Divider */}
+              <div className="w-[2px] h-auto bg-black rounded-md"></div>
+
+              {/* Right section */}
+              <div className="bg-gray-700 text-[#cccccc] w-[50%] h-full pt-10 p-4 relative rounded-e-lg overflow-auto">
+                {/* Close Button */}
                 <button
                   onClick={toggleModal}
-                  className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                  className="absolute right-3 top-3 text-white bg-black hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
                 >
                   <svg
                     className="w-3 h-3"
@@ -349,62 +442,71 @@ const OrderManagement = () => {
                   </svg>
                   <span className="sr-only">Close modal</span>
                 </button>
-              </div>
-
-              {/* Modal body*/}
-              <div className="p-4 md:p-5 space-y-4 text-white">
-                {selectedOrderProducts.length === 0 && (
-                  <p>No orders available.</p>
-                )}
-                {Array.isArray(selectedOrderProducts) &&
-                selectedOrderProducts.length > 0 ? (
-                  selectedOrderProducts.map((item) => (
-                    <div
-                      key={item._id}
-                      className="flex justify-between items-center border-b border-gray-200 py-4"
-                    >
-                      <div className="flex items-center gap-4">
-                        <img
-                          src={
-                            item.images[0] ||
-                            "https://via.placeholder.com/150"
-                          }
-                          alt={item.productName || "Product Image"}
-                          className="w-20 h-20 object-cover rounded-lg"
-                        />
+                <h1 className="text-2xl mb-3">Product Details</h1>
+                <div className="h-[250px] px-[12px] overflow-y-auto border-b border-black">
+                  {Array.isArray(selectedOrderProducts) &&
+                  selectedOrderProducts.length > 0 ? (
+                    selectedOrderProducts.map((item) => (
+                      <div
+                        key={item._id}
+                        className="flex justify-between items-center py-4"
+                      >
+                        <div className="flex items-center gap-4">
+                          <img
+                            src={
+                              item.images[0] ||
+                              "https://via.placeholder.com/150"
+                            }
+                            alt={item.productName || "Product Image"}
+                            className="w-20 h-20 object-cover rounded-lg"
+                          />
+                          <div>
+                            <h3 className="text-md w-[190px] font-medium">
+                              {item.productName || "No product name"}
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                              {categories.find(
+                                (category) =>
+                                  category._id === item.category
+                              )?.name || ""}
+                            </p>
+                          </div>
+                        </div>
                         <div>
-                          <h3 className="text-md w-[190px] font-medium">
-                            {item.productName || "No product name"}
-                          </h3>
-                          <p className="text-sm text-gray-500">
-                            {categories.find(category => category._id === item.category)?. name || "No category"}
-                          </p>
+                          <p className="font-semibold">₹{item.price}</p>
+                          <p className="text-gray-500">Qty: {item.quantity}</p>
                         </div>
                       </div>
-                      <div>
-                        <p className="font-semibold">₹{item.price}</p>
-                        <p className="text-gray-500">
-                          Quantity: {item.quantity}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-gray-500">No items found in this order.</p>
-                )}
+                    ))
+                  ) : (
+                    <p>No products found.</p>
+                  )}
+                </div>
+                <div className="flex justify-between px-4 pt-3">
+                  <h1>Grand Total :</h1>
+                  <h1 className="font-bold">₹{order.totalAmount}</h1>
+                </div>
 
                 <button
-                  className={`btn w-full mt-4 px-4 py-2 text-black  bg-red-400 hover:bg-red-500 rounded-lg transition `}
+                  className={`btn py-2 absolute bottom-5 w-[94%] tracking-widest ${
+                    order.isCancelled ? "text-black" : "text-white"
+                  } bg-black rounded-lg transition`}
                   onClick={() => handleCancelOrder(orderId, userId)}
                   disabled={orderCancelDisable}
                 >
-                  {orderStatus === 'Delivered' ? "Return Order" : "Cancel Order"} 
+                  {orderStatus === "Delivered"
+                    ? "Return Order"
+                    : "Cancel Order"}
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
+            </>
+          );
+        })()}
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };

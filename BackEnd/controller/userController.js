@@ -2,6 +2,8 @@ import users from "../modal/userModal.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import HttpStatus from "../utils/httpStatus.js";
+import nodemailer from "nodemailer";
+import crypto from 'crypto'
 
 //USER-- SIGNUP
 const signUp = async (req, res) => {
@@ -59,8 +61,10 @@ const login = async (req, res) => {
         .json({ message: "User Not Available" });
     }
 
-    if(user.status === 'blocked'){
-      return res.status(HttpStatus.FORBIDDEN).json({message: "Your Account is Blocked!"});
+    if (user.status === "blocked") {
+      return res
+        .status(HttpStatus.FORBIDDEN)
+        .json({ message: "Your Account is Blocked!" });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -101,8 +105,8 @@ const storeGoogleUser = async (req, res) => {
 
     if (user) {
       console.log("Existing user logged in:", user);
-       //New User Token While Login
-       const token = jwt.sign(
+      //New User Token While Login
+      const token = jwt.sign(
         {
           id: user._id,
           email: user.email,
@@ -241,4 +245,90 @@ const changePassword = async (req, res) => {
   }
 };
 
-export { signUp, login, storeGoogleUser, updateUserData, changePassword };
+//Forgot Password
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await users.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+   //Random 6-digit verification code
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    const hashedCode = crypto.createHash("sha256").update(verificationCode).digest("hex");
+    const codeExpiry = Date.now() + 3600000; // 1 hour
+
+     user.resetPasswordCode = hashedCode;
+     user.resetPasswordExpiry = codeExpiry;
+     await user.save();
+
+     console.log(user);
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Password Reset Verification Code",
+      text: `Your password reset verification code is: ${verificationCode}`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        return console.log(error);
+      }
+      console.log("Email sent: " + info.response);
+    });
+
+    console.log("Verification Code: - ", verificationCode);
+
+    res.status(HttpStatus.OK).json({ message: "Password reset email sent" });
+  } catch (error) {
+    console.error(error);
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Server error" });
+  }
+};
+
+//FORGOT PASSWORD VERIFICATION
+const forgotPasswordVerify = async (req, res) => {
+  const { email, code, password } = req.body;
+  try {
+    const user = await users.findOne({ email });
+    if (!user) {
+      return res.status(HttpStatus.NOT_FOUND).json({ message: "User not found" });
+    }
+
+    const hashedCode = crypto.createHash("sha256").update(code).digest("hex");
+
+    console.log(user.resetPasswordCode, user.resetPasswordExpiry, user.resetPasswordCode !== hashedCode, user.resetPasswordExpiry < Date.now())
+    if (
+      user.resetPasswordCode !== hashedCode ||
+      user.resetPasswordExpiry < Date.now()
+    ) {
+      return res.status(400).json({ message: "Invalid or expired code" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    user.password = hashedPassword;
+    user.resetPasswordCode = undefined;
+    user.resetPasswordExpiry = undefined;
+    await user.save();
+
+    res.status(HttpStatus.OK).json({ message: "Password reset successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Server error" });
+  }
+}
+
+export { signUp, login, storeGoogleUser, updateUserData, changePassword, forgotPassword, forgotPasswordVerify };

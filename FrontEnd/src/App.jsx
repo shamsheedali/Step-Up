@@ -24,6 +24,8 @@ import Wallet from "./pages/user/wallet/Wallet";
 import OrderDetailsPage from "./pages/user/orderDetails/OrderDetailsPage";
 import AdminProtectedRoute from "../src/protectedRoutes/adminProtectedRoute";
 import OrderPendingPage from "./pages/user/orderPending/OrderPendingPage";
+import ForgotPassword from "./pages/user/forgotPassword/ForgotPassword";
+import ForgotPasswordVerify from "./pages/user/forgotPassword_verify/ForgotPasswordVerify";
 
 const App = () => {
   return (
@@ -35,6 +37,8 @@ const App = () => {
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/otp" element={<OtpPage />} />
+        <Route path="/forgotPassword" element={<ForgotPassword />} />
+        <Route path="/forgotPassword-verify" element={<ForgotPasswordVerify />} />
         <Route path="/products" element={<AllProduct />} />
         <Route path="/products/:id" element={<SingleProductPage />} />
         <Route path="/bag" element={<Bag />} />

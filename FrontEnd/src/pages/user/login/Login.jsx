@@ -155,6 +155,11 @@ const Login = () => {
               <label className="absolute left-0 top-[22px] text-gray-400 transition-all duration-300 ease-in-out pointer-events-none peer-focus:top-[-12px] peer-valid:top-[-12px] peer-focus:text-gray-800 peer-valid:text-gray-800 peer-focus:text-sm peer-valid:text-sm">
                 Password
               </label>
+              <Link to={"/forgotPassword"}>
+                <p className="text-left text-gray-700 mt-2 text-sm cursor-pointer underline">
+                  Forgot password?
+                </p>
+              </Link>
               <div className="text-red-600">{errors.password}</div>
             </div>
             {errorMessage && <div className="text-red-600">{errorMessage}</div>}

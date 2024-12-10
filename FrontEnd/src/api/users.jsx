@@ -87,9 +87,33 @@ const changePassword = async(data) => {
   }
 }
 
+//forgot password
+const forgotPassword = async(email) => {
+  try {
+    const response = await axios.post(`${API_URL}/forgotPassword`, {email});
+    console.log(response);
+    toast.success(response.data.message);
+    if(response.status === 200) return true;
+  } catch (error) {
+    console.log(error);
+    toast.error(error.response.data.message);
+  }
+}
+
+//forgot password verify
+const forgotPasswordVerify = async (email, code, password) => {
+  try {
+    const response = await axios.post(`${API_URL}/forgotPassword-verify`, {email, code, password});
+    console.log(response);
+    if(response.status === 200) return true;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 const logout = () => {
   localStorage.removeItem('userToken');
   toast.success("You have successfully logged out!");
 }
 
-export { signUp, login, logout, storeGoogleInfo, updateUserData, changePassword };
+export { signUp, login, logout, storeGoogleInfo, updateUserData, changePassword, forgotPassword, forgotPasswordVerify };

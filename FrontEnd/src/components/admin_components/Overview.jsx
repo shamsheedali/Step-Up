@@ -128,23 +128,23 @@ const Overview = () => {
 
   // Update the chart data dynamically based on the fetched data
   const lineChartData = {
-    labels: labels, // Use the dynamic labels (days of the week)
+    labels: labels,
     datasets: [
       {
         label: "Revenue",
-        data: revenueData, // Use the dynamic revenue data
+        data: revenueData, 
         backgroundColor: "rgba(54, 162, 235, 0.2)",
         borderColor: "#cddf73",
         borderWidth: 2,
-        tension: 0.3, // Smooths the line curve
+        tension: 0.3, 
       },
       {
         label: "Cost",
-        data: costData, // Use the dynamic cost data
+        data: costData, 
         backgroundColor: "rgba(255, 99, 132, 0.2)",
         borderColor: "#8c74c5",
         borderWidth: 2,
-        tension: 0.3, // Smooths the line curve
+        tension: 0.3, 
       },
     ],
   };
@@ -273,9 +273,9 @@ const Overview = () => {
       </div>
 
       {/* Section 2 */}
-      <div className="flex gap-3 pl-9 p-5 bg-[#1f2937]">
+      <div className="flex justify-around mt-[-11px] pl-9 p-5 bg-[#1f2937]">
         {/* Top selling products */}
-        <div className="bg-[#83c9e2] rounded-md p-3">
+        <div className="bg-[#83c9e2] rounded-md p-3 w-[40%]">
           <h1>Top Selling Products</h1>
 
           <div>
@@ -309,7 +309,7 @@ const Overview = () => {
           </div>
         </div>
         {/* Top selling categories */}
-        <div className="bg-[#cddf73] rounded-md p-3">
+        <div className="bg-[#cddf73] rounded-md p-3 w-[40%]">
           <h1>Top Selling Categories</h1>
 
           <div>
@@ -337,7 +337,7 @@ const Overview = () => {
           </div>
         </div>
         {/* Top selling brands */}
-        <div className="bg-[#997fd4] rounded-md p-3">
+        {/* <div className="bg-[#997fd4] rounded-md p-3">
           <h1>Top Selling Brands</h1>
 
           <div>
@@ -356,7 +356,7 @@ const Overview = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

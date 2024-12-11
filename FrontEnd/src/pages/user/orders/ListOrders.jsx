@@ -142,7 +142,8 @@ const ListOrders = () => {
                   <div>
                     <p className="flex items-center">
                       Payment Method: {order.paymentMethod}
-                      {(order.paymentMethod === "razorPay" || order.paymentMethod === "Wallet") && (
+                      {(order.paymentMethod === "razorPay" ||
+                        order.paymentMethod === "Wallet") && (
                         <span
                           className={`px-3 py-1 rounded flex items-center gap-1 ${
                             order.paymentStatus === "Pending"
@@ -171,7 +172,7 @@ const ListOrders = () => {
                           ? "bg-green-500"
                           : order.status === "Cancelled"
                           ? "bg-red-500"
-                          : order.status === "Shipped"
+                          : ["Shipped", "Returned"].includes(order.status)
                           ? "bg-yellow-500"
                           : order.status === "Processing"
                           ? "bg-blue-500"
@@ -180,10 +181,16 @@ const ListOrders = () => {
                     ></div>
                     <p>{order.status}</p>
                   </div>
-                  {order.isCancelled && (
+                  {order.isCancelled ? (
                     <h1 className="mx-auto text-red-500 font-bold text-lg">
                       Order cancelled
                     </h1>
+                  ) : (
+                    order.isReturned && (
+                      <h1 className="mx-auto text-yellow-500 font-bold text-lg">
+                        Order returned
+                      </h1>
+                    )
                   )}
 
                   {/* buttons */}
@@ -219,7 +226,7 @@ const ListOrders = () => {
                         <div className="flex items-center gap-4">
                           <img
                             src={
-                              item.product?.images[0]||
+                              item.product?.images[0] ||
                               "https://via.placeholder.com/150"
                             }
                             alt={item.product?.productName || "Product Image"}

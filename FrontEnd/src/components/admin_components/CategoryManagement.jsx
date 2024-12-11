@@ -5,6 +5,7 @@ import {
   editCategory,
   toggleCategoryStatus,
 } from "../../api/category";
+import { toast } from "react-toastify";
 
 const CategoryManagement = () => {
   const [categories, setCategories] = useState([]);
@@ -14,12 +15,16 @@ const CategoryManagement = () => {
   const [categoryDescription, setCategoryDescription] = useState("");
   const [categoryID, setCategoryID] = useState(null);
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredCategories, setFilteredCategories] = useState([]);
+
   useEffect(() => {
     const getCategories = async () => {
       try {
         const { data } = await fetchCategories();
         if (data) {
           setCategories(data);
+          setFilteredCategories(data);
         } else {
           console.log("No data found");
         }
@@ -28,7 +33,7 @@ const CategoryManagement = () => {
       }
     };
     getCategories();
-  }, [categories]);
+  }, []);
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
@@ -53,8 +58,27 @@ const CategoryManagement = () => {
     }
   };
 
+  //Add new category
   const handleAddCategory = async (e) => {
     e.preventDefault();
+
+    const normalizeString = (str) =>
+      str
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "");
+
+    const normalizedCategoryName = normalizeString(categoryName);
+
+    const categoryExists = categories.some(
+      (category) => normalizeString(category.name) === normalizedCategoryName
+    );
+
+    if (categoryExists) {
+      toast.error("Category name already exists.");
+      return;
+    }
+
     const categoryData = {
       name: categoryName,
       description: categoryDescription,
@@ -67,8 +91,9 @@ const CategoryManagement = () => {
       const { newCategory } = await addCategory(categoryData);
       if (newCategory) {
         setCategories((prevCategories) => [...prevCategories, newCategory]);
+        toast.success("Added new category");
       } else {
-        console.log("Failed to add category");
+        toast.error("Failed to add category");
       }
       toggleModal();
     } catch (error) {
@@ -79,6 +104,24 @@ const CategoryManagement = () => {
   //edit--category
   const handleEditCategory = async (e) => {
     e.preventDefault();
+
+    const normalizeString = (str) =>
+      str
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "");
+
+    const normalizedCategoryName = normalizeString(categoryName);
+
+    const categoryExists = categories.some(
+      (category) => normalizeString(category.name) === normalizedCategoryName
+    );
+
+    if (categoryExists) {
+      toast.error("Category name already exists.");
+      return;
+    }
+
     const categoryData = {
       name: categoryName,
       description: categoryDescription,
@@ -88,13 +131,14 @@ const CategoryManagement = () => {
     try {
       const updatedCategory = await editCategory(categoryID, categoryData);
       if (updatedCategory) {
+        toast.success("Edited Category");
         setCategories((prevCategories) =>
           prevCategories.map((category) =>
             category._id === categoryID ? updatedCategory : category
           )
         );
       } else {
-        console.log("Failed to update category");
+        toast.error("Failed to update category");
       }
       toggleEditModal(categoryID);
     } catch (error) {
@@ -103,9 +147,26 @@ const CategoryManagement = () => {
   };
 
   //delete category
-  const toggleCategory = async(ID) => {
-    const {updatedCategory} = await toggleCategoryStatus(ID);
+  const toggleCategory = async (ID) => {
+    const { updatedCategory } = await toggleCategoryStatus(ID);
     setCategories((prevCategories) => [...prevCategories, updatedCategory]);
+  };
+
+  // Handle search query
+  const handleSearch = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    const normalizedQuery = query.trim().toLowerCase();
+
+    const filtered = categories.filter(
+      (category) =>
+        category.name.toLowerCase().includes(normalizedQuery) ||
+        (category.description &&
+          category.description.toLowerCase().includes(normalizedQuery))
+    );
+
+    setFilteredCategories(filtered);
   };
 
   return (
@@ -119,6 +180,8 @@ const CategoryManagement = () => {
                 <input
                   type="text"
                   id="table-search-users"
+                  value={searchQuery}
+                  onChange={handleSearch}
                   className="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   placeholder="Search for category"
                 />
@@ -155,8 +218,8 @@ const CategoryManagement = () => {
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800">
-              {categories.length > 0 ? (
-                categories.map((category) => (
+              {filteredCategories.length > 0 ? (
+                filteredCategories.map((category) => (
                   <tr
                     key={category._id}
                     className="hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -188,19 +251,19 @@ const CategoryManagement = () => {
                     <td className="px-6 py-4">
                       <span
                         onClick={() => toggleEditModal(category._id)}
-                        className="font-medium text-green-600 dark:text-green-500 cursor-pointer hover:underline"
+                        className="font-medium text-green-600 dark:text-green-400 cursor-pointer hover:underline"
                       >
-                        Edit Category
+                        Edit
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <span
                         onClick={() => toggleCategory(category._id)}
                         className={`font-medium ${
-                          category.isDeleted ? "text-green-600" : "text-red-600"
+                          category.isDeleted ? "text-green-400" : "text-red-400"
                         } cursor-pointer hover:underline`}
                       >
-                        {category.isDeleted ? "Recover" : "Delete Category"}
+                        {category.isDeleted ? "Recover" : "Delete"}
                       </span>
                     </td>
                   </tr>

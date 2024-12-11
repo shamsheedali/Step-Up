@@ -197,6 +197,64 @@ const cancelOrder = async (req, res) => {
   }
 };
 
+//RETURN ORDER
+const returnOrder = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const uid = req.params.uid;
+
+    const order = await Orders.findByIdAndUpdate(
+      orderId,
+      { isReturned: true, status: "Returned" },
+      { new: true }
+    );
+
+    for (const item of order.items) {
+      const quantity = Number(item.quantity);
+
+      if (isNaN(quantity)) {
+        throw new Error(
+          `Invalid quantity for product ${item.product}: quantity must be a number.`
+        );
+      }
+
+      await Product.findByIdAndUpdate(
+        item.product,
+        { $inc: { stock: +quantity } },
+        { new: true }
+      );
+    }
+
+    if (
+      ["razorPay", "Wallet"].includes(order.paymentMethod) &&
+      ["Completed", "Refunded"].includes(order.paymentStatus)
+    ) {
+      const transaction = {
+        description: "Amount Returned Due to Order Return",
+        type: "Credit",
+        amount: order.totalAmount,
+      };
+
+      await Wallet.findOneAndUpdate(
+        { userId: uid },
+        { $push: { transactions: transaction } },
+        { upsert: true, new: true }
+      );
+
+      await Orders.findByIdAndUpdate(orderId, {
+        paymentStatus: "Refunded",
+      });
+    }
+
+    res.status(HttpStatus.OK).json({ message: "Order Returned!" });
+  } catch (error) {
+    console.log(error);
+    res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: "Error While Returning order" });
+  }
+}
+
 //Fetching all orders
 const getAllOrders = async (req, res) => {
   try {
@@ -396,4 +454,5 @@ export {
   salesReport,
   changePaymentStatus,
   getOrdersPagination,
+  returnOrder,
 };

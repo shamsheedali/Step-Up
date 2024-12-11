@@ -77,6 +77,26 @@ const cancelOrder = async (orderId, uid) => {
   }
 };
 
+//return order
+const returnOrder = async (orderId, uid) => {
+  try {
+    const token = localStorage.getItem("userToken");
+
+    const response = await axios.delete(
+      `${API_URL}/order-return/${orderId}/${uid}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log(response);
+    toast.success("Order Returned");
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 //get all orders
 const getOrders = async () => {
   try {
@@ -160,4 +180,5 @@ export {
   salesReport,
   changePaymentStatus,
   orderLimit,
+  returnOrder,
 };

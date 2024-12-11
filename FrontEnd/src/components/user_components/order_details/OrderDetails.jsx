@@ -19,6 +19,22 @@ const OrderDetails = ({ id }) => {
   const [categories, setCategories] = useState([]);
   const [reRender, setReRender] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [confirmationModal, setConfirmationModal] = useState(false);
+
+  const [orderId, setOrderId] = useState("");
+  const [totalAmount, setTotalAmount] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState("");
+
+  const openModal = (orderId, totalAmount, paymentMethod, paymentStatus) => {
+    setOrderId(orderId);
+    setTotalAmount(totalAmount);
+    setPaymentMethod(paymentMethod);
+    setPaymentStatus(paymentStatus);
+    setConfirmationModal(true);
+  };
+
+  const closeModal = () => setConfirmationModal(false);
 
   useEffect(() => {
     const getOrders = async () => {
@@ -57,9 +73,11 @@ const OrderDetails = ({ id }) => {
   ) => {
     if (order.status === "Delivered") {
       toast.success("Requested to Return Order");
+      closeModal();
       return;
     }
     await cancelOrder(orderId, uid);
+    closeModal();
     if (
       ["razorPay", "Wallet"].includes(order.paymentMethod) &&
       ["Completed", "Refunded"].includes(order.paymentStatus)
@@ -208,7 +226,8 @@ const OrderDetails = ({ id }) => {
           <p className="flex items-center">
             Payment Method: {order.paymentMethod}
             {" - "}
-            {(order.paymentMethod === "razorPay" || order.paymentMethod === "Wallet") && (
+            {(order.paymentMethod === "razorPay" ||
+              order.paymentMethod === "Wallet") && (
               <span
                 className={`px-3 py-1 rounded flex items-center gap-1 ${
                   order.paymentStatus === "Pending"
@@ -238,7 +257,7 @@ const OrderDetails = ({ id }) => {
                   ? "bg-green-500"
                   : order.status === "Cancelled"
                   ? "bg-red-500"
-                  : order.status === "Shipped"
+                  : ["Shipped", "Returned"].includes(order.status)
                   ? "bg-yellow-500"
                   : order.status === "Processing"
                   ? "bg-blue-500"
@@ -307,14 +326,14 @@ const OrderDetails = ({ id }) => {
               order.isCancelled ? "text-black" : "text-white"
             } bg-black rounded-lg transition`}
             onClick={() =>
-              handleCancelOrder(
+              openModal(
                 order._id,
                 order.totalAmount,
                 order.paymentMethod,
                 order.paymentStatus
               )
             }
-            disabled={order.isCancelled}
+            disabled={order.isCancelled || order.isReturned}
           >
             {order.status === "Delivered"
               ? "Request Return"
@@ -324,6 +343,61 @@ const OrderDetails = ({ id }) => {
           </button>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {confirmationModal && (
+        <div
+          id="popup-modal"
+          tabIndex="-1"
+          className="fixed inset-0 z-50 flex items-center justify-center w-full h-full bg-black bg-opacity-50"
+        >
+          <div className="relative p-4 w-full max-w-md">
+            <div className="relative bg-white rounded-lg shadow dark:bg-[#c4c4c4]">
+              <div className="p-4 md:p-5 text-center">
+                <svg
+                  className="mx-auto mb-4 text-black w-12 h-12 dark:text-black"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                  />
+                </svg>
+                <h3 className="mb-5 text-lg font-normal text-black dark:text-black">
+                  Are you sure?
+                </h3>
+                <button
+                  onClick={() =>
+                    handleCancelOrder(
+                      orderId,
+                      totalAmount,
+                      paymentMethod,
+                      paymentStatus
+                    )
+                  }
+                  type="button"
+                  className="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center"
+                >
+                  Yes, I'm sure
+                </button>
+                <button
+                  onClick={closeModal}
+                  type="button"
+                  className="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                >
+                  No, cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

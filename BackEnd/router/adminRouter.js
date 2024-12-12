@@ -4,7 +4,7 @@ import verifyToken from '../middleware/middleware.js';
 const router = express.Router();
 
 router.post('/admin_login', login);
-router.get('/get_users', verifyToken,fetchUsers);
+router.get('/get_users',fetchUsers);
 router.patch('/:id/block', verifyToken, blockUser);
 router.patch('/:id/unblock', verifyToken, unBlockUser);
 

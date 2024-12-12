@@ -16,6 +16,7 @@ import { GoHeart, GoHeartFill } from "react-icons/go";
 import { addToWishlist, fetchWishlist } from "../../../api/wishlist";
 import { HiOutlineShoppingBag } from "react-icons/hi";
 import { addToBagQty } from "../../../features/bag/BagSlice";
+import ReviewForm from "../../../components/user_components/review_form/ReviewForm";
 
 // const product = {
 //   name: "Basic Tee 6-Pack",
@@ -131,7 +132,7 @@ const SingleProductPage = () => {
   useEffect(() => {
     // Check if the product is already in the bag
     if (bags[uid]?.quantities[product._id]) {
-      console.log("Already")
+      console.log("Already");
       setIsInBag(true);
     }
   }, [bags, product._id, uid]);
@@ -139,21 +140,21 @@ const SingleProductPage = () => {
   //add to bag
   const handleAddToBag = async (e, productId) => {
     e.preventDefault();
-  
+
     if (product.stock < 1) {
       return toast.warning("Product Out Of Stock");
     }
-  
+
     const data = {
       userId: uid,
       productId,
     };
-  
+
     try {
       // Call API to add product to bag
       await addToBag(data);
-      dispatch(addToBagQty({userId: uid, productId}))
-  
+      dispatch(addToBagQty({ userId: uid, productId }));
+
       // Update the state and show a success toast
       setIsInBag(true);
       toast.success("Product added to bag");
@@ -450,7 +451,9 @@ const SingleProductPage = () => {
                   <button
                     type="submit"
                     onClick={(e) => handleAddToBag(e, product._id)}
-                    className={`mt-10 flex w-full items-center justify-center rounded-md border border-transparent ${isInBag ? "bg-[#000000a1]" : "bg-black"}  px-8 py-3 text-base font-medium text-white hover:bg-[#000000d6] focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2`}
+                    className={`mt-10 flex w-full items-center justify-center rounded-md border border-transparent ${
+                      isInBag ? "bg-[#000000a1]" : "bg-black"
+                    }  px-8 py-3 text-base font-medium text-white hover:bg-[#000000d6] focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2`}
                     disabled={isInBag || product.stock < 1}
                   >
                     {isInBag ? "Already in Bag" : "Add to Bag"}
@@ -516,11 +519,18 @@ const SingleProductPage = () => {
         </div>
       </div>
 
+      {/* Review Section */}
       <h1 className="text-xl text-black font-clash-display px-10 font-bold">
         Customer Review
       </h1>
-      <ReviewSection />
-      <ReviewSection />
+      {product && product._id ? (
+        <>
+          <ReviewForm productId={product._id} />
+          <ReviewSection productId={product._id} />
+        </>
+      ) : (
+        <p>Loading product details...</p>
+      )}
 
       {/* Related Products */}
       <div className="relative mx-auto max-w-2xl px-8 py-14 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-20">

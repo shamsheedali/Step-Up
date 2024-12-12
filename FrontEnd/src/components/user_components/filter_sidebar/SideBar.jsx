@@ -50,9 +50,6 @@ function classNames(...classes) {
 }
 
 const SideBar = () => {
-
-  
-
   const dispatch = useDispatch();
   const [categories, setCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
@@ -112,17 +109,6 @@ const SideBar = () => {
     );
   };
 
-  useEffect(() => {
-    if (selectedCategories.length > 0) {
-      const filtered = products.filter((product) => 
-        selectedCategories.includes(product.category)
-      );
-      setFilteredProducts(filtered);
-    } else {
-      setFilteredProducts(products);
-    }
-  }, [selectedCategories, products]);
-
   //FETCHING
   useEffect(() => {
     const getProducts = async () => {
@@ -153,6 +139,18 @@ const SideBar = () => {
     };
     getProducts();
   }, [currentPage]);
+
+
+  useEffect(() => {
+    if (selectedCategories.length > 0) {
+      const filtered = products.filter((product) => 
+        selectedCategories.includes(product.category)
+      );
+      setFilteredProducts(filtered);
+    } else {
+      setFilteredProducts(products);
+    }
+  }, [selectedCategories, products]);
 
   const handleSort = (order) => {
     setSortOrder(order);
@@ -213,7 +211,7 @@ const SideBar = () => {
               {/* Filters */}
               <form className="mt-4 border-t border-gray-200">
                 <h3 className="sr-only">Categories</h3>
-                <ul role="list" className="px-2 py-3 font-medium text-gray-900">
+                {/* <ul role="list" className="px-2 py-3 font-medium text-gray-900">
                   {subCategories.map((category) => (
                     <li key={category.name}>
                       <a href={category.href} className="block px-2 py-3">
@@ -221,7 +219,7 @@ const SideBar = () => {
                       </a>
                     </li>
                   ))}
-                </ul>
+                </ul> */}
 
                 {filters.map((section) => (
                   <Disclosure
@@ -344,7 +342,7 @@ const SideBar = () => {
               {/* Filters */}
               <form className="hidden lg:block">
                 <h3 className="sr-only">Categories</h3>
-                <ul
+                {/* <ul
                   role="list"
                   className="space-y-4 border-b border-gray-200 pb-6 text-sm font-medium text-gray-900"
                 >
@@ -353,7 +351,7 @@ const SideBar = () => {
                       <a href={category.href}>{category.name}</a>
                     </li>
                   ))}
-                </ul>
+                </ul> */}
 
                 {filters.map((section) => (
                   <Disclosure
@@ -406,6 +404,7 @@ const SideBar = () => {
                     </DisclosurePanel>
                   </Disclosure>
                 ))}
+                {/* <button className="btn text-white bg-black w-full rounded-full" onClick={handleFilters}>Apply</button> */}
               </form>
 
               {/* Product grid */}

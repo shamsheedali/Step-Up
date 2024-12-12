@@ -14,6 +14,7 @@ import wishlistRouter from './router/wishlistRouter.js';
 import couponRouter from './router/couponRouter.js';
 import offerRouter from './router/offerRouter.js';
 import walletRouter from './router/walletRouter.js';
+import reviewRoutes from './router/reviewRoutes.js'; 
 import connectDB from './db/connection.js';
 
 dotenv.config();
@@ -51,6 +52,9 @@ app.use('/api/coupon', couponRouter);
 app.use('/api/offer', offerRouter);
 //WALLET-ROUTE
 app.use('/api/wallet', walletRouter);
+//REVIEW-ROUTE
+app.use('/api/review', reviewRoutes);
+
 
 
 

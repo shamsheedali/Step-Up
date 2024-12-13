@@ -1,7 +1,6 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 
-
 const API_URL = `${import.meta.env.VITE_API_URL}/product`;
 
 const addProduct = async (formData) => {
@@ -26,7 +25,7 @@ const addProduct = async (formData) => {
 const fetchProducts = async () => {
   try {
     const response = await axios.get(`${API_URL}/fetchProducts`);
-    console.log('product response', `${API_URL}/fetchProducts`);
+    console.log("product response", `${API_URL}/fetchProducts`);
     return response.data;
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -34,20 +33,45 @@ const fetchProducts = async () => {
 };
 
 //fetch product with limit (pagination)
-const fetchProductsLimit = async(page, limit) => {
+const fetchProductsLimit = async (page, limit) => {
   try {
     const response = await axios.get(`${API_URL}/productLimit`, {
       params: {
         page,
         limit,
-      }
-    })
+      },
+    });
 
     return response.data;
   } catch (error) {
     console.log(error);
   }
-}
+};
+
+//Advanced fetch
+const advancedFetch = async (filters) => {
+  try {
+    const {
+      categories = [],
+      sort,
+      currentPage,
+      entriesPerPage,
+      search,
+    } = filters;
+    const params = new URLSearchParams();
+
+    if (categories.length > 0)
+      params.append("categories", categories.join(","));
+
+    const response = await axios.get(
+      `${API_URL}/filter_products?${params.toString()}&sortBy=${sort}&page=${currentPage}&limit=${entriesPerPage}&search=${search}`
+    );
+
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 const getProduct = async (id) => {
   try {
@@ -140,7 +164,7 @@ const productCheckout = async (productIds) => {
 };
 
 //Top selling products
-const getTopSellingProducts = async() => {
+const getTopSellingProducts = async () => {
   try {
     const response = await axios.get(`${API_URL}/top-selling/products`);
 
@@ -149,7 +173,7 @@ const getTopSellingProducts = async() => {
   } catch (error) {
     console.log(error);
   }
-}
+};
 
 export {
   addProduct,
@@ -161,4 +185,5 @@ export {
   fetchProductsLimit,
   getTopSellingProducts,
   uploadImageToStorage,
+  advancedFetch,
 };

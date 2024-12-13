@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { addReview } from "../../../api/review";
 import { toast } from "react-toastify";
 
-const ReviewForm = ({ productId }) => {
+const ReviewForm = ({ product, onReviewSubmit }) => {
   const { uid } = useSelector((state) => state.user);
   const [reviewText, setReviewText] = useState("");
   const [rating, setRating] = useState(0);
@@ -23,7 +23,7 @@ const ReviewForm = ({ productId }) => {
 
     const reviewData = {
       userId: uid,
-      productId,
+      productId: product._id,
       review: reviewText,
       rating,
     };
@@ -32,6 +32,7 @@ const ReviewForm = ({ productId }) => {
 
     try {
       await addReview(reviewData);
+      if (onReviewSubmit) onReviewSubmit(); //To Notify parent about the update
       setReviewText("");
       setRating(0);
       setIsModalOpen(false);
@@ -65,18 +66,14 @@ const ReviewForm = ({ productId }) => {
           <div className="fixed inset-0 bg-black bg-opacity-50 z-40"></div>
 
           {/* Modal content */}
-          <div
-            className="fixed top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full flex justify-center items-center"
-          >
+          <div className="fixed top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full flex justify-center items-center">
             <div
               className="relative flex flex-col items-center w-full h-[80vh] max-w-[40rem] bg-white rounded-3xl shadow p-9"
-              onClick={(e) => e.stopPropagation()} 
+              onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between p-4 md:p-5">
-                <h3 className="text-xl font-medium text-black">Write a Review</h3>
                 <button
                   onClick={closeModal}
-                  className="text-black bg-transparent hover:bg-gray-200 hover:text-black rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center"
+                  className="text-black bg-gray-300 hover:bg-gray-200 hover:text-black rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center"
                 >
                   <svg
                     className="w-3 h-3"
@@ -94,11 +91,29 @@ const ReviewForm = ({ productId }) => {
                     />
                   </svg>
                 </button>
+              <div className="p-4 md:p-5">
+                <div className="flex text-center flex-col">
+                  <h3 className="text-xl font-medium text-black">
+                    Write a Review
+                  </h3>
+                  <p className="text-gray-500">Share your thoughts with the community.</p>
+                </div>
               </div>
 
               {/* Modal body */}
+              <div className="flex items-center gap-4">
+                <img
+                  src={product.images[0] || "https://via.placeholder.com/150"}
+                  alt={product?.productName || "Product Image"}
+                  className="w-20 h-20 object-cover rounded-lg"
+                />
+                <h3 className="text-md w-[190px] font-medium">
+                  {product?.productName || "No product name"}
+                </h3>
+              </div>
               <form onSubmit={handleSubmit}>
                 {/* Star Rating */}
+                <h1>Overall rating *</h1>
                 <div className="rating mb-4">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <React.Fragment key={star}>
@@ -115,7 +130,7 @@ const ReviewForm = ({ productId }) => {
 
                 {/* Review Text Area */}
                 <textarea
-                  className="w-full h-28 p-2 border border-black rounded mb-4 focus:outline-none focus:ring-2 focus:ring-black"
+                  className="w-full h-28 p-2 border border-black rounded mb-4 focus:outline-none focus:ring-1 focus:ring-black"
                   placeholder="Write your review here..."
                   value={reviewText}
                   onChange={(e) => setReviewText(e.target.value)}
@@ -124,7 +139,7 @@ const ReviewForm = ({ productId }) => {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  className={`w-full bg-black text-white py-2 px-4 rounded hover:bg-gray-800 transition ${
+                  className={`w-full bg-black text-white py-3 px-4 rounded-full hover:bg-gray-800 transition ${
                     loading ? "opacity-50 cursor-not-allowed" : ""
                   }`}
                   disabled={loading}

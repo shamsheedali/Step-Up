@@ -10,6 +10,7 @@ import {
   fetchProductsWithLimit,
   getTopSellingProducts,
   uploadEditImage,
+  advancedFilter,
 } from "../controller/productController.js";
 import verifyToken from "../middleware/middleware.js";
 
@@ -32,6 +33,8 @@ router.post("/add_product", verifyToken, upload, addProduct);
 router.get("/fetchProducts", fetchProducts);
 //Pagination
 router.get("/productLimit", fetchProductsWithLimit);
+//Advanced filter
+router.get("/filter_products", advancedFilter);
 router.get("/:id", getProduct);
 router.patch("/toggle/:id", verifyToken, toggleProductStatus);
 router.put("/:id", verifyToken, editProduct);

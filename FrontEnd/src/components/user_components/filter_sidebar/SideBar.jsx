@@ -20,7 +20,7 @@ import {
   Squares2X2Icon,
 } from "@heroicons/react/20/solid";
 import ProductGrid from "../product_grid/ProductGrid";
-import { fetchProducts, fetchProductsLimit } from "../../../api/product";
+import { advancedFetch, fetchProducts, fetchProductsLimit } from "../../../api/product";
 import { fetchCategories } from "../../../api/category";
 import { getActiveOffer } from "../../../api/offer";
 import { useDispatch } from "react-redux";
@@ -30,10 +30,10 @@ import { toast } from "react-toastify";
 import { clearOffers } from "../../../features/offers/OfferSlice";
 
 const sortOptions = [
-  { name: "Most Popular", value: "#", current: true },
+  { name: "Sort By", value: "", current: true },
   { name: "aA - zZ", value: "aToZ", current: false },
   { name: "zZ - aA", value: "zToA", current: false },
-  { name: "Newest", value: "#", current: false },
+  { name: "Newest", value: "newArrival", current: false },
   { name: "Price: Low to High", value: "lowToHigh", current: false },
   { name: "Price: High to Low", value: "highToLow", current: false },
 ];
@@ -109,20 +109,19 @@ const SideBar = () => {
     );
   };
 
-  //FETCHING
-  useEffect(() => {
+   //FETCHING PRODUCTS
+   useEffect(() => {
     const getProducts = async () => {
       try {
         setLoading(true);
-        const { products, totalProducts } = await fetchProductsLimit(
+        const { products, totalProducts } = await advancedFetch({
+          categories: selectedCategories,
+          sort: sortOrder,
           currentPage,
-          entriesPerPage
-        );
+          entriesPerPage,
+          search: searchQuery,
+        });
         setTotalProducts(totalProducts);
-        const { data } = await fetchCategories();
-        const {activeOffer} = await getActiveOffer();
-        setOffers(activeOffer);
-        setCategories(data.filter((item) => item.isDeleted !== true));
         setLoading(false);
         if (products) {
           setProducts(products.filter((product) => !product.isDeleted));
@@ -138,43 +137,28 @@ const SideBar = () => {
       }
     };
     getProducts();
-  }, [currentPage]);
+  }, [currentPage, searchQuery, sortOrder, selectedCategories]);
 
-
+  //FETCHING CATEGORY AND OFFER
   useEffect(() => {
-    if (selectedCategories.length > 0) {
-      const filtered = products.filter((product) => 
-        selectedCategories.includes(product.category)
-      );
-      setFilteredProducts(filtered);
-    } else {
-      setFilteredProducts(products);
-    }
-  }, [selectedCategories, products]);
+    const getItems = async () => {
+      try {
+        const { data } = await fetchCategories();
+        setCategories(data.filter((item) => item.isDeleted !== true));
+        
+        const {activeOffer} = await getActiveOffer();
+        setOffers(activeOffer);
+        
+      } catch (error) {
+        console.error("Error fetching Category & Offer", error);
+      }
+    };
+    getItems();
+  }, []);
 
   const handleSort = (order) => {
     setSortOrder(order);
-    const sortedProducts = [...filteredProducts].sort((a, b) => {
-      if (order === "lowToHigh") return a.price - b.price;
-      if (order === "highToLow") return b.price - a.price;
-      if (order === "aToZ") return a.productName.localeCompare(b.productName);
-      if (order === "zToA") return b.productName.localeCompare(a.productName);
-      return 0;
-    });
-    setFilteredProducts(sortedProducts);
   };
-
-  //search query
-  useEffect(() => {
-    if (searchQuery) {
-      const filtered = filteredProducts.filter((product) =>
-        product.productName.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredProducts(filtered);
-    } else {
-      setFilteredProducts(products);
-    }
-  }, [searchQuery, products]);
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   return (
@@ -404,7 +388,6 @@ const SideBar = () => {
                     </DisclosurePanel>
                   </Disclosure>
                 ))}
-                {/* <button className="btn text-white bg-black w-full rounded-full" onClick={handleFilters}>Apply</button> */}
               </form>
 
               {/* Product grid */}

@@ -8,6 +8,7 @@ import { clearOffers, setOffer } from "../../../features/offers/OfferSlice";
 import { addToBagQty } from "../../../features/bag/BagSlice";
 
 const ProductGrid = ({ products, loading, offers }) => {
+  console.log("Products", products[0]);
   const { uid } = useSelector((state) => state.user);
   const { bags } = useSelector((state) => state.bag);
   const dispatch = useDispatch();
@@ -100,7 +101,7 @@ const ProductGrid = ({ products, loading, offers }) => {
               .map((product) => {
                 // Checking product has an active offer
                 const isOnOffer =
-                  offers && offers.productsIncluded.includes(product._id);
+                  offers?.productsIncluded?.includes(product._id) ?? false;
                 const discount = isOnOffer ? offers.offerPrice : 0;
                 const discountedPrice = isOnOffer
                   ? getDiscountedPrice(product.price, discount)

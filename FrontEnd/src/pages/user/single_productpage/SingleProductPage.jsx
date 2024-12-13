@@ -95,6 +95,12 @@ const SingleProductPage = () => {
   const [loading, setLoading] = useState(false);
   const [selectedSize, setSelectedSize] = useState(null);
 
+  //For rerendering the child after successfull review submit
+  const [reviewsUpdated, setReviewsUpdated] = useState(false);
+  const handleReviewSubmit = () => {
+    setReviewsUpdated((prev) => !prev);
+  };
+
   const [wishlistIcon, setWishlistIcon] = useState(<GoHeart />);
 
   useEffect(() => {
@@ -525,8 +531,8 @@ const SingleProductPage = () => {
       </h1>
       {product && product._id ? (
         <>
-          <ReviewForm productId={product._id} />
-          <ReviewSection productId={product._id} />
+          <ReviewForm product={product} onReviewSubmit={handleReviewSubmit} />
+          <ReviewSection productId={product._id} reviewsUpdated={reviewsUpdated} />
         </>
       ) : (
         <p>Loading product details...</p>

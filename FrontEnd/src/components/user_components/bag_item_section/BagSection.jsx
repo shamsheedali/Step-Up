@@ -42,7 +42,7 @@ const BagSection = ({
     }
   }, [stock]);
 
-  //use effect for dispaching and storing quantity info in redux
+  //use effect for dispatching and storing quantity info in redux
   useEffect(() => {
     dispatch(updateQuantity({ userId, productId, quantity }));
 
@@ -131,18 +131,25 @@ const BagSection = ({
         <div className="relative right-24">
           <h1 className="w-[190px]">{name}</h1>
           <h2 className="text-gray-500">{category}</h2>
-          <h2 className="text-gray-500">Normal Variant</h2>
+          {/* <h2 className="text-gray-500">Normal Variant</h2>
           <h2>
             Size<span className="underline ml-2">7</span>
-          </h2>
+          </h2> */}
+          <h2>{discount > 0 ? (
+              <>Offer Price : ₹{getDiscountedPrice(managePrice).toFixed(0)}</>
+            ) : (
+              <>
+                MRP : ₹ <span>{managePrice}</span>
+              </>
+            )}</h2>
         </div>
         <div className="flex">
           <h1>
             {discount > 0 ? (
-              <>Offer Price : ₹{getDiscountedPrice(price).toFixed(0)}</>
+              <>Sub : ₹{getDiscountedPrice(price).toFixed(0)}</>
             ) : (
               <>
-                MRP : ₹ <span>{price}</span>
+                Sub : ₹ <span>{price}</span>
               </>
             )}
           </h1>

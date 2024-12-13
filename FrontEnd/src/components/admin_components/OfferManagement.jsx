@@ -477,6 +477,7 @@ const OfferManagement = () => {
                     type="date"
                     id="endDate"
                     value={addOfferData.endDate}
+                    min={new Date().toISOString().split("T")[0]}
                     onChange={handleChange}
                     name="endDate"
                     required
@@ -700,6 +701,7 @@ const OfferManagement = () => {
                         ? addOfferData.endDate.split("T")[0]
                         : ""
                     }
+                    min={new Date().toISOString().split("T")[0]}
                     onChange={handleChange}
                     name="endDate"
                     required

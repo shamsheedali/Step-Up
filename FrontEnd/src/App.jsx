@@ -23,6 +23,7 @@ import OrderSuccessPage from "./pages/user/order_success/OrderSuccessPage";
 import Wallet from "./pages/user/wallet/Wallet";
 import OrderDetailsPage from "./pages/user/orderDetails/OrderDetailsPage";
 import AdminProtectedRoute from "../src/protectedRoutes/adminProtectedRoute";
+import UserProtectedRoute from "./protectedRoutes/UserProtectedRoute";
 import OrderPendingPage from "./pages/user/orderPending/OrderPendingPage";
 import ForgotPassword from "./pages/user/forgotPassword/ForgotPassword";
 import ForgotPasswordVerify from "./pages/user/forgotPassword_verify/ForgotPasswordVerify";
@@ -38,30 +39,117 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/otp" element={<OtpPage />} />
         <Route path="/forgotPassword" element={<ForgotPassword />} />
-        <Route path="/forgotPassword-verify" element={<ForgotPasswordVerify />} />
+        <Route
+          path="/forgotPassword-verify"
+          element={<ForgotPasswordVerify />}
+        />
         <Route path="/products" element={<AllProduct />} />
         <Route path="/products/:id" element={<SingleProductPage />} />
-        <Route path="/bag" element={<Bag />} />
-        <Route path="/wishlist" element={<Wishlist />} />
-        <Route path="/wishlist/:id" element={<SingleProductPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/profile/settings" element={<Settings />} />
+
+        {/* Protected routes */}
+        <Route
+          path="/profile"
+          element={
+            <UserProtectedRoute>
+              <ProfilePage />
+            </UserProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile/settings"
+          element={
+            <UserProtectedRoute>
+              <Settings />
+            </UserProtectedRoute>
+          }
+        />
         <Route
           path="/profile/settings/delivery-addresses"
-          element={<DeliveryAddresses />}
+          element={
+            <UserProtectedRoute>
+              <DeliveryAddresses />
+            </UserProtectedRoute>
+          }
         />
-        <Route path="/profile/orders" element={<ListOrders />} />
-        <Route path="/profile/orders/:id" element={<OrderDetailsPage />} />
-        <Route path="/profile/coupons" element={<Coupons />} />
-        <Route path="/profile/wallet" element={<Wallet />} />
-        <Route path="/bag/checkout" element={<Checkout />} />
+        <Route
+          path="/profile/orders"
+          element={
+            <UserProtectedRoute>
+              <ListOrders />
+            </UserProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile/orders/:id"
+          element={
+            <UserProtectedRoute>
+              <OrderDetailsPage />
+            </UserProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile/coupons"
+          element={
+            <UserProtectedRoute>
+              <Coupons />
+            </UserProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile/wallet"
+          element={
+            <UserProtectedRoute>
+              <Wallet />
+            </UserProtectedRoute>
+          }
+        />
+        <Route
+          path="/bag"
+          element={
+            <UserProtectedRoute>
+              <Bag />
+            </UserProtectedRoute>
+          }
+        />
+        <Route
+          path="/wishlist"
+          element={
+            <UserProtectedRoute>
+              <Wishlist />
+            </UserProtectedRoute>
+          }
+        />
+        <Route
+          path="/wishlist/:id"
+          element={
+            <UserProtectedRoute>
+              <SingleProductPage />
+            </UserProtectedRoute>
+          }
+        />
+        <Route
+          path="/bag/checkout"
+          element={
+            <UserProtectedRoute>
+              <Checkout />
+            </UserProtectedRoute>
+          }
+        />
         <Route
           path="/bag/checkout/order-success"
-          element={<OrderSuccessPage />}
+          element={
+            <UserProtectedRoute>
+              <OrderSuccessPage />
+            </UserProtectedRoute>
+          }
         />
         <Route
           path="/bag/checkout/order-pending"
-          element={<OrderPendingPage />}
+          element={
+            <UserProtectedRoute>
+              <OrderPendingPage />
+            </UserProtectedRoute>
+          }
         />
 
         {/* ADMIN--ROUTES */}

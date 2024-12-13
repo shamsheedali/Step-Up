@@ -13,6 +13,7 @@ import {
   advancedFilter,
 } from "../controller/productController.js";
 import verifyToken from "../middleware/middleware.js";
+import requireRole from "../middleware/requireRole.js";
 
 const router = express.Router();
 //For adding product
@@ -29,16 +30,16 @@ const uploadEdit = multer({
 //Router for image edit upload
 router.post("/upload", uploadEdit, uploadEditImage);
 
-router.post("/add_product", verifyToken, upload, addProduct);
+router.post("/add_product", verifyToken, requireRole("admin"), upload, addProduct);
 router.get("/fetchProducts", fetchProducts);
 //Pagination
 router.get("/productLimit", fetchProductsWithLimit);
 //Advanced filter
 router.get("/filter_products", advancedFilter);
 router.get("/:id", getProduct);
-router.patch("/toggle/:id", verifyToken, toggleProductStatus);
-router.put("/:id", verifyToken, editProduct);
-router.post("/product-checkout", verifyToken, productCheckout);
+router.patch("/toggle/:id", verifyToken, requireRole("admin"), toggleProductStatus);
+router.put("/:id", verifyToken, requireRole("admin"), editProduct);
+router.post("/product-checkout", productCheckout);
 router.get('/top-selling/products', getTopSellingProducts);
 
 export default router;

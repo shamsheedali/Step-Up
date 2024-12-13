@@ -9,165 +9,179 @@ import { toast } from "react-toastify";
 
 const CategoryManagement = () => {
   const [categories, setCategories] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [categoryName, setCategoryName] = useState("");
-  const [categoryDescription, setCategoryDescription] = useState("");
-  const [categoryID, setCategoryID] = useState(null);
+const [isModalOpen, setIsModalOpen] = useState(false);
+const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+const [categoryName, setCategoryName] = useState("");
+const [categoryDescription, setCategoryDescription] = useState("");
+const [categoryID, setCategoryID] = useState(null);
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filteredCategories, setFilteredCategories] = useState([]);
+const [searchQuery, setSearchQuery] = useState("");
+const [filteredCategories, setFilteredCategories] = useState([]);
 
-  useEffect(() => {
-    const getCategories = async () => {
-      try {
-        const { data } = await fetchCategories();
-        if (data) {
-          setCategories(data);
-          setFilteredCategories(data);
-        } else {
-          console.log("No data found");
-        }
-      } catch (error) {
-        console.error("Error fetching categories", error);
+// Add a state to trigger rerenders
+const [rerender, setRerender] = useState(false);
+
+useEffect(() => {
+  const getCategories = async () => {
+    try {
+      const { data } = await fetchCategories();
+      if (data) {
+        setCategories(data);
+        setFilteredCategories(data);
+      } else {
+        console.log("No data found");
       }
-    };
-    getCategories();
-  }, []);
-
-  const toggleModal = () => {
-    setIsModalOpen(!isModalOpen);
-    if (isModalOpen) {
-      setCategoryName("");
-      setCategoryDescription("");
+    } catch (error) {
+      console.error("Error fetching categories", error);
     }
   };
+  getCategories();
+}, [rerender]); // Add rerender as a dependency
 
-  const toggleEditModal = (ID) => {
-    setIsEditModalOpen(!isEditModalOpen);
-    setCategoryID(ID);
+const toggleModal = () => {
+  setIsModalOpen(!isModalOpen);
+  if (isModalOpen) {
+    setCategoryName("");
+    setCategoryDescription("");
+  }
+};
 
-    if (!isEditModalOpen) {
-      const categoryToEdit = categories.find((category) => category._id === ID);
-      setCategoryName(categoryToEdit.name);
-      setCategoryDescription(categoryToEdit.description);
+const toggleEditModal = (ID) => {
+  setIsEditModalOpen(!isEditModalOpen);
+  setCategoryID(ID);
+
+  if (!isEditModalOpen) {
+    const categoryToEdit = categories.find((category) => category._id === ID);
+    setCategoryName(categoryToEdit.name);
+    setCategoryDescription(categoryToEdit.description);
+  } else {
+    // Reset inputs when closing the edit modal
+    setCategoryName("");
+    setCategoryDescription("");
+  }
+};
+
+// Add new category
+const handleAddCategory = async (e) => {
+  e.preventDefault();
+
+  const normalizeString = (str) =>
+    str
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "");
+
+  const normalizedCategoryName = normalizeString(categoryName);
+
+  const categoryExists = categories.some(
+    (category) => normalizeString(category.name) === normalizedCategoryName
+  );
+
+  if (categoryExists) {
+    toast.error("Category name already exists.");
+    return;
+  }
+
+  const categoryData = {
+    name: categoryName,
+    description: categoryDescription,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    isDeleted: false,
+  };
+
+  try {
+    const { newCategory } = await addCategory(categoryData);
+    if (newCategory) {
+      setCategories((prevCategories) => [...prevCategories, newCategory]);
+      setRerender((prev) => !prev); // Trigger rerender
+      toast.success("Added new category");
     } else {
-      // Reset inputs when closing the edit modal
-      setCategoryName("");
-      setCategoryDescription("");
+      toast.error("Failed to add category");
     }
+    toggleModal();
+  } catch (error) {
+    console.error("Error adding category", error);
+  }
+};
+
+// Edit category
+const handleEditCategory = async (e) => {
+  e.preventDefault();
+
+  const normalizeString = (str) =>
+    str
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "");
+
+  const normalizedCategoryName = normalizeString(categoryName);
+
+  const categoryExists = categories.some(
+    (category) => normalizeString(category.name) === normalizedCategoryName
+  );
+
+  if (categoryExists) {
+    toast.error("Category name already exists.");
+    return;
+  }
+
+  const categoryData = {
+    name: categoryName,
+    description: categoryDescription,
+    updatedAt: new Date().toISOString(),
   };
 
-  //Add new category
-  const handleAddCategory = async (e) => {
-    e.preventDefault();
-
-    const normalizeString = (str) =>
-      str
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, "");
-
-    const normalizedCategoryName = normalizeString(categoryName);
-
-    const categoryExists = categories.some(
-      (category) => normalizeString(category.name) === normalizedCategoryName
-    );
-
-    if (categoryExists) {
-      toast.error("Category name already exists.");
-      return;
+  try {
+    const updatedCategory = await editCategory(categoryID, categoryData);
+    if (updatedCategory) {
+      toast.success("Edited Category");
+      setCategories((prevCategories) =>
+        prevCategories.map((category) =>
+          category._id === categoryID ? updatedCategory : category
+        )
+      );
+      setRerender((prev) => !prev); // Trigger rerender
+    } else {
+      toast.error("Failed to update category");
     }
+    toggleEditModal(categoryID);
+  } catch (error) {
+    console.error("Error editing category", error);
+  }
+};
 
-    const categoryData = {
-      name: categoryName,
-      description: categoryDescription,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      isDeleted: false,
-    };
-
-    try {
-      const { newCategory } = await addCategory(categoryData);
-      if (newCategory) {
-        setCategories((prevCategories) => [...prevCategories, newCategory]);
-        toast.success("Added new category");
-      } else {
-        toast.error("Failed to add category");
-      }
-      toggleModal();
-    } catch (error) {
-      console.error("Error adding category", error);
-    }
-  };
-
-  //edit--category
-  const handleEditCategory = async (e) => {
-    e.preventDefault();
-
-    const normalizeString = (str) =>
-      str
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, "");
-
-    const normalizedCategoryName = normalizeString(categoryName);
-
-    const categoryExists = categories.some(
-      (category) => normalizeString(category.name) === normalizedCategoryName
-    );
-
-    if (categoryExists) {
-      toast.error("Category name already exists.");
-      return;
-    }
-
-    const categoryData = {
-      name: categoryName,
-      description: categoryDescription,
-      updatedAt: new Date().toISOString(),
-    };
-
-    try {
-      const updatedCategory = await editCategory(categoryID, categoryData);
-      if (updatedCategory) {
-        toast.success("Edited Category");
-        setCategories((prevCategories) =>
-          prevCategories.map((category) =>
-            category._id === categoryID ? updatedCategory : category
-          )
-        );
-      } else {
-        toast.error("Failed to update category");
-      }
-      toggleEditModal(categoryID);
-    } catch (error) {
-      console.error("Error editing category", error);
-    }
-  };
-
-  //delete category
-  const toggleCategory = async (ID) => {
+// Toggle category status (e.g., delete/restore)
+const toggleCategory = async (ID) => {
+  try {
     const { updatedCategory } = await toggleCategoryStatus(ID);
-    setCategories((prevCategories) => [...prevCategories, updatedCategory]);
-  };
-
-  // Handle search query
-  const handleSearch = (e) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-
-    const normalizedQuery = query.trim().toLowerCase();
-
-    const filtered = categories.filter(
-      (category) =>
-        category.name.toLowerCase().includes(normalizedQuery) ||
-        (category.description &&
-          category.description.toLowerCase().includes(normalizedQuery))
+    setCategories((prevCategories) =>
+      prevCategories.map((category) =>
+        category._id === ID ? updatedCategory : category
+      )
     );
+    setRerender((prev) => !prev); // Trigger rerender
+  } catch (error) {
+    console.error("Error toggling category status", error);
+  }
+};
 
-    setFilteredCategories(filtered);
-  };
+// Handle search query
+const handleSearch = (e) => {
+  const query = e.target.value;
+  setSearchQuery(query);
+
+  const normalizedQuery = query.trim().toLowerCase();
+
+  const filtered = categories.filter(
+    (category) =>
+      category.name.toLowerCase().includes(normalizedQuery) ||
+      (category.description &&
+        category.description.toLowerCase().includes(normalizedQuery))
+  );
+
+  setFilteredCategories(filtered);
+};
 
   return (
     <div>

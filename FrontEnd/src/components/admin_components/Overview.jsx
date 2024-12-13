@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { IoMdPricetag } from "react-icons/io";
 import { BsFillBarChartFill } from "react-icons/bs";
 import { TiShoppingCart } from "react-icons/ti";
-import { Line } from "react-chartjs-2";
+import { Line, Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend,
@@ -27,6 +28,7 @@ ChartJS.register(
   CategoryScale,
   LinearScale,
   LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend,
@@ -178,98 +180,105 @@ const Overview = () => {
   return (
     <div className="absolute top-14 right-0 w-[1110px] h-[91vh]">
       <div className="flex pl-9 p-5 mt-3 gap-3">
-        <div className="w-[70%] flex flex-col gap-5">
-          {/* Left side */}
-          <div className="flex justify-between">
-            <div className="px-12 py-6 rounded-md font-bold flex flex-col gap-3 bg-[#DAEAF0]">
-              <div className="flex items-center gap-2">
-                <IoMdPricetag className="bg-white text-4xl rounded-md p-1" />
-                <h2>Total Sales</h2>
-              </div>
-              <h1>₹{Math.round(overallOrderAmount)}</h1>
-            </div>
-            <div className="px-12 py-6 rounded-md font-bold flex flex-col gap-3 bg-[#cddf73]">
-              <div className="flex items-center gap-2">
-                <BsFillBarChartFill className="bg-white text-4xl rounded-md p-1" />
-                <h2>Total Profit</h2>
-              </div>
-              <h1>₹{Math.round(overallOrderAmount - overallDiscount)}</h1>
-            </div>
-            <div className="px-12 py-6 rounded-md font-bold flex flex-col gap-3 bg-[#8c74c5]">
-              <div className="flex items-center gap-2">
-                <TiShoppingCart className="bg-white text-4xl rounded-md p-1" />
-                <h2>Total Orders</h2>
-              </div>
-              <h1>{totalSalesCount}</h1>
-            </div>
-          </div>
-
-          {/* Chart */}
-          <div className="relative flex justify-center items-center w-full h-full bg-white p-5 rounded-lg shadow-md">
-            <Line data={lineChartData} options={chartOptions} />
-            {/* Dropdown */}
-            <div className="absolute right-3 top-3">
-              <Menu as="div" className="relative inline-block text-left">
-                <div>
-                  <Menu.Button className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-                    {timeframe}{" "}
-                    <ChevronDownIcon
-                      aria-hidden="true"
-                      className="-mr-1 h-5 w-5 text-gray-400"
-                    />
-                  </Menu.Button>
-                </div>
-                <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">
-                  <div className="py-1">
-                    <Menu.Item>
-                      {({ active }) => (
-                        <button
-                          className={`${
-                            active
-                              ? "bg-gray-100 text-gray-900"
-                              : "text-gray-700"
-                          } block px-4 py-2 text-sm`}
-                          onClick={() => updateTimeframe("Weekly")}
-                        >
-                          Weekly
-                        </button>
-                      )}
-                    </Menu.Item>
-                    <Menu.Item>
-                      {({ active }) => (
-                        <button
-                          className={`${
-                            active
-                              ? "bg-gray-100 text-gray-900"
-                              : "text-gray-700"
-                          } block px-4 py-2 text-sm`}
-                          onClick={() => updateTimeframe("Monthly")}
-                        >
-                          Monthly
-                        </button>
-                      )}
-                    </Menu.Item>
-                    <Menu.Item>
-                      {({ active }) => (
-                        <button
-                          className={`${
-                            active
-                              ? "bg-gray-100 text-gray-900"
-                              : "text-gray-700"
-                          } block px-4 py-2 text-sm`}
-                          onClick={() => updateTimeframe("Yearly")}
-                        >
-                          Yearly
-                        </button>
-                      )}
-                    </Menu.Item>
-                  </div>
-                </Menu.Items>
-              </Menu>
-            </div>
-          </div>
+      <div className="flex gap-5">
+  {/* Left section */}
+  <div className="w-[70%] flex flex-col gap-5">
+    <div className="flex justify-between">
+      <div className="px-12 py-6 rounded-md font-bold flex flex-col gap-3 bg-[#DAEAF0]">
+        <div className="flex items-center gap-2">
+          <IoMdPricetag className="bg-white text-4xl rounded-md p-1" />
+          <h2>Total Sales</h2>
         </div>
-        <div className="bg-blue-500 w-[30%]">{/* Right side content */}</div>
+        <h1>₹{Math.round(overallOrderAmount)}</h1>
+      </div>
+      <div className="px-12 py-6 rounded-md font-bold flex flex-col gap-3 bg-[#cddf73]">
+        <div className="flex items-center gap-2">
+          <BsFillBarChartFill className="bg-white text-4xl rounded-md p-1" />
+          <h2>Total Profit</h2>
+        </div>
+        <h1>₹{Math.round(overallOrderAmount - overallDiscount)}</h1>
+      </div>
+      <div className="px-12 py-6 rounded-md font-bold flex flex-col gap-3 bg-[#8c74c5]">
+        <div className="flex items-center gap-2">
+          <TiShoppingCart className="bg-white text-4xl rounded-md p-1" />
+          <h2>Total Orders</h2>
+        </div>
+        <h1>{totalSalesCount}</h1>
+      </div>
+    </div>
+
+    {/* Chart */}
+    <div className="relative flex justify-center items-center w-full h-full bg-white p-5 rounded-lg shadow-md">
+      <Line data={lineChartData} options={chartOptions} />
+      {/* Dropdown */}
+      <div className="absolute right-3 top-3">
+        <Menu as="div" className="relative inline-block text-left">
+          <div>
+            <Menu.Button className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+              {timeframe}{" "}
+              <ChevronDownIcon
+                aria-hidden="true"
+                className="-mr-1 h-5 w-5 text-gray-400"
+              />
+            </Menu.Button>
+          </div>
+          <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">
+            <div className="py-1">
+              <Menu.Item>
+                {({ active }) => (
+                  <button
+                    className={`${
+                      active
+                        ? "bg-gray-100 text-gray-900"
+                        : "text-gray-700"
+                    } block px-4 py-2 text-sm`}
+                    onClick={() => updateTimeframe("Weekly")}
+                  >
+                    Weekly
+                  </button>
+                )}
+              </Menu.Item>
+              <Menu.Item>
+                {({ active }) => (
+                  <button
+                    className={`${
+                      active
+                        ? "bg-gray-100 text-gray-900"
+                        : "text-gray-700"
+                    } block px-4 py-2 text-sm`}
+                    onClick={() => updateTimeframe("Monthly")}
+                  >
+                    Monthly
+                  </button>
+                )}
+              </Menu.Item>
+              <Menu.Item>
+                {({ active }) => (
+                  <button
+                    className={`${
+                      active
+                        ? "bg-gray-100 text-gray-900"
+                        : "text-gray-700"
+                    } block px-4 py-2 text-sm`}
+                    onClick={() => updateTimeframe("Yearly")}
+                  >
+                    Yearly
+                  </button>
+                )}
+              </Menu.Item>
+            </div>
+          </Menu.Items>
+        </Menu>
+      </div>
+    </div>
+  </div>
+
+  {/* Right section */}
+  <div className="w-[30%] bg-white p-5 rounded-lg shadow-md flex justify-center items-center">
+    <Bar data={lineChartData} options={chartOptions} />
+  </div>
+</div>
+
       </div>
 
       {/* Section 2 */}

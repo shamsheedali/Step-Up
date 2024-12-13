@@ -7,7 +7,6 @@ const API_URL = `${import.meta.env.VITE_API_URL}/address`;
 const addAddress = async (data, userId) => {
   const token = localStorage.getItem("userToken");
 
-  console.log("data form frontend", data);
   try {
     const response = await axios.post(`${API_URL}/add-address/${userId}`, data, {
       headers: {

@@ -681,7 +681,7 @@ const ProductManagement = () => {
 
                       {/* SIZE */}
                       {/* Add Sizes Selection */}
-                      <div className="col-span-2">
+                      {/* <div className="col-span-2">
                         <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                           Sizes
                         </label>
@@ -717,9 +717,9 @@ const ProductManagement = () => {
                             </div>
                           ))}
                         </div>
-                      </div>
+                      </div> */}
 
-                      <hr />
+                      {/* <hr /> */}
                       <div className="col-span-2">
                         <label className="flex items-center mb-2 text-sm font-medium text-gray-900 dark:text-white">
                           <input
@@ -780,7 +780,7 @@ const ProductManagement = () => {
 
                     <button
                       type="submit"
-                      className="btn bg-blue-700 text-white hover:bg-blue-800 px-4 py-2 rounded-lg"
+                      className="btn bg-blue-700 text-white hover:bg-blue-800 w-full px-4 py-2 rounded-lg"
                     >
                       {loading ? "Adding Product..." : "Add Product"}
                     </button>

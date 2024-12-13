@@ -16,6 +16,7 @@ const addProduct = async (formData) => {
         Authorization: `Bearer ${token}`,
       },
     });
+    toast.success(response.data.message)
     return response.data;
   } catch (error) {
     console.error("Error Adding Product", error);

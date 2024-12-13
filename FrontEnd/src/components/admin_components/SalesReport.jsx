@@ -103,14 +103,18 @@ const SalesReport = () => {
       align: "center",
     });
 
-    // const rupeeSymbol = String.fromCharCode(8377); 
+    // const rupeeSymbol = String.fromCharCode(8377);
 
     doc.setFontSize(12);
     doc.setFont("Helvetica", "normal");
     const summaryData = [
       `Total Sales Count: ${reports?.overallSummary?.orderCount || 0} Orders`,
-      `Overall Order Amount: ${(reports?.overallSummary?.totalRevenue || 0).toFixed(2)}`,
-      `Overall Discount: ${(reports?.overallSummary?.totalDiscount || 0).toFixed(2)}`,
+      `Overall Order Amount: ${(
+        reports?.overallSummary?.totalRevenue || 0
+      ).toFixed(2)}`,
+      `Overall Discount: ${(
+        reports?.overallSummary?.totalDiscount || 0
+      ).toFixed(2)}`,
     ];
 
     summaryData.forEach((text, index) => {
@@ -167,8 +171,6 @@ const SalesReport = () => {
     doc.save("Sales_Report.pdf");
   };
 
-
-
   // Function to download Excel report
   const downloadExcelReport = () => {
     const worksheetData = [
@@ -186,18 +188,18 @@ const SalesReport = () => {
             .reverse()
             .map((report) => [
               new Date(report._id).toLocaleDateString("en-GB"),
-              `₹${report.totalRevenue.toFixed(2)}`, 
-              `₹${report.totalDiscount.toFixed(2)}`, 
-              `₹${report.netSales.toFixed(2)}`, 
+              `₹${report.totalRevenue.toFixed(2)}`,
+              `₹${report.totalDiscount.toFixed(2)}`,
+              `₹${report.netSales.toFixed(2)}`,
               report.orderCount.toString(),
-              report.itemsSold.toString()   
+              report.itemsSold.toString(),
             ])
         : []),
     ];
-  
+
     // Create worksheet and workbook
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-  
+
     // Set column widths for better alignment in the Excel file
     const columnWidths = [
       { wch: 12 }, // Date column
@@ -207,15 +209,15 @@ const SalesReport = () => {
       { wch: 18 }, // Number of Orders column
       { wch: 18 }, // Total Items Sold column
     ];
-    worksheet['!cols'] = columnWidths;
-  
+    worksheet["!cols"] = columnWidths;
+
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Sales Report");
-  
+
     // Write and download the Excel file
     XLSX.writeFile(workbook, "Sales_Report.xlsx");
   };
-  
+
   return (
     <div className="absolute top-14 right-0 w-[1110px] px-3 bg-[#1f2937]">
       <div className="relative overflow-x-auto shadow-md sm:rounded-lg min-h-[30vh] h-fit">
@@ -289,7 +291,12 @@ const SalesReport = () => {
               name="startDate"
               value={startDate}
               max={new Date().toISOString().split("T")[0]}
-              onChange={handleStartDateChange}
+              onChange={(e) => {
+                setStartDate(e.target.value); 
+                if (endDate && e.target.value > endDate) {
+                  setEndDate(""); 
+                }
+              }}
               className="px-2 bg-black py-1 border border-black rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-white"
             />
             <input
@@ -297,10 +304,12 @@ const SalesReport = () => {
               id="endDate"
               name="endDate"
               value={endDate}
-              max={new Date().toISOString().split("T")[0]}
-              onChange={handleEndDateChange}
+              min={startDate} 
+              max={new Date().toISOString().split("T")[0]} 
+              onChange={(e) => setEndDate(e.target.value)}
               className="px-2 py-1 border border-black rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-black bg-black text-white"
             />
+
             <button
               type="submit"
               onClick={handleDateSubmit}

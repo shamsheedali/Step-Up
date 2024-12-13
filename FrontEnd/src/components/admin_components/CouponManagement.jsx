@@ -485,6 +485,7 @@ const CouponManagement = () => {
                     type="date"
                     id="expiryDate"
                     value={addCouponData.expiryDate}
+                    min={new Date().toISOString().split("T")[0]}
                     onChange={handleChange}
                     name="expiryDate"
                     required
@@ -683,6 +684,7 @@ const CouponManagement = () => {
                         ? addCouponData.expiryDate.split("T")[0]
                         : ""
                     }
+                    min={new Date().toISOString().split("T")[0]}
                     onChange={handleChange}
                     name="expiryDate"
                     required

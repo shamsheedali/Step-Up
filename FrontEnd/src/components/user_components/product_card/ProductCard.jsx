@@ -1,18 +1,41 @@
-import React from 'react'
-import productImg from '../../../assets/images/auth/nike.png'
+import React from "react";
+import productImg from "../../../assets/images/auth/nike.png";
+import { useNavigate } from "react-router-dom";
 
-const ProductCard = () => {
+const ProductCard = ({ product }) => {
+  const navigate = useNavigate();
+
+  const handleCardClick = (productID) => {
+    navigate(`/products/${productID}`);
+  };
+
   return (
-    <div className='bg-[#d6d7da] w-[300px] p-8 rounded-xl' style={{ boxShadow: "5px 4px 8px #00000099" }}>
+    <div
+      className="w-[240px] bg-transparent px-3 py-4 text-center cursor-pointer transition duration-500 ease-in-out hover:translate-y-[-10px]"
+      // style={{ boxShadow: "5px 4px 8px #00000099" }}
+      onClick={() => handleCardClick(product._id)}
+    >
       <div>
-        <img src={productImg} alt="" className='w-[240px] rotate-[320deg] relative right-[33px] bottom-[37px]' />
+        {product.images ? (
+          <img
+            src={product.images[0]}
+            alt=""
+            className="w-[290px] relative bottom-[10px] rounded-lg"
+          />
+        ) : (
+          <img
+            src={productImg}
+            alt=""
+            className="w-[240px] rotate-[320deg] relative right-[33px] bottom-[37px]"
+          />
+        )}
       </div>
       <div>
-        <h2>Nike Air Max 90 LV8</h2>
-        <p>₹14599</p>
+        <h2>{product.productName || "No Name"}</h2>
+        {/* <p>₹{product.price || "1000"}</p> */}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ProductCard
+export default ProductCard;

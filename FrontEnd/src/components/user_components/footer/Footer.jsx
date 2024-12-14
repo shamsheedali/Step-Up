@@ -7,7 +7,7 @@ const Footer = () => {
         <div class="mx-auto w-full max-w-screen-xl p-4 py-6 lg:py-8">
           <div class="md:flex md:justify-between">
             <div class="mb-6 md:mb-0">
-              <a href="" class="flex items-center">
+              <a href="#" class="flex items-center">
                 <span class="self-center text-2xl font-semibold whitespace-nowrap">
                   StepUp
                 </span>
@@ -20,12 +20,12 @@ const Footer = () => {
                 </h2>
                 <ul class="font-medium">
                   <li class="mb-4">
-                    <a href="" class="hover:underline">
+                    <a href="#" class="hover:underline">
                       Flowbite
                     </a>
                   </li>
                   <li>
-                    <a href="" class="hover:underline">
+                    <a href="#" class="hover:underline">
                       Tailwind CSS
                     </a>
                   </li>
@@ -38,7 +38,7 @@ const Footer = () => {
                 <ul class=" font-medium">
                   <li class="mb-4">
                     <a
-                      href="https://github.com/themesberg/flowbite"
+                      href="#"
                       class="hover:underline "
                     >
                       Github
@@ -46,7 +46,7 @@ const Footer = () => {
                   </li>
                   <li>
                     <a
-                      href="https://discord.gg/4eeurUVvTy"
+                      href="#"
                       class="hover:underline"
                     >
                       Discord
@@ -77,7 +77,7 @@ const Footer = () => {
           <div class="sm:flex sm:items-center sm:justify-between">
             <span class="text-sm  sm:text-center ">
               © 2023{" "}
-              <a href="https://flowbite.com/" class="hover:underline">
+              <a href="#" class="hover:underline">
                 Flowbite™
               </a>
               . All Rights Reserved.

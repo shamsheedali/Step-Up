@@ -48,10 +48,15 @@ const OrderManagement = () => {
   const [orderCancelDisable, setOrderCancelDisable] = useState(false);
   const [orderStatus, setOrderStatus] = useState("");
 
-
   const [detailsModal, setDetailsModal] = useState(false);
 
-  const openDetailsModal = (orderId, userId, isCancelled, isReturned, orderStatus) => {
+  const openDetailsModal = (
+    orderId,
+    userId,
+    isCancelled,
+    isReturned,
+    orderStatus
+  ) => {
     setOrderId(orderId);
     setUserId(userId);
     setOrderCancelDisable(isCancelled || isReturned);
@@ -122,10 +127,11 @@ const OrderManagement = () => {
 
   //cancel order
   const handleCancelOrder = async (orderId, userId, orderStatus) => {
-    console.log("uid", userId);
-    if(orderStatus === "Delivered") {
+    if (orderStatus === "Delivered") {
       await returnOrder(orderId, userId);
       closeModal();
+      closeDetailsModal();
+      setReRender(true);
       return;
     }
     await cancelOrder(orderId, userId);
@@ -267,7 +273,9 @@ const OrderManagement = () => {
                       <button
                         onClick={() => toggleDropdown(order._id)}
                         className={`text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 ${
-                          order.isCancelled || order.status === "Delivered" || order.status === "Returned"
+                          order.isCancelled ||
+                          order.status === "Delivered" ||
+                          order.status === "Returned"
                             ? "hidden"
                             : ""
                         }`}
@@ -323,7 +331,12 @@ const OrderManagement = () => {
                                 onClick={() =>
                                   handleStatusChange(order._id, "Delivered")
                                 }
-                                className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                                className={`${
+                                  order.paymentMethod === "razorPay" &&
+                                  order.paymentStatus === "Pending"
+                                    ? "hidden"
+                                    : "block"
+                                } w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white`}
                               >
                                 Delivered
                               </button>
@@ -588,7 +601,9 @@ const OrderManagement = () => {
 
                 {/* Confirm Button */}
                 <button
-                  onClick={() => handleCancelOrder(orderId, userId, orderStatus)}
+                  onClick={() =>
+                    handleCancelOrder(orderId, userId, orderStatus)
+                  }
                   type="button"
                   className="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center"
                 >

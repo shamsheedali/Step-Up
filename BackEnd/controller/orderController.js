@@ -51,7 +51,10 @@ const createOrder = async (req, res) => {
     //coupon used by user
     await Coupons.findOneAndUpdate(
       { code: promo },
-      { $push: { usedBy: user } }
+      {
+        $push: { usedBy: user },
+        $inc: { usedCount: 1 },
+      }
     );
 
     if (newOrder.paymentMethod === "Wallet") {
@@ -253,7 +256,7 @@ const returnOrder = async (req, res) => {
       .status(HttpStatus.INTERNAL_SERVER_ERROR)
       .json({ message: "Error While Returning order" });
   }
-}
+};
 
 //Fetching all orders
 const getAllOrders = async (req, res) => {

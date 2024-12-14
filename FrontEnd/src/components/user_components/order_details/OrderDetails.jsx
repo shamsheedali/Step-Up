@@ -267,13 +267,15 @@ const OrderDetails = ({ id }) => {
             {order.status}
           </h1>
 
-          {!order.isCancelled && (
+          {!order.isCancelled && (order.paymentStatus === "Completed" || order.paymentStatus === "Refunded") ? (
             <button
               className="btn py-2 absolute bottom-5 w-[80%] text-white bg-black"
               onClick={() => handleDownloadInvoice(order._id)}
             >
               <IoMdDownload /> Invoice
             </button>
+          ) : (
+            <h2 className="absolute bottom-5 text-red-500 text-md">Complete the payment to download invoice.</h2>
           )}
         </div>
 

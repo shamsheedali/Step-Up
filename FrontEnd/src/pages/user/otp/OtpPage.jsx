@@ -51,7 +51,7 @@ const OtpPage = () => {
   }, [timer]);
 
   const handleChange = (e, index) => {
-    const value = e.target.value.replace(/\D/g, ""); // Allow only digits
+    const value = e.target.value.replace(/\D/g, "");
     setOtp((prev) => {
       const newOtp = [...prev];
       newOtp[index] = value;

@@ -23,7 +23,7 @@ const Homepage = () => {
       {/* ------- */}
       <CategorySection />
       {/* ----- */}
-      <ClassicSpotlight />
+      {/* <ClassicSpotlight /> */}
       {/* ------- */}
       <Footer />
     </div>

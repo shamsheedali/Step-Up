@@ -10,12 +10,12 @@ const CategorySection = () => {
         <h1 className="text-3xl font-clash-grotesk text-center">
           Step Into Style
         </h1>
-        <div className="flex gap-[100px] mt-[4.75rem]">
+        <div className="flex gap-[100px] mt-[3.75rem]">
           <img src={sneakersCategoryImg} alt="" className="w-[300px] object-cover" style={{ boxShadow: "5px 4px 8px #00000099" }} />
           <img src={footballCategoryImg} alt="" className="w-[300px] object-cover" style={{ boxShadow: "5px 4px 8px #00000099" }} />
           <img src={basketballCategoryImg} alt="" className="w-[300px] object-cover brightness-[0.9]" style={{ boxShadow: "5px 4px 8px #00000099" }} />
         </div>
-        <button className="btn mx-auto mt-[4.75rem] px-14 bg-black text-white rounded-3xl">
+        <button className="btn mx-auto mt-[3.75rem] px-14 bg-black text-white rounded-3xl">
           Show All
         </button>
       </div>

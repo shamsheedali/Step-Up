@@ -11,6 +11,7 @@ import {
   getTopSellingProducts,
   uploadEditImage,
   advancedFilter,
+  getThreeNewArrivalProducts,
 } from "../controller/productController.js";
 import verifyToken from "../middleware/middleware.js";
 import requireRole from "../middleware/requireRole.js";
@@ -41,5 +42,7 @@ router.patch("/toggle/:id", verifyToken, requireRole("admin"), toggleProductStat
 router.put("/:id", verifyToken, requireRole("admin"), editProduct);
 router.post("/product-checkout", productCheckout);
 router.get('/top-selling/products', getTopSellingProducts);
+//Three new Arrival product for homepage
+router.get("/three/new-arrivals", getThreeNewArrivalProducts);
 
 export default router;

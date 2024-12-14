@@ -1,8 +1,8 @@
 import Product from "../modal/productModal.js";
 import Order from "../modal/orderModal.js";
 import HttpStatus from "../utils/httpStatus.js";
-import uploadImageToS3 from '../aws/awsConfig.js';
-import mongoose from 'mongoose'
+import uploadImageToS3 from "../aws/awsConfig.js";
+import mongoose from "mongoose";
 
 // const addProduct = async (req, res) => {
 //   try {
@@ -91,7 +91,7 @@ const addProduct = async (req, res) => {
 
     // Upload images to S3 and get URLs
     const uploadedImagesUrls = await Promise.all(
-      req.files.map((file) => uploadImageToS3(file, 'products'))
+      req.files.map((file) => uploadImageToS3(file, "products"))
     );
 
     const parsedSizes = JSON.parse(sizes);
@@ -153,50 +153,44 @@ const fetchProductsWithLimit = async (req, res) => {
 };
 
 //Advanced Filter
-const advancedFilter = async(req, res) => {
+const advancedFilter = async (req, res) => {
   try {
-
-    const {
-      search,
-      categories,
-      sortBy,
-      page = 1,
-      limit = 8,
-    } = req.query;
-
+    const { search, categories, sortBy, page = 1, limit = 8 } = req.query;
 
     const pageInt = parseInt(page);
     const limitInt = parseInt(limit);
     const skip = (pageInt - 1) * limitInt;
 
-    const filterCriteria = {isDeleted: false};
+    const filterCriteria = { isDeleted: false };
 
-    if(search){
-      filterCriteria.productName = {$regex: search, $options: "i"};
+    if (search) {
+      filterCriteria.productName = { $regex: search, $options: "i" };
     }
 
-    if(categories) {
-      const categoryArray = categories.split(",").map((category) => new mongoose.Types.ObjectId(category));
-      filterCriteria.category = {$in: categoryArray};
+    if (categories) {
+      const categoryArray = categories
+        .split(",")
+        .map((category) => new mongoose.Types.ObjectId(category));
+      filterCriteria.category = { $in: categoryArray };
     }
 
     let sortCriteria = {};
-    if(sortBy) {
+    if (sortBy) {
       switch (sortBy) {
         case "lowToHigh":
-          sortCriteria = {price: 1};
+          sortCriteria = { price: 1 };
           break;
         case "highToLow":
-          sortCriteria = {price: -1};
+          sortCriteria = { price: -1 };
           break;
         case "aToZ":
-          sortCriteria = {productName: 1};
+          sortCriteria = { productName: 1 };
           break;
         case "zToA":
-          sortCriteria = {productName: -1};
+          sortCriteria = { productName: -1 };
           break;
         case "newArrival":
-          sortCriteria = {createdAt: -1};
+          sortCriteria = { createdAt: -1 };
           break;
         default:
           sortCriteria = {};
@@ -204,9 +198,9 @@ const advancedFilter = async(req, res) => {
     }
     const totalProducts = await Product.countDocuments(filterCriteria);
     const products = await Product.find(filterCriteria)
-    .sort(sortCriteria)
-    .skip(skip)
-    .limit(limitInt);
+      .sort(sortCriteria)
+      .skip(skip)
+      .limit(limitInt);
 
     res.status(HttpStatus.OK).json({ products, totalProducts });
   } catch (error) {
@@ -215,7 +209,7 @@ const advancedFilter = async(req, res) => {
       .status(HttpStatus.INTERNAL_SERVER_ERROR)
       .json({ message: "Error fetching products", error });
   }
-}
+};
 
 //get Single Product
 const getProduct = async (req, res) => {
@@ -275,11 +269,11 @@ const uploadEditImage = async (req, res) => {
     }
 
     // Upload the image to S3 and get the URL
-    const uploadedImageUrl = await uploadImageToS3(req.file, 'products');
+    const uploadedImageUrl = await uploadImageToS3(req.file, "products");
 
     res.status(HttpStatus.OK).json({
       message: "Image uploaded successfully",
-      url: uploadedImageUrl, 
+      url: uploadedImageUrl,
     });
   } catch (err) {
     console.error(err);
@@ -367,8 +361,8 @@ const getTopSellingProducts = async (req, res) => {
 
     const productIds = topProducts.map((product) => product._id);
     const products = await Product.find({ _id: { $in: productIds } })
-      .select("productName price category images") 
-      .lean(); 
+      .select("productName price category images")
+      .lean();
 
     const populatedProducts = topProducts.map((topProduct) => {
       const product = products.find(
@@ -389,6 +383,25 @@ const getTopSellingProducts = async (req, res) => {
   }
 };
 
+//THREE NEW ARRIVAL PRODUCTS FOR HOMEPAGE
+const getThreeNewArrivalProducts = async (req, res) => {
+  try {
+    const newArrivals = await Product.find({
+      newArrival: true,
+      isDeleted: false,
+    })
+      .sort({ createdAt: -1 })
+      .limit(3);
+
+    res.status(HttpStatus.OK).json({ products: newArrivals });
+  } catch (error) {
+    console.error("Error fetching new arrival products:", error);
+    res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json({ error: "Failed to fetch new arrival products" });
+  }
+};
+
 export {
   addProduct,
   fetchProducts,
@@ -400,4 +413,5 @@ export {
   getTopSellingProducts,
   uploadEditImage,
   advancedFilter,
+  getThreeNewArrivalProducts,
 };

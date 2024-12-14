@@ -17,7 +17,7 @@ import { emptyBag, storeSubtotal } from "../../../features/bag/BagSlice";
 import { handlePayment } from "../../../api/payment";
 import { fetchCoupons, verifyCouponCode } from "../../../api/coupons";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getUserWallet } from "../../../api/wallet";
 
 const CheckoutForm = ({ getDiscountApplied }) => {
@@ -41,25 +41,23 @@ const CheckoutForm = ({ getDiscountApplied }) => {
 
   //For disable Wallet button
   const [walletBalance, setWalletBalance] = useState(0);
-const [disableWallet, setDisableWallet] = useState(false);
+  const [disableWallet, setDisableWallet] = useState(false);
 
-useEffect(() => {
-  const getWalletDetails = async () => {
-    try {
-      const { totalBalance } = await getUserWallet(uid); 
-      setWalletBalance(totalBalance); 
-    } catch (error) {
-      console.error("Failed to fetch wallet details:", error);
-    }
-  };
-  getWalletDetails();
-}, [uid]); 
+  useEffect(() => {
+    const getWalletDetails = async () => {
+      try {
+        const { totalBalance } = await getUserWallet(uid);
+        setWalletBalance(totalBalance);
+      } catch (error) {
+        console.error("Failed to fetch wallet details:", error);
+      }
+    };
+    getWalletDetails();
+  }, [uid]);
 
-useEffect(() => {
-  setDisableWallet(walletBalance < calculatedSubtotal);
-}, [walletBalance, calculatedSubtotal]); 
-
-
+  useEffect(() => {
+    setDisableWallet(walletBalance < calculatedSubtotal);
+  }, [walletBalance, calculatedSubtotal]);
 
   const [oldSubtotal, setOldSubtotal] = useState(calculatedSubtotal);
 
@@ -158,7 +156,7 @@ useEffect(() => {
     if (!formValues.country) tempErrors.country = "country is required";
     if (!formValues.phonenumber)
       tempErrors.phonenumber = "phonenumber is required";
-    else if (formValues.phonenumber.length <= 10)
+    else if (formValues.phonenumber.length !== 10)
       tempErrors.phonenumber = "phonenumber is incorrect";
     setError(tempErrors);
     return Object.keys(tempErrors).length === 0;
@@ -302,7 +300,7 @@ useEffect(() => {
               ...orderDetails,
               paymentStatus: "Completed",
             };
-        
+
             const response = await createOrder(updatedOrderDetails);
             if (response) {
               // Redirect to order success page
@@ -314,7 +312,7 @@ useEffect(() => {
           .catch(async (err) => {
             if (err.error === "redirect") {
               // Only redirect for actual payment failures
-        
+
               const response = await createOrder(orderDetails);
               if (response) {
                 // Redirect to order-pending page
@@ -325,8 +323,6 @@ useEffect(() => {
               }
             }
           });
-        
-        
       } else if (selectedPaymentMethod === "cashOnDelivery") {
         if (calculatedSubtotal >= 5000) {
           toast.error(
@@ -365,9 +361,7 @@ useEffect(() => {
         }
       } else {
         if (walletBalance < calculatedSubtotal) {
-          toast.error(
-            "Insufficient balance in your wallet!"
-          );
+          toast.error("Insufficient balance in your wallet!");
           return;
         }
 
@@ -395,7 +389,9 @@ useEffect(() => {
         };
 
         const response = await createOrder(orderDetails);
-        toast.success("Payment successful. The amount has been debited from your wallet");
+        toast.success(
+          "Payment successful. The amount has been debited from your wallet"
+        );
         if (response) {
           navigate("/bag/checkout/order-success");
           dispatch(emptyBag({ userId: uid }));
@@ -449,8 +445,8 @@ useEffect(() => {
   };
 
   return (
-    <div className="w-[720px] mt-5">
-      <h1 className="text-xl">Shipping Address</h1>
+    <div className="w-[720px] mt-7">
+      <h1 className="text-xl mb-5">Shipping Address</h1>
 
       <select
         value={selectedAddress ? selectedAddress._id : ""}
@@ -509,9 +505,14 @@ useEffect(() => {
       <hr />
 
       {/* Code Section */}
-      <h1 className="text-xl">Have a promo code?</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-xl mb-5 mt-2">Have a promo code?</h1>
+        <Link to={"/profile/coupons"}>
+          <h2 className="underline cursor-pointer">see coupons</h2>
+        </Link>
+      </div>
       <div class="relative">
-        <div className="flex gap-5">
+        <div className="flex gap-5 mb-5">
           <label
             htmlFor="promoCode"
             class="absolute -top-2 left-2 bg-white px-1 text-sm text-gray-500"
@@ -544,8 +545,10 @@ useEffect(() => {
           </button>
         </div>
 
+        <hr />
+
         {/* Select payment type */}
-        <h1 className="text-xl">How would you like to pay?</h1>
+        <h1 className="text-xl mt-2 mb-5">How would you like to pay?</h1>
         <div
           className={`flex justify-around ${
             mainError.paymentMethod ? "border border-red-500" : ""
@@ -593,12 +596,16 @@ useEffect(() => {
             <LuWallet />
             <h1>Wallet</h1>
           </div>
-          {disableWallet && <p className="text-sm text-red-500 absolute right-[75px] bottom-[70px]">Insufficient balance</p> }
+          {disableWallet && (
+            <p className="text-sm text-red-500 absolute right-[75px] bottom-[70px]">
+              Insufficient balance
+            </p>
+          )}
         </div>
         <p className="text-sm text-red-500">{mainError.paymentMethod}</p>
 
         <button
-          className="btn rounded-full mt-3 mb-6 w-full bg-black text-white tracking-[1px]"
+          className="btn rounded-full mt-6 mb-6 w-full bg-black text-white tracking-[1px]"
           onClick={handlePlaceOrder}
         >
           Place Order

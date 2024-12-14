@@ -176,6 +176,18 @@ const getTopSellingProducts = async () => {
   }
 };
 
+//Three new arrival products
+const fetchThreeNewArrivals = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/three/new-arrivals`);
+    console.log(response)
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching new arrival products:", error);
+    throw error;
+  }
+};
+
 export {
   addProduct,
   fetchProducts,
@@ -187,4 +199,5 @@ export {
   getTopSellingProducts,
   uploadImageToStorage,
   advancedFetch,
+  fetchThreeNewArrivals,
 };

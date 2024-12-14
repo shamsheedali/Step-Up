@@ -8,6 +8,7 @@ import { auth, googleProvider } from "../../../../firebase/firebase";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../../../features/users/UserSlice";
 import { initializeBag } from "../../../features/bag/BagSlice";
+import { HiEye, HiEyeOff } from "react-icons/hi";
 
 const Login = () => {
   const isVerified = useSelector((state) => state.user.isVerified);
@@ -16,6 +17,8 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -35,8 +38,6 @@ const Login = () => {
     let tempErrors = {};
     if (!formData.email) tempErrors.email = "Email is required";
     if (!formData.password) tempErrors.password = "Password is required";
-    else if (formData.password.length < 6)
-      tempErrors.password = "Password must be at least 6 characters";
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;
   };
@@ -89,6 +90,7 @@ const Login = () => {
           username: user.displayName,
           email: user.email,
           isVerified: true,
+          googleUser: true,
         })
       );
       dispatch(initializeBag({ userId: googleUser.user.uid }));
@@ -97,6 +99,10 @@ const Login = () => {
     } catch (error) {
       console.error("Google sign-in error:", error);
     }
+  };
+
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
   };
 
   return (
@@ -145,7 +151,7 @@ const Login = () => {
 
             <div className="relative w-80">
               <input
-                type="password"
+                type={passwordVisible ? "text" : "password"}
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
@@ -155,6 +161,16 @@ const Login = () => {
               <label className="absolute left-0 top-[22px] text-gray-400 transition-all duration-300 ease-in-out pointer-events-none peer-focus:top-[-12px] peer-valid:top-[-12px] peer-focus:text-gray-800 peer-valid:text-gray-800 peer-focus:text-sm peer-valid:text-sm">
                 Password
               </label>
+              <div
+                className="absolute right-0 top-1/2 transform -translate-y-1/2 cursor-pointer"
+                onClick={togglePasswordVisibility}
+              >
+                {passwordVisible ? (
+                  <HiEyeOff className="text-gray-500" />
+                ) : (
+                  <HiEye className="text-gray-500" />
+                )}
+              </div>
               <Link to={"/forgotPassword"}>
                 <p className="text-left text-gray-700 mt-2 text-sm cursor-pointer underline">
                   Forgot password?

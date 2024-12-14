@@ -15,22 +15,32 @@ const ForgotPasswordVerify = () => {
   const validateForm = () => {
     let valid = true;
     let newErrors = { code: "", password: "" };
-
+  
     // Validate code
     if (!/^\d{6}$/.test(code)) {
       newErrors.code = "Code must be a 6-digit number.";
       valid = false;
     }
-
+  
     // Validate password
-    if (password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters.";
+    if (password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters.";
+      valid = false;
+    } else if (!/[A-Z]/.test(password)) {
+      newErrors.password = "Password must contain at least one uppercase letter.";
+      valid = false;
+    } else if (!/[0-9]/.test(password)) {
+      newErrors.password = "Password must contain at least one number.";
+      valid = false;
+    } else if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      newErrors.password = "Password must contain at least one special character.";
       valid = false;
     }
-
+  
     setErrors(newErrors);
     return valid;
   };
+  
 
   const handleForgotPasswordVerify = async () => {
     if (!validateForm()) return;

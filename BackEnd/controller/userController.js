@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import HttpStatus from "../utils/httpStatus.js";
 import nodemailer from "nodemailer";
-import crypto from 'crypto'
+import crypto from "crypto";
 
 //USER-- SIGNUP
 const signUp = async (req, res) => {
@@ -12,9 +12,13 @@ const signUp = async (req, res) => {
 
     const user = await users.findOne({ email });
     if (user) {
-      return res
-        .status(HttpStatus.BAD_REQUEST)
-        .json({ message: "User already exists" });
+      if (!user.isVerified) {
+        await users.deleteOne({ email });
+      } else {
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .json({ message: "User already exists" });
+      }
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -43,7 +47,6 @@ const signUp = async (req, res) => {
     res
       .status(HttpStatus.CREATED)
       .json({ message: "Signup Successful", token, newUser });
-    console.log("New User Signed In");
   } catch (error) {
     console.error(error);
     res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
@@ -60,6 +63,12 @@ const login = async (req, res) => {
       return res
         .status(HttpStatus.BAD_REQUEST)
         .json({ message: "User Not Available" });
+    }
+
+    if (user.isVerified === false) {
+      return res
+        .status(HttpStatus.FORBIDDEN)
+        .json({ message: "Account not verified try sign up again!" });
     }
 
     if (user.status === "blocked") {
@@ -267,17 +276,20 @@ const forgotPassword = async (req, res) => {
       },
     });
 
-   //Random 6-digit verification code
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    //Random 6-digit verification code
+    const verificationCode = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
 
-    const hashedCode = crypto.createHash("sha256").update(verificationCode).digest("hex");
+    const hashedCode = crypto
+      .createHash("sha256")
+      .update(verificationCode)
+      .digest("hex");
     const codeExpiry = Date.now() + 3600000; // 1 hour
 
-     user.resetPasswordCode = hashedCode;
-     user.resetPasswordExpiry = codeExpiry;
-     await user.save();
-
-     console.log(user);
+    user.resetPasswordCode = hashedCode;
+    user.resetPasswordExpiry = codeExpiry;
+    await user.save();
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -298,7 +310,9 @@ const forgotPassword = async (req, res) => {
     res.status(HttpStatus.OK).json({ message: "Password reset email sent" });
   } catch (error) {
     console.error(error);
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Server error" });
+    res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: "Server error" });
   }
 };
 
@@ -308,12 +322,19 @@ const forgotPasswordVerify = async (req, res) => {
   try {
     const user = await users.findOne({ email });
     if (!user) {
-      return res.status(HttpStatus.NOT_FOUND).json({ message: "User not found" });
+      return res
+        .status(HttpStatus.NOT_FOUND)
+        .json({ message: "User not found" });
     }
 
     const hashedCode = crypto.createHash("sha256").update(code).digest("hex");
 
-    console.log(user.resetPasswordCode, user.resetPasswordExpiry, user.resetPasswordCode !== hashedCode, user.resetPasswordExpiry < Date.now())
+    console.log(
+      user.resetPasswordCode,
+      user.resetPasswordExpiry,
+      user.resetPasswordCode !== hashedCode,
+      user.resetPasswordExpiry < Date.now()
+    );
     if (
       user.resetPasswordCode !== hashedCode ||
       user.resetPasswordExpiry < Date.now()
@@ -331,8 +352,18 @@ const forgotPasswordVerify = async (req, res) => {
     res.status(HttpStatus.OK).json({ message: "Password reset successfully" });
   } catch (error) {
     console.error(error);
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Server error" });
+    res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: "Server error" });
   }
-}
+};
 
-export { signUp, login, storeGoogleUser, updateUserData, changePassword, forgotPassword, forgotPasswordVerify };
+export {
+  signUp,
+  login,
+  storeGoogleUser,
+  updateUserData,
+  changePassword,
+  forgotPassword,
+  forgotPasswordVerify,
+};

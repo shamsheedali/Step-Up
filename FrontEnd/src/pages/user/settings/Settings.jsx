@@ -5,9 +5,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { changePassword, updateUserData } from "../../../api/users";
 import { setUser } from "../../../features/users/UserSlice";
 import { toast } from "react-toastify";
+import { fetchUsers } from "../../../api/admin";
 
 const Settings = () => {
-  const { username, email, uid } = useSelector((state) => state.user);
+  const { username, email, uid, googleUser } = useSelector(
+    (state) => state.user
+  );
   const dispatch = useDispatch();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,6 +28,22 @@ const Settings = () => {
   const [isFormChanged, setIsFormChanged] = useState(false);
   const [error, setError] = useState("");
   const [profileError, setProfileError] = useState({});
+
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const allUsers = await fetchUsers();
+        setUsers(allUsers);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    fetchData();
+  }, [])
+  
 
   useEffect(() => {
     const hasFormChanged =
@@ -66,15 +85,30 @@ const Settings = () => {
 
   const profileValidate = () => {
     let tempError = {};
+    
+    // Username validations
     if (formValues.username.trim() === "" || formValues.username.length < 4) {
-      tempError.username = "username should be at least 4 characters";
+      tempError.username = "Username should be at least 4 characters";
     } else if (/^[0-9]/.test(formValues.username)) {
-      tempError.username = "username cannot start with a number";
-    } else if (formValues.email.trim() === "") {
-      tempError.email = "invalid email";
+      tempError.username = "Username cannot start with a number";
     }
+  
+    // Email validations
+    if (formValues.email.trim() === "") {
+      tempError.email = "Email is required";
+    } else if (!/^[\w.-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formValues.email)) {
+      tempError.email = "Invalid email format";
+    } else {
+      const isEmailTaken = users.some(
+        (user) => user.email === formValues.email && user._id !== uid
+      );
+      if (isEmailTaken) {
+        tempError.email = "This email is already in use";
+      }
+    }
+  
     setProfileError(tempError);
-    return Object.keys(tempError).length === 0;
+    return Object.keys(tempError).length === 0; 
   };
 
   //Form submit of username and email
@@ -89,7 +123,6 @@ const Settings = () => {
     if (profileValidate()) {
       try {
         const { user } = await updateUserData(userData);
-        console.log("success", user);
         setFormValues({
           username: user.username,
           email: user.email,
@@ -111,18 +144,46 @@ const Settings = () => {
 
   //Password form validation
   const passwordValidate = () => {
-    if (passwordData.currentPassword.length < 6) {
-      setError("Incorrect Password");
+    const { currentPassword, newPassword, confirmPassword } = passwordData;
+  
+    if (currentPassword.length < 6) {
+      setError("Current password must be at least 6 characters");
       return false;
-    } else if (passwordData.newPassword.length < 6) {
-      setError("Password must be at least 6 characters");
+    }
+  
+    if (newPassword.length < 8) {
+      setError("New password must be at least 8 characters");
       return false;
-    } else if (passwordData.newPassword !== passwordData.confirmPassword) {
+    }
+  
+    if (!/[A-Z]/.test(newPassword)) {
+      setError("New password must contain at least one uppercase letter");
+      return false;
+    }
+  
+    if (!/[0-9]/.test(newPassword)) {
+      setError("New password must contain at least one number");
+      return false;
+    }
+  
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(newPassword)) {
+      setError("New password must contain at least one special character");
+      return false;
+    }
+  
+    if (newPassword !== confirmPassword) {
       setError("New password and confirmation do not match");
       return false;
     }
+  
+    if (currentPassword === newPassword) {
+      setError("Old password and new password cannot be the same");
+      return false;
+    }
+  
     return true;
   };
+  
 
   //Form submit of New password
   const handlePasswordSubmit = async (e) => {
@@ -188,6 +249,7 @@ const Settings = () => {
                   type="email"
                   name="email"
                   value={formValues.email}
+                  disabled={googleUser}
                   onChange={handleInputChange}
                   className={`block w-full rounded-md border ${
                     profileError.email ? "border-red-500" : "border-black"
@@ -196,20 +258,24 @@ const Settings = () => {
                 <p className="text-red-500 text-sm">{profileError.email}</p>
               </div>
 
-              <label htmlFor="">Password</label>
-              <div className="flex justify-between relative bottom-3">
-                <input
-                  type="password"
-                  value={"123456789"}
-                  className="border-none focus:border-none active:border-none disabled"
-                />
-                <h3
-                  className="underline font-bold cursor-pointer"
-                  onClick={openModal}
-                >
-                  Edit
-                </h3>
-              </div>
+              {!googleUser && (
+                <>
+                  <label htmlFor="">Password</label>
+                  <div className="flex justify-between relative bottom-3">
+                    <input
+                      type="password"
+                      value={"123456789"}
+                      className="border-none focus:border-none active:border-none disabled"
+                    />
+                    <h3
+                      className="underline font-bold cursor-pointer"
+                      onClick={openModal}
+                    >
+                      Edit
+                    </h3>
+                  </div>
+                </>
+              )}
 
               <div className="flex justify-end">
                 <button

@@ -22,6 +22,7 @@ const signUp = async (userData) => {
 const login = async (userData) => {
   try {
     const response = await axios.post(`${API_URL}/login`, userData);
+    console.log(response);
     if (response.status === 200) {
       toast.success("Login Successful");
       localStorage.setItem("userToken", response.data.token);
@@ -108,6 +109,7 @@ const forgotPasswordVerify = async (email, code, password) => {
     if(response.status === 200) return true;
   } catch (error) {
     console.log(error);
+    toast.error(error.response.data.message);
   }
 }
 

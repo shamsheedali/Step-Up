@@ -5,6 +5,7 @@ const initialState = {
     username: null,
     email: null,
     isVerified: false,
+    googleUser: false,
 };
 
 const userSlice = createSlice({
@@ -16,6 +17,7 @@ const userSlice = createSlice({
             state.username = action.payload.username;
             state.email = action.payload.email;
             state.isVerified = action.payload.isVerified;
+            state.googleUser = action.payload.googleUser;
         },
         logoutUser(state) {
             state.uid = null;

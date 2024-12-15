@@ -138,7 +138,6 @@ const SingleProductPage = () => {
   useEffect(() => {
     // Check if the product is already in the bag
     if (bags[uid]?.quantities[product._id]) {
-      console.log("Already");
       setIsInBag(true);
     }
   }, [bags, product._id, uid]);
@@ -146,6 +145,13 @@ const SingleProductPage = () => {
   //add to bag
   const handleAddToBag = async (e, productId) => {
     e.preventDefault();
+
+    const token = localStorage.getItem("userToken");
+    
+      if (!token) {
+        navigate("/login");
+        return;
+      }
 
     if (product.stock < 1) {
       return toast.warning("Product Out Of Stock");
@@ -181,6 +187,14 @@ const SingleProductPage = () => {
   //Adding product to wishlist
   const handleAddToWishlist = async (e, productId) => {
     e.preventDefault();
+
+    const token = localStorage.getItem("userToken");
+    
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
     const data = {
       userId: uid,
       productId,
@@ -353,7 +367,7 @@ const SingleProductPage = () => {
               <form className="mt-10">
                 {/* Colors */}
                 <div>
-                  <h3 className="text-sm font-medium text-gray-900">Color</h3>
+                  {/* <h3 className="text-sm font-medium text-gray-900">Color</h3> */}
 
                   <fieldset aria-label="Choose a color" className="mt-4">
                     {/* <RadioGroup

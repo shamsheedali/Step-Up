@@ -464,7 +464,7 @@ const CheckoutForm = ({ getDiscountApplied }) => {
         </option>
         {allAddresses.map((allAddresses) => (
           <option key={allAddresses._id} value={allAddresses._id}>
-            {allAddresses.username} - {allAddresses.street}, {allAddresses.town}
+            {allAddresses.street}, {allAddresses.town}
             , {allAddresses.postcode}
           </option>
         ))}

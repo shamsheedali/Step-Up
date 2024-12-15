@@ -53,6 +53,12 @@ const Wishlist = () => {
 
   //add to bag
   const handleAddToBag = async (productId) => {
+    const token = localStorage.getItem("userToken");
+    
+      if (!token) {
+        navigate("/login");
+        return;
+      }
     setDisableBtnState((prevState) => ({
       ...prevState,
       [productId]: true,

@@ -41,13 +41,22 @@ const ProductGrid = ({ products, loading, offers }) => {
 
   // Add to bag function
   const handleAddToBag = async (productId) => {
+    const token = localStorage.getItem("userToken");
+
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
     setDisableBtnState((prevState) => ({
       ...prevState,
       [productId]: true,
     }));
 
     // Find the product and its stock
-    const productIndex = products.findIndex((product) => product._id === productId);
+    const productIndex = products.findIndex(
+      (product) => product._id === productId
+    );
     const product = products[productIndex];
 
     if (product.stock <= 0) {
@@ -66,7 +75,7 @@ const ProductGrid = ({ products, loading, offers }) => {
 
     try {
       await addToBag(data);
-      dispatch(addToBagQty({userId: uid, productId}));
+      dispatch(addToBagQty({ userId: uid, productId }));
       toast.success("Product added to bag");
     } catch (error) {
       console.error("Error adding to bag:", error);
@@ -143,7 +152,10 @@ const ProductGrid = ({ products, loading, offers }) => {
                     <div
                       className="btn w-fit bg-black text-white p-3 text-xl absolute right-0 cursor-pointer transition duration-500 ease-in-out opacity-0 group-hover:opacity-100 group-hover:translate-y-[-20px] hover:scale-90 rounded-md"
                       onClick={() => handleAddToBag(product._id)}
-                      disabled={isProductInBag(product._id) || disableBtnState[product._id]} 
+                      disabled={
+                        isProductInBag(product._id) ||
+                        disableBtnState[product._id]
+                      }
                     >
                       <HiOutlineShoppingBag />
                     </div>

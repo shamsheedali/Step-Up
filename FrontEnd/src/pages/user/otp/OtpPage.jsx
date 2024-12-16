@@ -3,14 +3,14 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
-import {setUser} from '../../../features/users/UserSlice';
+import { setUser } from "../../../features/users/UserSlice";
 import { initializeBag } from "../../../features/bag/BagSlice";
 
 let userDetails;
 //THIS IS FUNCTION
 //send - otp
 const sendOtp = async (userData) => {
-  userDetails = userData
+  userDetails = userData;
   try {
     const otpResponse = await axios.post(
       `${import.meta.env.VITE_API_URL}/otp/send_otp`,
@@ -25,21 +25,21 @@ const sendOtp = async (userData) => {
 };
 
 const OtpPage = () => {
-
   const isVerified = useSelector((state) => state.user.isVerified);
   const dispatch = useDispatch();
 
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [isResending, setIsResending] = useState(false);
   const [timer, setTimer] = useState(30); // OTP timer in seconds
+  const [isOtpExpired, setIsOtpExpired] = useState(false);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    if(isVerified){
-      navigate('/')
+    if (isVerified) {
+      navigate("/");
     }
-  })
+  });
 
   useEffect(() => {
     if (timer > 0) {
@@ -47,6 +47,8 @@ const OtpPage = () => {
         setTimer((prev) => prev - 1);
       }, 1000);
       return () => clearInterval(interval);
+    } else {
+      setIsOtpExpired(true);
     }
   }, [timer]);
 
@@ -65,20 +67,27 @@ const OtpPage = () => {
   };
 
   //handling otp submit
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isOtpExpired) {
+      toast.error("OTP has expired. Please request a new OTP.");
+      return;
+    }
     const otpValue = Number(otp.join(""));
     try {
-     const response = await axios.post(`${import.meta.env.VITE_API_URL}/otp/verify_otp`, {otpValue, userDetails});
-     if(response.status === 200){
-      const {username, email, _id} = response.data.user;
-      dispatch(setUser({uid :_id, username, email, isVerified: true}));
-      dispatch(initializeBag({ userId: _id }))
-      toast.success("OTP Verified");
-      navigate('/')
-     }
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/otp/verify_otp`,
+        { otpValue, userDetails }
+      );
+      if (response.status === 200) {
+        const { username, email, _id } = response.data.user;
+        dispatch(setUser({ uid: _id, username, email, isVerified: true }));
+        dispatch(initializeBag({ userId: _id }));
+        toast.success("OTP Verified");
+        navigate("/");
+      }
     } catch (error) {
-      console.log(error)
+      console.log(error);
       toast.error("Invalid OTP");
     }
   };
@@ -87,6 +96,7 @@ const OtpPage = () => {
     setIsResending(true);
     setTimer(30);
     //otp resend
+    setIsOtpExpired(false);
     sendOtp(userDetails);
 
     setTimeout(() => {
@@ -106,6 +116,7 @@ const OtpPage = () => {
               type="text"
               maxLength="1"
               value={digit}
+              autoComplete="off"
               onChange={(e) => handleChange(e, index)}
               className="w-12 h-12 text-center bg-gray-600 border border-gray-500 rounded focus:outline-none focus:ring focus:ring-white transition duration-150"
             />

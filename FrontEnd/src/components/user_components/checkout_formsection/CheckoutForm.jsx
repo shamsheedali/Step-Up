@@ -150,17 +150,49 @@ const CheckoutForm = ({ getDiscountApplied }) => {
   //Validate Address Form
   const validate = () => {
     let tempErrors = {};
-    if (!formValues.street) tempErrors.street = "street is required";
-    if (!formValues.postcode) tempErrors.postcode = "postcode is required";
-    if (!formValues.state) tempErrors.state = "state is required";
-    if (!formValues.country) tempErrors.country = "country is required";
-    if (!formValues.phonenumber)
-      tempErrors.phonenumber = "phonenumber is required";
-    else if (formValues.phonenumber.length !== 10)
-      tempErrors.phonenumber = "phonenumber is incorrect";
+    const specialCharPattern = /[^\w\s]/g; 
+  
+    // Validate street
+    if (!formValues.street) {
+      tempErrors.street = "Street is required";
+    } else if (specialCharPattern.test(formValues.street)) {
+      tempErrors.street = "Street cannot contain special characters";
+    }
+  
+    // Validate postcode
+    if (!formValues.postcode) {
+      tempErrors.postcode = "Postcode is required";
+    } else if (specialCharPattern.test(formValues.postcode)) {
+      tempErrors.postcode = "Postcode cannot contain special characters";
+    }
+  
+    // Validate state
+    if (!formValues.state) {
+      tempErrors.state = "State is required";
+    } else if (specialCharPattern.test(formValues.state)) {
+      tempErrors.state = "State cannot contain special characters";
+    }
+  
+    // Validate country
+    if (!formValues.country) {
+      tempErrors.country = "Country is required";
+    } else if (specialCharPattern.test(formValues.country)) {
+      tempErrors.country = "Country cannot contain special characters";
+    }
+  
+    // Validate phone number
+    if (!formValues.phonenumber) {
+      tempErrors.phonenumber = "Phone number is required";
+    } else if (!/^\d+$/.test(formValues.phonenumber)) {
+      tempErrors.phonenumber = "Phone number must contain only numbers";
+    } else if (formValues.phonenumber.length !== 10) {
+      tempErrors.phonenumber = "Phone number must be exactly 10 digits";
+    }
+  
     setError(tempErrors);
-    return Object.keys(tempErrors).length === 0;
+    return Object.keys(tempErrors).length === 0; // Returns true if no errors
   };
+  
 
   //ADDING ADDRESS FORM SUBMIT
   const handleFormSubmit = async (e) => {

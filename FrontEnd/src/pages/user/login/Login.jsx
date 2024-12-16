@@ -60,7 +60,6 @@ const Login = () => {
         dispatch(initializeBag({ userId: user._id }));
         navigate("/");
       } catch (error) {
-        console.log(error);
         setErrorMessage("Invalid email or password");
       } finally {
         setLoading(false);
@@ -71,12 +70,10 @@ const Login = () => {
   //google login
   const handleGoogleSignIn = async () => {
     try {
-      // Trigger Google sign-in using Firebase
       const result = await signInWithPopup(auth, googleProvider);
 
       // Get user information from result
       const user = result.user;
-      console.log("User signed in:", user.displayName, user.email);
       const userDetails = {
         uid: user.uid,
         name: user.displayName,

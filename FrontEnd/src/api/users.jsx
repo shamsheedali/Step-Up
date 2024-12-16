@@ -47,6 +47,9 @@ const storeGoogleInfo = async(userData) => {
     return response.data;
   } catch (error) {
     console.log(error);
+    if(error.response.status === 403){
+      toast.error(error.response.data.message);
+    }
   }
 }
 

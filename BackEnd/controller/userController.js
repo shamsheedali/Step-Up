@@ -115,6 +115,11 @@ const storeGoogleUser = async (req, res) => {
     let user = await users.findOne({ email });
 
     if (user) {
+      if (user.status === "blocked") {
+        return res
+          .status(HttpStatus.FORBIDDEN)
+          .json({ message: "Your Account is Blocked!" });
+      }
       console.log("Existing user logged in:", user);
       //New User Token While Login
       const token = jwt.sign(
@@ -149,7 +154,6 @@ const storeGoogleUser = async (req, res) => {
       });
 
       await newUser.save();
-      console.log("New Google user created and logged in.");
       //Finding this _id and sending to frontend
       const user = await users.findOne({ email });
       //New User Token While Signup

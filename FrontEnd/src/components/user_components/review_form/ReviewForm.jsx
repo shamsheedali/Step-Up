@@ -16,6 +16,13 @@ const ReviewForm = ({ product, onReviewSubmit }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem("userToken");
+
+    if (!token) {
+      toast.info("Login to add review!");
+      return;
+    }
+    
     if (!reviewText.trim() || rating === 0) {
       toast.error("Please add a review and a rating.");
       return;

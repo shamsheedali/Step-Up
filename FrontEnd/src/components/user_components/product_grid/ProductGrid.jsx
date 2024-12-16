@@ -163,6 +163,11 @@ const ProductGrid = ({ products, loading, offers }) => {
                 );
               })
           )}
+          {products.length === 0 && (
+            <div className="flex justify-center w-full absolute">
+              <h1 className="text-gray-500">No products found!</h1>
+            </div>
+          )}
         </div>
       </div>
     </div>

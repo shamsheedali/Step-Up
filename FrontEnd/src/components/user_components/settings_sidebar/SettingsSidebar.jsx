@@ -20,9 +20,9 @@ const SettingsSidebar = () => {
               >
                 <PiPackage className="text-[23px]" /> Delivery Addresses
               </Link>
-              <li className="flex gap-3">
+              {/* <li className="flex gap-3">
                 <MdOutlineWidthWide className="text-[23px]" /> Shop Preferances
-              </li>
+              </li> */}
             </ul>
           </nav>
         </div>

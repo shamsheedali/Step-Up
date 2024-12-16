@@ -133,6 +133,7 @@ const Settings = () => {
             username: user.username,
             email: user.email,
             isVerified: true,
+            googleUser,
           })
         );
         toast.success("Your profile has been successfully updated!");

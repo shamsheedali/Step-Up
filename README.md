@@ -15,7 +15,7 @@
 
 ## Tech Stack
 ### **Frontend:**
-- React + TypeScript
+- React
 - Redux Toolkit for state management
 - Tailwind CSS & DaisyUI for styling
 - Vite for fast development

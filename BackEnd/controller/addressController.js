@@ -1,7 +1,7 @@
 import address from "../modal/addressModal.js";
 import HttpStatus from '../utils/httpStatus.js';
 
-//ADD NEW ADDRESS
+//ADD NEW ADDRESS 
 const addAddress = async (req, res) => {
   try {
     const userId = req.params.id;

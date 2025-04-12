@@ -15,19 +15,35 @@ import {
 } from "../controller/productController.js";
 import verifyToken from "../middleware/middleware.js";
 import requireRole from "../middleware/requireRole.js";
+import { cloudinary, storage } from "../cloudinary/config.js";
 
 const router = express.Router();
 //For adding product
+
+//AWS-S3
+// const upload = multer({
+//   storage: multer.memoryStorage(),
+//   limits: { fileSize: 5 * 1024 * 1024 },
+// }).array("images", 5);
+
+// //For Editing product image
+// const uploadEdit = multer({
+//   storage: multer.memoryStorage(),
+//   limits: { fileSize: 5 * 1024 * 1024 }, 
+// }).single("file"); 
+
+// For adding product (multiple images)
+//Cloudinary
 const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 },
+  storage: storage, 
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
 }).array("images", 5);
 
-//For Editing product image
+// For editing product image (single image)
 const uploadEdit = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 }, 
-}).single("file"); 
+  storage: storage, 
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+}).single("file");
 //Router for image edit upload
 router.post("/upload", uploadEdit, uploadEditImage);
 

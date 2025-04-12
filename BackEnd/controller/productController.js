@@ -89,10 +89,8 @@ const addProduct = async (req, res) => {
         .json({ error: "No images uploaded" });
     }
 
-    // Upload images to S3 and get URLs
-    const uploadedImagesUrls = await Promise.all(
-      req.files.map((file) => uploadImageToS3(file, "products"))
-    );
+    // Get Cloudinary URLs from req.files
+    const uploadedImagesUrls = req.files.map((file) => file.path); // `path` contains the Cloudinary URL
 
     const parsedSizes = JSON.parse(sizes);
 
@@ -105,7 +103,7 @@ const addProduct = async (req, res) => {
       sizes: parsedSizes,
       newArrival: newArrival === "true",
       stock,
-      images: uploadedImagesUrls, //URLs of the uploaded images
+      images: uploadedImagesUrls, // Cloudinary URLs
     });
 
     await newProduct.save();
@@ -259,7 +257,7 @@ const editProduct = async (req, res) => {
   }
 };
 
-//STORE EDIT IMAGE IN S3
+//STORE EDIT IMAGE IN CLOUDINARY
 const uploadEditImage = async (req, res) => {
   try {
     if (!req.file) {
@@ -268,8 +266,8 @@ const uploadEditImage = async (req, res) => {
         .json({ error: "No image uploaded" });
     }
 
-    // Upload the image to S3 and get the URL
-    const uploadedImageUrl = await uploadImageToS3(req.file, "products");
+    // Get the Cloudinary URL from req.file
+    const uploadedImageUrl = req.file.path; // Cloudinary URL
 
     res.status(HttpStatus.OK).json({
       message: "Image uploaded successfully",

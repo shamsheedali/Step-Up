@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogBackdrop,
@@ -20,14 +20,11 @@ import {
   Squares2X2Icon,
 } from "@heroicons/react/20/solid";
 import ProductGrid from "../product_grid/ProductGrid";
-import { advancedFetch, fetchProducts, fetchProductsLimit } from "../../../api/product";
+import { advancedFetch } from "../../../api/product";
 import { fetchCategories } from "../../../api/category";
 import { getActiveOffer } from "../../../api/offer";
-import { useDispatch } from "react-redux";
 import Pagination from "../pagination/Pagination";
-import gsap from 'gsap';
-import { toast } from "react-toastify";
-import { clearOffers } from "../../../features/offers/OfferSlice";
+import { useSearchParams } from "react-router-dom";
 
 const sortOptions = [
   { name: "Sort By", value: "", current: true },
@@ -50,7 +47,6 @@ function classNames(...classes) {
 }
 
 const SideBar = () => {
-  const dispatch = useDispatch();
   const [categories, setCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
 
@@ -101,6 +97,23 @@ const SideBar = () => {
   const entriesPerPage = 8;
   const [totalProducts, setTotalProducts] = useState(0);
 
+  //Extract category from url
+  const [searchParams] = useSearchParams();
+  const categoryFromUrl = decodeURIComponent(
+    searchParams.get("category") || ""
+  );
+
+  useEffect(() => {
+    if (categories.length && categoryFromUrl) {
+      const matchedCategory = categories.find(
+        (cat) => cat.name.toLowerCase() === categoryFromUrl.toLowerCase()
+      );
+      if (matchedCategory) {
+        setSelectedCategories([matchedCategory._id]);
+      }
+    }
+  }, [categories, categoryFromUrl]);
+
   const handleCategoryChange = (category) => {
     setSelectedCategories((prevCategories) =>
       prevCategories.includes(category)
@@ -109,8 +122,8 @@ const SideBar = () => {
     );
   };
 
-   //FETCHING PRODUCTS
-   useEffect(() => {
+  //FETCHING PRODUCTS
+  useEffect(() => {
     const getProducts = async () => {
       try {
         setLoading(true);
@@ -145,10 +158,9 @@ const SideBar = () => {
       try {
         const { data } = await fetchCategories();
         setCategories(data.filter((item) => item.isDeleted !== true));
-        
-        const {activeOffer} = await getActiveOffer();
+
+        const { activeOffer } = await getActiveOffer();
         setOffers(activeOffer);
-        
       } catch (error) {
         console.error("Error fetching Category & Offer", error);
       }
@@ -412,7 +424,7 @@ const SideBar = () => {
                   className="mx-auto"
                   currentPage={currentPage}
                   setCurrentPage={setCurrentPage}
-                  totalEntries={totalProducts} 
+                  totalEntries={totalProducts}
                   entriesPerPage={entriesPerPage}
                 />
               </div>

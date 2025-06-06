@@ -17,6 +17,7 @@ const addCategory = async (req, res) => {
 // FETCH ALL CATEGORIES
 const getCategories = async (req, res) => {
   try {
+    console.log("first")
     const categories = await Category.find();
     res.json({ data: categories });
   } catch (error) {

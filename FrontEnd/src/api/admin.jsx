@@ -6,7 +6,7 @@ const API_URL = `${import.meta.env.VITE_API_URL}/admin`;
 // ADMIN--LOGIN
 const adminlogin = async (userData) => {
   try {
-    const response = await axios.post(`${API_URL}/admin_login`, userData);
+    const response = await axios.post(`${API_URL}/admin-login`, userData);
     if (response.status === 200 && response.data.token) {
       localStorage.setItem("adminToken", response.data.token);
       return true; 
@@ -23,7 +23,7 @@ const adminlogin = async (userData) => {
 const fetchUsers = async () => {
   try {
     const token = localStorage.getItem("adminToken");
-    const response = await axios.get(`${API_URL}/get_users`, {
+    const response = await axios.get(`${API_URL}/users`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

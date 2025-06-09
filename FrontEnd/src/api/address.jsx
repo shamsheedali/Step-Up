@@ -8,7 +8,7 @@ const addAddress = async (data, userId) => {
   const token = localStorage.getItem("userToken");
 
   try {
-    const response = await axios.post(`${API_URL}/add-address/${userId}`, data, {
+    const response = await axios.post(`${API_URL}/address/${userId}`, data, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -27,7 +27,7 @@ const addAddress = async (data, userId) => {
 const getAddress = async(userId) => {
   const token = localStorage.getItem('userToken');
   try {
-    const response = await axios.get(`${API_URL}/get-alladdress/${userId}`, {
+    const response = await axios.get(`${API_URL}/address/${userId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -42,7 +42,7 @@ const getAddress = async(userId) => {
 const getDefaultAddress = async(userId) => {
   const token = localStorage.getItem('userToken');
   try {
-    const response = await axios.get(`${API_URL}/get-default/${userId}`, {
+    const response = await axios.get(`${API_URL}/default-address/${userId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -57,8 +57,7 @@ const getDefaultAddress = async(userId) => {
 const editAddress = async(data, id) => {
   const token = localStorage.getItem('userToken');
   try {
-    console.log("from frontend", data, id);
-    const response = await axios.post(`${API_URL}/edit-address/${id}`, data, {
+    const response = await axios.put(`${API_URL}/address/${id}`, data, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -69,7 +68,7 @@ const editAddress = async(data, id) => {
     }
   } catch (error) {
     console.log(error);
-    if(response.status === 400){
+    if(error.response.status === 400){
       toast.error("No Address Found!")
     }else {
       toast.error("Plese Tryagain Later!");
@@ -81,7 +80,7 @@ const editAddress = async(data, id) => {
 const delAddress = async(id) => {
   const token = localStorage.getItem('userToken');
   try {
-    const response = await axios.get(`${API_URL}/delete-address/${id}`, {
+    const response = await axios.delete(`${API_URL}/address/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

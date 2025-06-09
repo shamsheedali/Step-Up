@@ -161,7 +161,7 @@ const App = () => {
             </AdminProtectedRoute>
           }
         />
-        <Route path="/admin_login" element={<AdminLogin />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
 
         {/* 404 PAGE */}
         <Route path="*" element={<Page404 />} />

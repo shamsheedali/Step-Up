@@ -5,7 +5,7 @@ const API_URL = `${import.meta.env.VITE_API_URL}/coupon`;
 
 const fetchCoupons = async () => {
   try {
-    const response = await axios.get(`${API_URL}/coupons`);
+    const response = await axios.get(`${API_URL}/`);
 
     return response.data.coupons;
   } catch (error) {
@@ -32,7 +32,7 @@ const fetchCouponsLimit = async (page, limit) => {
 const createCoupon = async (couponData) => {
   const token = localStorage.getItem("adminToken");
   try {
-    const response = await axios.post(`${API_URL}/create`, couponData, {
+    const response = await axios.post(`${API_URL}/`, couponData, {
       headers: {
         Authorization: `Bearer, ${token}`,
       },
@@ -49,8 +49,8 @@ const createCoupon = async (couponData) => {
 const updateCoupon = async (id, couponData) => {
   const token = localStorage.getItem("adminToken");
   try {
-    const response = await axios.put(
-      `${API_URL}/edit-coupon/${id}`,
+    await axios.put(
+      `${API_URL}/coupon/${id}`,
       couponData,
       {
         headers: { Authorization: `Bearer ${token}` },
@@ -92,7 +92,7 @@ const toggleCouponState = async (id) => {
 const deleteCoupon = async (id) => {
   const token = localStorage.getItem("adminToken");
   try {
-    const response = await axios.delete(`${API_URL}/coupon/${id}`, {
+    await axios.delete(`${API_URL}/coupon/${id}`, {
       headers: {
         Authorization: `Bearer, ${token}`,
       },

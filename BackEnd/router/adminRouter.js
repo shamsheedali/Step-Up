@@ -4,8 +4,8 @@ import verifyToken from '../middleware/middleware.js';
 import requireRole from '../middleware/requireRole.js';
 const router = express.Router();
 
-router.post('/admin_login', login);
-router.get('/get_users',fetchUsers);
+router.post('/admin-login', login);
+router.get('/users',fetchUsers);
 router.patch('/:id/block', verifyToken, requireRole("admin"), blockUser);
 router.patch('/:id/unblock', verifyToken, requireRole("admin"), unBlockUser);
 

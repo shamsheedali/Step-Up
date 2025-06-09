@@ -11,7 +11,7 @@ const addProduct = async (formData) => {
   }
 
   try {
-    const response = await axios.post(`${API_URL}/add_product`, formData, {
+    const response = await axios.post(`${API_URL}/`, formData, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -25,8 +25,7 @@ const addProduct = async (formData) => {
 
 const fetchProducts = async () => {
   try {
-    const response = await axios.get(`${API_URL}/fetchProducts`);
-    console.log("product response", `${API_URL}/fetchProducts`);
+    const response = await axios.get(`${API_URL}/`);
     return response.data;
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -65,7 +64,7 @@ const advancedFetch = async (filters) => {
       params.append("categories", categories.join(","));
 
     const response = await axios.get(
-      `${API_URL}/filter_products?${params.toString()}&sortBy=${sort}&page=${currentPage}&limit=${entriesPerPage}&search=${search}`
+      `${API_URL}/filter-products?${params.toString()}&sortBy=${sort}&page=${currentPage}&limit=${entriesPerPage}&search=${search}`
     );
 
     return response.data;
@@ -87,7 +86,7 @@ const getProduct = async (id) => {
 const editProduct = async (id, data) => {
   const token = localStorage.getItem("adminToken");
   try {
-    const response = await axios.put(`${API_URL}/${id}`, data, {
+    await axios.put(`${API_URL}/${id}`, data, {
       headers: { Authorization: `Bearer ${token}` },
     });
     toast.success("Product Updated");

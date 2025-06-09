@@ -13,12 +13,12 @@ import requireRole from "../middleware/requireRole.js";
 
 const router = express.Router();
 
-router.post("/create", verifyToken, requireRole("admin"), createCoupon);
+router.post("/", verifyToken, requireRole("admin"), createCoupon);
 router.post("/verify", verifyCouponCode);
-router.get("/coupons", getCoupons);
+router.get("/", getCoupons);
 //pagination
 router.get("/couponLimit", getLimitCoupons);
-router.put("/edit-coupon/:id", verifyToken, requireRole("admin"), editCoupon);
+router.put("/coupon/:id", verifyToken, requireRole("admin"), editCoupon);
 router.patch("/toggle/:id", verifyToken, requireRole("admin"), toggleCouponStatus);
 router.delete("/coupon/:id", verifyToken, requireRole("admin"), deleteCoupon);
 

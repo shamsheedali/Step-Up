@@ -6,7 +6,7 @@ const API_URL = `${import.meta.env.VITE_API_URL}/wishlist`;
 //Add product to wishlist
 const addToWishlist = async (data) => {
   try {
-    const response = await axios.post(`${API_URL}/addto-wishlist`, data);
+    const response = await axios.post(`${API_URL}/`, data);
 
     if (response.status === 200) {
       toast.success(response.data.message);

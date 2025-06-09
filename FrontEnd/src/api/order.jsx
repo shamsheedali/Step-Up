@@ -7,7 +7,7 @@ const createOrder = async (orderDetails) => {
   try {
     const token = localStorage.getItem("userToken");
 
-    const response = await axios.post(`${API_URL}/createOrder`, orderDetails, {
+    const response = await axios.post(`${API_URL}/`, orderDetails, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -26,7 +26,7 @@ const getUserOrders = async (userId, page, limit) => {
   try {
     const token = localStorage.getItem("userToken");
     const response = await axios.get(
-      `${API_URL}/orders/${userId}`,
+      `${API_URL}/${userId}`,
       {
         params: { page, limit },
         headers: {
@@ -44,7 +44,7 @@ const getUserOrders = async (userId, page, limit) => {
 const getOrderProducts = async (orderId) => {
   try {
     const token = localStorage.getItem("userToken");
-    const response = await axios.get(`${API_URL}/orders/${orderId}/products`, {
+    const response = await axios.get(`${API_URL}/${orderId}/products`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -63,7 +63,7 @@ const cancelOrder = async (orderId, uid) => {
     const token = localStorage.getItem("userToken");
 
     const response = await axios.delete(
-      `${API_URL}/order-delete/${orderId}/${uid}`,
+      `${API_URL}/${orderId}/${uid}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -100,7 +100,7 @@ const returnOrder = async (orderId, uid) => {
 //get all orders
 const getOrders = async () => {
   try {
-    const response = await axios.get(`${API_URL}/getallorders`);
+    const response = await axios.get(`${API_URL}/`);
     // console.log(response);
     return response.data;
   } catch (error) {
@@ -126,8 +126,8 @@ const orderLimit = async (page, limit) => {
 //change status
 const changeStatus = async (orderId, status) => {
   try {
-    const response = await axios.get(
-      `${API_URL}/change_status?status=${status}&orderId=${orderId}`
+    const response = await axios.patch(
+      `${API_URL}/change-status?status=${status}&orderId=${orderId}`
     );
 
     if (response.status === 200) {
@@ -135,22 +135,22 @@ const changeStatus = async (orderId, status) => {
     }
   } catch (error) {
     console.log(error);
-    toast.error(response.data.message);
+    toast.error(error.response.data.message);
   }
 };
 
 //change payment status
 const changePaymentStatus = async (orderId, paymentStatus) => {
   try {
-    const response = await axios.get(
-      `${API_URL}/change_payment_status?paymentStatus=${paymentStatus}&orderId=${orderId}`
+    const response = await axios.patch(
+      `${API_URL}/payment-status?paymentStatus=${paymentStatus}&orderId=${orderId}`
     );
     if (response.status === 200) {
       console.log(response.data.message);
     }
   } catch (error) {
     console.log(error);
-    toast.error(response.data.message);
+    toast.error(error.response.data.message);
   }
 };
 

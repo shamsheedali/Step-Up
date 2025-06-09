@@ -47,12 +47,12 @@ const uploadEdit = multer({
 //Router for image edit upload
 router.post("/upload", uploadEdit, uploadEditImage);
 
-router.post("/add_product", verifyToken, requireRole("admin"), upload, addProduct);
-router.get("/fetchProducts", fetchProducts);
+router.post("/", verifyToken, requireRole("admin"), upload, addProduct);
+router.get("/", fetchProducts);
 //Pagination
 router.get("/productLimit", fetchProductsWithLimit);
 //Advanced filter
-router.get("/filter_products", advancedFilter);
+router.get("/filter-products", advancedFilter);
 router.get("/:id", getProduct);
 router.patch("/toggle/:id", verifyToken, requireRole("admin"), toggleProductStatus);
 router.put("/:id", verifyToken, requireRole("admin"), editProduct);

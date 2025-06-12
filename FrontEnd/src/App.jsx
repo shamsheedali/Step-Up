@@ -1,171 +1,197 @@
-import React from "react";
 import { Routes, Route } from "react-router-dom";
-import Dashboard from "./pages/admin/dashboard/Dashboard";
-import Signup from "./pages/user/signup/Signup";
-import Login from "./pages/user/login/Login";
-import AdminLogin from "./pages/admin/adminlogin/AdminLogin";
-import Homepage from "./pages/user/homepage/Homepage";
-import AllProduct from "./pages/user/all_product/AllProduct";
-import SingleProductPage from "./pages/user/single_productpage/SingleProductPage";
-import { ToastContainer, toast } from "react-toastify";
+import { lazy, Suspense } from "react";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import OtpPage from "./pages/user/otp/OtpPage";
-import Page404 from "./components/user_components/404/Page404";
-import ProfilePage from "./pages/user/profile_page/ProfilePage";
-import Settings from "./pages/user/settings/Settings";
-import DeliveryAddresses from "./pages/user/delivery_addresses/DeliveryAddresses";
-import Bag from "./pages/user/bag/Bag";
-import Checkout from "./pages/user/checkout/Checkout";
-import ListOrders from "./pages/user/orders/ListOrders";
-import Wishlist from "./pages/user/wishlist/Wishlist";
-import Coupons from "./pages/user/coupons/Coupons";
-import OrderSuccessPage from "./pages/user/order_success/OrderSuccessPage";
-import Wallet from "./pages/user/wallet/Wallet";
-import OrderDetailsPage from "./pages/user/orderDetails/OrderDetailsPage";
+
+// Protected Routes (small, no need to lazy load)
 import AdminProtectedRoute from "../src/protectedRoutes/adminProtectedRoute";
 import UserProtectedRoute from "./protectedRoutes/UserProtectedRoute";
-import OrderPendingPage from "./pages/user/orderPending/OrderPendingPage";
-import ForgotPassword from "./pages/user/forgotPassword/ForgotPassword";
-import ForgotPasswordVerify from "./pages/user/forgotPassword_verify/ForgotPasswordVerify";
+
+// Lazy-loaded pages
+const Dashboard = lazy(() => import("./pages/admin/dashboard/Dashboard"));
+const Signup = lazy(() => import("./pages/user/signup/Signup"));
+const Login = lazy(() => import("./pages/user/login/Login"));
+const AdminLogin = lazy(() => import("./pages/admin/adminlogin/AdminLogin"));
+const Homepage = lazy(() => import("./pages/user/homepage/Homepage"));
+const AllProduct = lazy(() => import("./pages/user/all_product/AllProduct"));
+const SingleProductPage = lazy(() =>
+  import("./pages/user/single_productpage/SingleProductPage")
+);
+const OtpPage = lazy(() => import("./pages/user/otp/OtpPage"));
+const Page404 = lazy(() => import("./components/user_components/404/Page404"));
+const ProfilePage = lazy(() => import("./pages/user/profile_page/ProfilePage"));
+const Settings = lazy(() => import("./pages/user/settings/Settings"));
+const DeliveryAddresses = lazy(() =>
+  import("./pages/user/delivery_addresses/DeliveryAddresses")
+);
+const Bag = lazy(() => import("./pages/user/bag/Bag"));
+const Checkout = lazy(() => import("./pages/user/checkout/Checkout"));
+const ListOrders = lazy(() => import("./pages/user/orders/ListOrders"));
+const Wishlist = lazy(() => import("./pages/user/wishlist/Wishlist"));
+const Coupons = lazy(() => import("./pages/user/coupons/Coupons"));
+const OrderSuccessPage = lazy(() =>
+  import("./pages/user/order_success/OrderSuccessPage")
+);
+const Wallet = lazy(() => import("./pages/user/wallet/Wallet"));
+const OrderDetailsPage = lazy(() =>
+  import("./pages/user/orderDetails/OrderDetailsPage")
+);
+const OrderPendingPage = lazy(() =>
+  import("./pages/user/orderPending/OrderPendingPage")
+);
+const ForgotPassword = lazy(() =>
+  import("./pages/user/forgotPassword/ForgotPassword")
+);
+const ForgotPasswordVerify = lazy(() =>
+  import("./pages/user/forgotPassword_verify/ForgotPasswordVerify")
+);
 
 const App = () => {
   return (
     <div className="bg-white text-black font-clash-display">
       <ToastContainer theme="dark" />
-      <Routes>
-        {/* USER--ROUTES */}
-        <Route path="/" element={<Homepage />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/otp" element={<OtpPage />} />
-        <Route path="/forgotPassword" element={<ForgotPassword />} />
-        <Route
-          path="/forgotPassword-verify"
-          element={<ForgotPasswordVerify />}
-        />
-        <Route path="/products" element={<AllProduct />} />
-        <Route path="/products/:id" element={<SingleProductPage />} />
+      <Suspense
+        fallback={
+          <div className="w-full h-screen flex items-center justify-center">
+            <span className="loading loading-spinner loading-lg text-black"></span>
+          </div>
+        }
+      >
+        <Routes>
+          {/* USER--ROUTES */}
+          <Route path="/" element={<Homepage />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/otp" element={<OtpPage />} />
+          <Route path="/forgotPassword" element={<ForgotPassword />} />
+          <Route
+            path="/forgotPassword-verify"
+            element={<ForgotPasswordVerify />}
+          />
+          <Route path="/products" element={<AllProduct />} />
+          <Route path="/products/:id" element={<SingleProductPage />} />
 
-        {/* Protected routes */}
-        <Route
-          path="/profile"
-          element={
-            <UserProtectedRoute>
-              <ProfilePage />
-            </UserProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile/settings"
-          element={
-            <UserProtectedRoute>
-              <Settings />
-            </UserProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile/settings/delivery-addresses"
-          element={
-            <UserProtectedRoute>
-              <DeliveryAddresses />
-            </UserProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile/orders"
-          element={
-            <UserProtectedRoute>
-              <ListOrders />
-            </UserProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile/orders/:id"
-          element={
-            <UserProtectedRoute>
-              <OrderDetailsPage />
-            </UserProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile/coupons"
-          element={
-            <UserProtectedRoute>
-              <Coupons />
-            </UserProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile/wallet"
-          element={
-            <UserProtectedRoute>
-              <Wallet />
-            </UserProtectedRoute>
-          }
-        />
-        <Route
-          path="/bag"
-          element={
-            <UserProtectedRoute>
-              <Bag />
-            </UserProtectedRoute>
-          }
-        />
-        <Route
-          path="/wishlist"
-          element={
-            <UserProtectedRoute>
-              <Wishlist />
-            </UserProtectedRoute>
-          }
-        />
-        <Route
-          path="/wishlist/:id"
-          element={
-            <UserProtectedRoute>
-              <SingleProductPage />
-            </UserProtectedRoute>
-          }
-        />
-        <Route
-          path="/bag/checkout"
-          element={
-            <UserProtectedRoute>
-              <Checkout />
-            </UserProtectedRoute>
-          }
-        />
-        <Route
-          path="/bag/checkout/order-success"
-          element={
-            <UserProtectedRoute>
-              <OrderSuccessPage />
-            </UserProtectedRoute>
-          }
-        />
-        <Route
-          path="/bag/checkout/order-pending"
-          element={
-            <UserProtectedRoute>
-              <OrderPendingPage />
-            </UserProtectedRoute>
-          }
-        />
+          {/* Protected routes */}
+          <Route
+            path="/profile"
+            element={
+              <UserProtectedRoute>
+                <ProfilePage />
+              </UserProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/settings"
+            element={
+              <UserProtectedRoute>
+                <Settings />
+              </UserProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/settings/delivery-addresses"
+            element={
+              <UserProtectedRoute>
+                <DeliveryAddresses />
+              </UserProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/orders"
+            element={
+              <UserProtectedRoute>
+                <ListOrders />
+              </UserProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/orders/:id"
+            element={
+              <UserProtectedRoute>
+                <OrderDetailsPage />
+              </UserProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/coupons"
+            element={
+              <UserProtectedRoute>
+                <Coupons />
+              </UserProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/wallet"
+            element={
+              <UserProtectedRoute>
+                <Wallet />
+              </UserProtectedRoute>
+            }
+          />
+          <Route
+            path="/bag"
+            element={
+              <UserProtectedRoute>
+                <Bag />
+              </UserProtectedRoute>
+            }
+          />
+          <Route
+            path="/wishlist"
+            element={
+              <UserProtectedRoute>
+                <Wishlist />
+              </UserProtectedRoute>
+            }
+          />
+          <Route
+            path="/wishlist/:id"
+            element={
+              <UserProtectedRoute>
+                <SingleProductPage />
+              </UserProtectedRoute>
+            }
+          />
+          <Route
+            path="/bag/checkout"
+            element={
+              <UserProtectedRoute>
+                <Checkout />
+              </UserProtectedRoute>
+            }
+          />
+          <Route
+            path="/bag/checkout/order-success"
+            element={
+              <UserProtectedRoute>
+                <OrderSuccessPage />
+              </UserProtectedRoute>
+            }
+          />
+          <Route
+            path="/bag/checkout/order-pending"
+            element={
+              <UserProtectedRoute>
+                <OrderPendingPage />
+              </UserProtectedRoute>
+            }
+          />
 
-        {/* ADMIN--ROUTES */}
-        <Route
-          path="/dashboard/*"
-          element={
-            <AdminProtectedRoute>
-              <Dashboard />
-            </AdminProtectedRoute>
-          }
-        />
-        <Route path="/admin-login" element={<AdminLogin />} />
+          {/* ADMIN--ROUTES */}
+          <Route
+            path="/dashboard/*"
+            element={
+              <AdminProtectedRoute>
+                <Dashboard />
+              </AdminProtectedRoute>
+            }
+          />
+          <Route path="/admin-login" element={<AdminLogin />} />
 
-        {/* 404 PAGE */}
-        <Route path="*" element={<Page404 />} />
-      </Routes>
+          {/* 404 PAGE */}
+          <Route path="*" element={<Page404 />} />
+        </Routes>
+      </Suspense>
     </div>
   );
 };

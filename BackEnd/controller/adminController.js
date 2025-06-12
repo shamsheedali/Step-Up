@@ -39,7 +39,7 @@ const login = async (req, res) => {
 //GET--USERS
 const fetchUsers = async (req, res) => {
   try {
-    const allUsers = await users.find();
+    const allUsers = await users.find().select('-password');
     res.json(allUsers);
   } catch (error) {
     res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Error fetching users", error });

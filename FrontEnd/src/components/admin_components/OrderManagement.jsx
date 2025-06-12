@@ -1,18 +1,14 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   cancelOrder,
   changeStatus,
-  getOrderProducts,
-  getOrders,
   orderLimit,
   returnOrder,
 } from "../../api/order";
 import { fetchProducts } from "../../api/product";
 import { fetchUsers } from "../../api/admin";
 import Pagination from "../user_components/pagination/Pagination";
-import { toast } from "react-toastify";
 import { fetchCategories } from "../../api/category";
-import { IoMdDownload, IoMdRefresh } from "react-icons/io";
 import { BiTimeFive } from "react-icons/bi";
 import { IoIosCheckmarkCircle } from "react-icons/io";
 

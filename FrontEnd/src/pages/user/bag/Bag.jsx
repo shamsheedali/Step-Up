@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../../../components/user_components/navbar/Navbar";
 import BagSection from "../../../components/user_components/bag_item_section/BagSection";
-import Footer from "../../../components/user_components/footer/Footer";
 import { delFromBag, fetchBag } from "../../../api/bag";
 import { useDispatch, useSelector } from "react-redux";
 import { removeProduct, storeSubtotal } from "../../../features/bag/BagSlice";

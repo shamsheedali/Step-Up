@@ -19,7 +19,7 @@ const AdminSidebar = () => {
     closeModal();
     await adminLogoutFunction();
     console.log("Admin Logging out..."); 
-    navigate("/admin_login");
+    navigate("/admin-login");
   };
   return (
     <div>

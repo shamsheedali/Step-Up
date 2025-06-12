@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import profilePhoto from "../../../assets/images/homepage/Bibin Profile pic.jpeg";
+import { useEffect, useState } from "react";
 import { fetchReviews } from "../../../api/review";
 import { fetchUsers } from "../../../api/admin";
 

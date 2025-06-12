@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 // Protected Routes (small, no need to lazy load)
 import AdminProtectedRoute from "../src/protectedRoutes/adminProtectedRoute";
 import UserProtectedRoute from "./protectedRoutes/UserProtectedRoute";
+import Categories from "./pages/user/category/Categories";
 
 // Lazy-loaded pages
 const Dashboard = lazy(() => import("./pages/admin/dashboard/Dashboard"));
@@ -70,6 +71,7 @@ const App = () => {
           />
           <Route path="/products" element={<AllProduct />} />
           <Route path="/products/:id" element={<SingleProductPage />} />
+          <Route path="/categories" element={<Categories />} />
 
           {/* Protected routes */}
           <Route

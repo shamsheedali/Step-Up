@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { fetchWishlist, removeProduct } from "../../../api/wishlist";
 import Navbar from "../../../components/user_components/navbar/Navbar";
 import { HiOutlineShoppingBag } from "react-icons/hi2";
@@ -6,7 +6,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { addToBag } from "../../../api/bag";
 import { useNavigate } from "react-router-dom";
-import { GoHeartFill } from "react-icons/go";
 import { RiDeleteBinLine } from "react-icons/ri";
 import { addToBagQty } from "../../../features/bag/BagSlice";
 

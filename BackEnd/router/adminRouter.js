@@ -5,7 +5,7 @@ import requireRole from '../middleware/requireRole.js';
 const router = express.Router();
 
 router.post('/admin-login', login);
-router.get('/users',fetchUsers);
+router.get('/all-users', verifyToken, requireRole("admin"), fetchUsers);
 router.patch('/:id/block', verifyToken, requireRole("admin"), blockUser);
 router.patch('/:id/unblock', verifyToken, requireRole("admin"), unBlockUser);
 

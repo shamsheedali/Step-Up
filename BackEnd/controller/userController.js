@@ -120,7 +120,6 @@ const storeGoogleUser = async (req, res) => {
           .status(HttpStatus.FORBIDDEN)
           .json({ message: "Your Account is Blocked!" });
       }
-      console.log("Existing user logged in:", user);
       //New User Token While Login
       const token = jwt.sign(
         {

@@ -116,9 +116,24 @@ const forgotPasswordVerify = async (email, code, password) => {
   }
 }
 
+// FETCH--ALL-USERS
+const fetchUsers = async () => {
+  try {
+    const token = localStorage.getItem("userToken");
+    const response = await axios.get(`${API_URL}/users`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching users:", error);
+  }
+};
+
 const logout = () => {
   localStorage.removeItem('userToken');
   toast.success("You have successfully logged out!");
 }
 
-export { signUp, login, logout, storeGoogleInfo, updateUserData, changePassword, forgotPassword, forgotPasswordVerify };
+export { signUp, login, logout, storeGoogleInfo, updateUserData, changePassword, forgotPassword, forgotPasswordVerify, fetchUsers };

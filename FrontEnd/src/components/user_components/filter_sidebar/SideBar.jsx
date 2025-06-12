@@ -140,7 +140,6 @@ const SideBar = () => {
           setProducts(products.filter((product) => !product.isDeleted));
           setFilteredProducts(products);
         } else {
-          console.log("No data found");
           setLoading(false);
         }
       } catch (error) {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../../../components/user_components/navbar/Navbar";
 import BreadCrumb from "../../../components/user_components/breadcrumb/BreadCrumb";
 import Footer from "../../../components/user_components/footer/Footer";
@@ -120,7 +120,9 @@ const SingleProductPage = () => {
           setProduct(singleProduct);
         }
         setRelatedProduct(
-          relatedProductsData.filter((item) => item._id !== id)
+          relatedProductsData.filter(
+            (item) => item._id !== id && !item.isDeleted
+          )
         );
       } catch (error) {
         console.log(error);
@@ -147,11 +149,11 @@ const SingleProductPage = () => {
     e.preventDefault();
 
     const token = localStorage.getItem("userToken");
-    
-      if (!token) {
-        navigate("/login");
-        return;
-      }
+
+    if (!token) {
+      navigate("/login");
+      return;
+    }
 
     if (product.stock < 1) {
       return toast.warning("Product Out Of Stock");
@@ -189,7 +191,7 @@ const SingleProductPage = () => {
     e.preventDefault();
 
     const token = localStorage.getItem("userToken");
-    
+
     if (!token) {
       navigate("/login");
       return;
@@ -546,7 +548,10 @@ const SingleProductPage = () => {
       {product && product._id ? (
         <>
           <ReviewForm product={product} onReviewSubmit={handleReviewSubmit} />
-          <ReviewSection productId={product._id} reviewsUpdated={reviewsUpdated} />
+          <ReviewSection
+            productId={product._id}
+            reviewsUpdated={reviewsUpdated}
+          />
         </>
       ) : (
         <p>Loading product details...</p>

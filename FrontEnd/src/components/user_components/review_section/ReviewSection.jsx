@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetchReviews } from "../../../api/review";
-import { fetchUsers } from "../../../api/admin";
+import { fetchUsers } from "../../../api/users";
 
 const ReviewSection = ({ productId, reviewsUpdated }) => {
   const [reviews, setReviews] = useState([]);

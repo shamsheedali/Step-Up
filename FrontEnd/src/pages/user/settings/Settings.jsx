@@ -2,10 +2,9 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../../../components/user_components/navbar/Navbar";
 import SettingsSidebar from "../../../components/user_components/settings_sidebar/SettingsSidebar";
 import { useDispatch, useSelector } from "react-redux";
-import { changePassword, updateUserData } from "../../../api/users";
+import { changePassword, fetchUsers, updateUserData } from "../../../api/users";
 import { setUser } from "../../../features/users/UserSlice";
 import { toast } from "react-toastify";
-import { fetchUsers } from "../../../api/admin";
 
 const Settings = () => {
   const { username, email, uid, googleUser } = useSelector(

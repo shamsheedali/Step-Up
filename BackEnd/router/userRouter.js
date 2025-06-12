@@ -14,6 +14,6 @@ router.put('/change-password', verifyToken, requireRole("user"), changePassword)
 router.post('/forgotPassword', forgotPassword);
 router.post('/forgotPassword-verify', forgotPasswordVerify);
 //fetch-all-users(for-users)
-router.get('/users',verifyToken, fetchUsers);
+router.get('/users', fetchUsers);
 
 export default  router;

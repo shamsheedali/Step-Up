@@ -20,17 +20,33 @@ const adminlogin = async (userData) => {
 };
 
 // FETCH--ALL-USERS
-const fetchUsers = async (page, limit) => {
+const fetchUsersPagination = async (page, limit) => {
   try {
     const token = localStorage.getItem("adminToken");
     const response = await axios.get(
-      `${API_URL}/all-users?page=${page}&limit=${limit}`,
+      `${API_URL}/all-users-limit?page=${page}&limit=${limit}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       }
     );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return { allUsers: [], totalUsers: 0 };
+  }
+};
+
+//FETCH--USERS
+const fetchUsers = async () => {
+  try {
+    const token = localStorage.getItem("adminToken");
+    const response = await axios.get(`${API_URL}/all-users`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -133,6 +149,7 @@ const adminLogoutFunction = async () => {
 export {
   adminlogin,
   fetchUsers,
+  fetchUsersPagination,
   blockUser,
   unblockUser,
   adminLogoutFunction,

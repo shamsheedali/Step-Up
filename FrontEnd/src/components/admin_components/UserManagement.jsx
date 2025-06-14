@@ -3,6 +3,7 @@ import { fetchUsers, blockUser, unblockUser } from "../../api/admin";
 import { logoutUser } from "../../features/users/UserSlice";
 import { useDispatch } from "react-redux";
 import { persistor } from "../../app/Store";
+import Pagination from "../user_components/pagination/Pagination";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -11,19 +12,24 @@ const UserManagement = () => {
   const [userId, setUserId] = useState("");
   const [confirmationModal, setConfirmationModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const entriesPerPage = 5;
+  const [totalUsers, setTotalUsers] = useState(0);
 
   const dispatch = useDispatch();
 
   useEffect(() => {
     const getUsers = async () => {
       setLoading(true);
-      const allUsers = await fetchUsers();
-      setUsers(allUsers);
-      setFilteredUsers(allUsers); // Initialize filteredUsers
+      const response = await fetchUsers(currentPage, entriesPerPage);
+      setUsers(response.allUsers);
+      setFilteredUsers(response.allUsers);
+      setTotalUsers(response.totalUsers);
       setLoading(false);
     };
     getUsers();
-  }, []);
+  }, [currentPage]);
 
   const handleBlockUser = async (uid) => {
     const updatedUser = await blockUser(uid);
@@ -126,7 +132,7 @@ const UserManagement = () => {
                 </td>
               </tr>
             ) : (
-              filteredUsers.map((user) => (
+              filteredUsers && filteredUsers.map((user) => (
                 <tr
                   key={user._id}
                   className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
@@ -135,7 +141,6 @@ const UserManagement = () => {
                     scope="row"
                     className="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white"
                   >
-                    {/* <img className="w-10 h-10 rounded-full" src="/docs/images/people/profile-picture-1.jpg" alt="User profile" /> */}
                     <div className="ps-3">
                       <div className="text-base font-semibold">
                         {user.username}
@@ -183,6 +188,14 @@ const UserManagement = () => {
             )}
           </tbody>
         </table>
+
+        <Pagination
+          className="mx-auto"
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          totalEntries={totalUsers}
+          entriesPerPage={entriesPerPage}
+        />
       </div>
 
       {/* Confirmation Modal */}

@@ -1,13 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   createCoupon,
   deleteCoupon,
-  fetchCoupons,
   fetchCouponsLimit,
   toggleCouponState,
   updateCoupon,
 } from "../../api/coupons";
-import { fetchCategories } from "../../api/category";
 import { toast } from "react-toastify";
 import Pagination from "../user_components/pagination/Pagination";
 
@@ -95,7 +93,6 @@ const CouponManagement = () => {
 
   useEffect(() => {
     const getCoupons = async () => {
-      // const allCoupons = await fetchCoupons();
       const allCoupons = await fetchCouponsLimit(currentPage, entriesPerPage);
       setCoupons(allCoupons.coupons);
       setTotalCoupons(allCoupons.totalCoupons);

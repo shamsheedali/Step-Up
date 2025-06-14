@@ -30,6 +30,7 @@ const Bag = () => {
       setLoading(true);
       try {
         const { bagItems } = await fetchBag(uid);
+        console.log("Bag Items:", bagItems); // Temporary debug log
         const { data } = await fetchCategories();
         setCategories(data);
         setProducts(bagItems.filter((item) => !item.isDeleted).reverse());
@@ -48,7 +49,6 @@ const Bag = () => {
   const offers = useSelector((state) => state.offers);
 
   useEffect(() => {
-
     // subtotal based on products and quantities
     const calculatedSubtotal = products.reduce((acc, product) => {
       const quantity = quantities[product.productId] || 0;
@@ -57,7 +57,8 @@ const Bag = () => {
       const discount = productOffer ? productOffer.discount : 0;
 
       // calculating discount
-      const priceAfterDiscount = discount > 0 ? product.price - discount : product.price;
+      const priceAfterDiscount =
+        discount > 0 ? product.price - discount : product.price;
 
       const itemTotal = priceAfterDiscount * quantity;
       return acc + itemTotal;
@@ -136,9 +137,16 @@ const Bag = () => {
                     !product.isDeleted && (
                       <BagSection
                         key={product.productId}
-                        img={product.productImage}
+                        img={
+                          product.productImage&&
+                          product.productImage?.url
+                        }
                         name={product.productName}
-                        category={categories.find((category) => category._id === product.category)?.name || ""}
+                        category={
+                          categories.find(
+                            (category) => category._id === product.category
+                          )?.name || ""
+                        }
                         managePrice={product.price}
                         qty={product.quantity}
                         stock={product.stock}

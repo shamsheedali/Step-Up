@@ -16,10 +16,11 @@ const addProduct = async (formData) => {
         Authorization: `Bearer ${token}`,
       },
     });
-    toast.success(response.data.message)
+    toast.success(response.data.message);
     return response.data;
   } catch (error) {
     console.error("Error Adding Product", error);
+    toast.error("Error adding product");
   }
 };
 
@@ -32,7 +33,6 @@ const fetchProducts = async () => {
   }
 };
 
-//fetch product with limit (pagination)
 const fetchProductsLimit = async (page, limit) => {
   try {
     const response = await axios.get(`${API_URL}/productLimit`, {
@@ -41,32 +41,22 @@ const fetchProductsLimit = async (page, limit) => {
         limit,
       },
     });
-
     return response.data;
   } catch (error) {
     console.log(error);
   }
 };
 
-//Advanced fetch
 const advancedFetch = async (filters) => {
   try {
-    const {
-      categories = [],
-      sort,
-      currentPage,
-      entriesPerPage,
-      search,
-    } = filters;
+    const { categories = [], sort, currentPage, entriesPerPage, search } = filters;
     const params = new URLSearchParams();
 
-    if (categories.length > 0)
-      params.append("categories", categories.join(","));
+    if (categories.length > 0) params.append("categories", categories.join(","));
 
     const response = await axios.get(
       `${API_URL}/filter-products?${params.toString()}&sortBy=${sort}&page=${currentPage}&limit=${entriesPerPage}&search=${search}`
     );
-
     return response.data;
   } catch (error) {
     console.log(error);
@@ -82,7 +72,6 @@ const getProduct = async (id) => {
   }
 };
 
-//EDIT--PRODUCT
 const editProduct = async (id, data) => {
   const token = localStorage.getItem("adminToken");
   try {
@@ -90,32 +79,39 @@ const editProduct = async (id, data) => {
       headers: { Authorization: `Bearer ${token}` },
     });
     toast.success("Product Updated");
-  } catch ({ error }) {
+  } catch (error) {
     console.log(error);
     toast.error("Error Updating Product");
   }
 };
 
-//STORE EDITED IMAGE IN S3
-const uploadImageToStorage = async (file) => {
+const uploadImageToStorage = async (file, oldImageUrl, oldPublicId) => {
   try {
     const formData = new FormData();
     formData.append("file", file);
+    if (oldImageUrl) {
+      formData.append("oldImageUrl", oldImageUrl);
+    }
+    if (oldPublicId) {
+      formData.append("oldPublicId", oldPublicId);
+    }
 
+    const token = localStorage.getItem("adminToken");
     const response = await axios.post(`${API_URL}/upload`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
       },
     });
 
-    return response.data.url;
+    return response.data.image; // Return { url, public_id }
   } catch (error) {
     console.error("Error uploading image:", error);
+    toast.error("Image upload failed");
     throw new Error("Image upload failed");
   }
 };
 
-//TOGGLE--PRODUCT--ISDELETED
 const toggleProductState = async (id) => {
   const token = localStorage.getItem("adminToken");
   try {
@@ -159,18 +155,15 @@ const productCheckout = async (productIds) => {
   }
 };
 
-//Top selling products
 const getTopSellingProducts = async () => {
   try {
     const response = await axios.get(`${API_URL}/top-selling/products`);
-
     return response.data;
   } catch (error) {
     console.log(error);
   }
 };
 
-//Three new arrival products
 const fetchThreeNewArrivals = async () => {
   try {
     const response = await axios.get(`${API_URL}/three/new-arrivals`);

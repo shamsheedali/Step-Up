@@ -41,9 +41,9 @@ const UserManagement = () => {
   const handleBlockUser = async (uid) => {
     const updatedUser = await blockUser(uid);
     closeModal();
-    localStorage.removeItem("userToken");
-    dispatch(logoutUser());
-    persistor.purge();
+    // localStorage.removeItem("userToken");
+    // dispatch(logoutUser());
+    // persistor.purge();
 
     if (updatedUser) {
       setUsers((prevUsers) =>

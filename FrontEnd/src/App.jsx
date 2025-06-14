@@ -1,12 +1,18 @@
 import { Routes, Route } from "react-router-dom";
-import { lazy, Suspense } from "react";
-import { ToastContainer } from "react-toastify";
+import { lazy, Suspense, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { PersistGate } from "redux-persist/integration/react";
 
-// Protected Routes (small, no need to lazy load)
-import AdminProtectedRoute from "../src/protectedRoutes/adminProtectedRoute";
+// Protected Routes
+import AdminProtectedRoute from "./protectedRoutes/adminProtectedRoute";
 import UserProtectedRoute from "./protectedRoutes/UserProtectedRoute";
 import Categories from "./pages/user/category/Categories";
+import socket from "./utils/socket";
+import { logoutUser } from "./features/users/UserSlice";
+import { persistor } from "./app/Store";
 
 // Lazy-loaded pages
 const Dashboard = lazy(() => import("./pages/admin/dashboard/Dashboard"));
@@ -48,153 +54,188 @@ const ForgotPasswordVerify = lazy(() =>
 );
 
 const App = () => {
+  const { uid } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (uid) {
+      // Connect to Socket.IO
+      socket.connect();
+      console.log("Socket connected");
+
+      // Register user with socket
+      socket.emit("registerUser", uid);
+
+      // Listen for userBanned event
+      socket.on("userBanned", (data) => {
+        console.log("Received userBanned event:", data);
+        dispatch(logoutUser());
+        toast.info("Account Banned!");
+        localStorage.removeItem("userToken");
+        persistor.purge(); // Match handleBlockUser
+        socket.disconnect();
+        navigate("/login");
+      });
+
+      // Cleanup on unmount or uid change
+      return () => {
+        socket.off("userBanned");
+        socket.disconnect();
+        console.log("Socket disconnected");
+      };
+    }
+  }, [uid, dispatch, navigate]);
+
   return (
-    <div className="bg-white text-black font-clash-display">
-      <ToastContainer theme="dark" />
-      <Suspense
-        fallback={
-          <div className="w-full h-screen flex items-center justify-center">
-            <span className="loading loading-spinner loading-lg text-black"></span>
-          </div>
-        }
-      >
-        <Routes>
-          {/* USER--ROUTES */}
-          <Route path="/" element={<Homepage />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/otp" element={<OtpPage />} />
-          <Route path="/forgotPassword" element={<ForgotPassword />} />
-          <Route
-            path="/forgotPassword-verify"
-            element={<ForgotPasswordVerify />}
-          />
-          <Route path="/products" element={<AllProduct />} />
-          <Route path="/products/:id" element={<SingleProductPage />} />
-          <Route path="/categories" element={<Categories />} />
+    <PersistGate loading={null} persistor={persistor}>
+      <div className="bg-white text-black font-clash-display">
+        <ToastContainer theme="dark" />
+        <Suspense
+          fallback={
+            <div className="w-full h-screen flex items-center justify-center">
+              <span className="loading loading-spinner loading-lg text-black"></span>
+            </div>
+          }
+        >
+          <Routes>
+            {/* USER--ROUTES */}
+            <Route path="/" element={<Homepage />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/otp" element={<OtpPage />} />
+            <Route path="/forgotPassword" element={<ForgotPassword />} />
+            <Route
+              path="/forgotPassword-verify"
+              element={<ForgotPasswordVerify />}
+            />
+            <Route path="/products" element={<AllProduct />} />
+            <Route path="/products/:id" element={<SingleProductPage />} />
+            <Route path="/categories" element={<Categories />} />
 
-          {/* Protected routes */}
-          <Route
-            path="/profile"
-            element={
-              <UserProtectedRoute>
-                <ProfilePage />
-              </UserProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile/settings"
-            element={
-              <UserProtectedRoute>
-                <Settings />
-              </UserProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile/settings/delivery-addresses"
-            element={
-              <UserProtectedRoute>
-                <DeliveryAddresses />
-              </UserProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile/orders"
-            element={
-              <UserProtectedRoute>
-                <ListOrders />
-              </UserProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile/orders/:id"
-            element={
-              <UserProtectedRoute>
-                <OrderDetailsPage />
-              </UserProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile/coupons"
-            element={
-              <UserProtectedRoute>
-                <Coupons />
-              </UserProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile/wallet"
-            element={
-              <UserProtectedRoute>
-                <Wallet />
-              </UserProtectedRoute>
-            }
-          />
-          <Route
-            path="/bag"
-            element={
-              <UserProtectedRoute>
-                <Bag />
-              </UserProtectedRoute>
-            }
-          />
-          <Route
-            path="/wishlist"
-            element={
-              <UserProtectedRoute>
-                <Wishlist />
-              </UserProtectedRoute>
-            }
-          />
-          <Route
-            path="/wishlist/:id"
-            element={
-              <UserProtectedRoute>
-                <SingleProductPage />
-              </UserProtectedRoute>
-            }
-          />
-          <Route
-            path="/bag/checkout"
-            element={
-              <UserProtectedRoute>
-                <Checkout />
-              </UserProtectedRoute>
-            }
-          />
-          <Route
-            path="/bag/checkout/order-success"
-            element={
-              <UserProtectedRoute>
-                <OrderSuccessPage />
-              </UserProtectedRoute>
-            }
-          />
-          <Route
-            path="/bag/checkout/order-pending"
-            element={
-              <UserProtectedRoute>
-                <OrderPendingPage />
-              </UserProtectedRoute>
-            }
-          />
+            {/* Protected routes */}
+            <Route
+              path="/profile"
+              element={
+                <UserProtectedRoute>
+                  <ProfilePage />
+                </UserProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile/settings"
+              element={
+                <UserProtectedRoute>
+                  <Settings />
+                </UserProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile/settings/delivery-addresses"
+              element={
+                <UserProtectedRoute>
+                  <DeliveryAddresses />
+                </UserProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile/orders"
+              element={
+                <UserProtectedRoute>
+                  <ListOrders />
+                </UserProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile/orders/:id"
+              element={
+                <UserProtectedRoute>
+                  <OrderDetailsPage />
+                </UserProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile/coupons"
+              element={
+                <UserProtectedRoute>
+                  <Coupons />
+                </UserProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile/wallet"
+              element={
+                <UserProtectedRoute>
+                  <Wallet />
+                </UserProtectedRoute>
+              }
+            />
+            <Route
+              path="/bag"
+              element={
+                <UserProtectedRoute>
+                  <Bag />
+                </UserProtectedRoute>
+              }
+            />
+            <Route
+              path="/wishlist"
+              element={
+                <UserProtectedRoute>
+                  <Wishlist />
+                </UserProtectedRoute>
+              }
+            />
+            <Route
+              path="/wishlist/:id"
+              element={
+                <UserProtectedRoute>
+                  <SingleProductPage />
+                </UserProtectedRoute>
+              }
+            />
+            <Route
+              path="/bag/checkout"
+              element={
+                <UserProtectedRoute>
+                  <Checkout />
+                </UserProtectedRoute>
+              }
+            />
+            <Route
+              path="/bag/checkout/order-success"
+              element={
+                <UserProtectedRoute>
+                  <OrderSuccessPage />
+                </UserProtectedRoute>
+              }
+            />
+            <Route
+              path="/bag/checkout/order-pending"
+              element={
+                <UserProtectedRoute>
+                  <OrderPendingPage />
+                </UserProtectedRoute>
+              }
+            />
 
-          {/* ADMIN--ROUTES */}
-          <Route
-            path="/dashboard/*"
-            element={
-              <AdminProtectedRoute>
-                <Dashboard />
-              </AdminProtectedRoute>
-            }
-          />
-          <Route path="/admin-login" element={<AdminLogin />} />
+            {/* ADMIN--ROUTES */}
+            <Route
+              path="/dashboard/*"
+              element={
+                <AdminProtectedRoute>
+                  <Dashboard />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route path="/admin-login" element={<AdminLogin />} />
 
-          {/* 404 PAGE */}
-          <Route path="*" element={<Page404 />} />
-        </Routes>
-      </Suspense>
-    </div>
+            {/* 404 PAGE */}
+            <Route path="*" element={<Page404 />} />
+          </Routes>
+        </Suspense>
+      </div>
+    </PersistGate>
   );
 };
 

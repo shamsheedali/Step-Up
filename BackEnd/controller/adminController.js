@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import HttpStatus from "../utils/httpStatus.js";
 
-//ADMIN--LOGIN
+// ADMIN--LOGIN
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -45,7 +45,7 @@ const login = async (req, res) => {
   }
 };
 
-//GET--USERS--PAGINATED
+// GET--USERS--PAGINATED
 const fetchUsersPagination = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -67,7 +67,7 @@ const fetchUsersPagination = async (req, res) => {
   }
 };
 
-//FETCH USERS
+// FETCH USERS
 const fetchUsers = async (req, res) => {
   try {
     const allUsers = await users.find().select("-password");
@@ -79,7 +79,7 @@ const fetchUsers = async (req, res) => {
   }
 };
 
-//BLOCK--USER
+// BLOCK--USER
 const blockUser = async (req, res) => {
   try {
     const userId = req.params.id;
@@ -95,6 +95,15 @@ const blockUser = async (req, res) => {
         .json({ message: "User not found" });
     }
 
+    // Emit userBanned event via Socket.IO
+    const io = req.app.get("io");
+    const connectedUsers = req.app.get("connectedUsers");
+    const socketId = connectedUsers.get(userId);
+
+    if (socketId) {
+      io.to(socketId).emit("userBanned", { message: "You have been banned" });
+    }
+
     res.json(updatedUser);
   } catch (error) {
     res
@@ -103,7 +112,7 @@ const blockUser = async (req, res) => {
   }
 };
 
-//UNBLOCK--USER
+// UNBLOCK--USER
 const unBlockUser = async (req, res) => {
   try {
     const userId = req.params.id;

@@ -1,6 +1,8 @@
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
+import { Server } from "socket.io";
+import http from "http";
 import userRouter from "./router/userRouter.js";
 import adminRouter from "./router/adminRouter.js";
 import categoryRouter from "./router/categoryRoutes.js";
@@ -20,10 +22,40 @@ import connectDB from "./db/connection.js";
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  },
+});
 
 app.use(express.json({ limit: "10mb" }));
 
-//CORS
+// Store connected users: userId -> socketId
+const connectedUsers = new Map();
+
+io.on("connection", (socket) => {
+  // Client sends userId on connection
+  socket.on("registerUser", (userId) => {
+    connectedUsers.set(userId, socket.id);
+  });
+
+  socket.on("disconnect", () => {
+    for (const [userId, socketId] of connectedUsers) {
+      if (socketId === socket.id) {
+        connectedUsers.delete(userId);
+        break;
+      }
+    }
+  });
+});
+
+app.set("io", io);
+app.set("connectedUsers", connectedUsers);
+
+// CORS
 app.use(
   cors({
     origin: process.env.FRONTEND_URL,
@@ -33,39 +65,26 @@ app.use(
   })
 );
 
-//USER-ROUTE
+// Routes
 app.use("/api/user", userRouter);
-//OTP-ROUTE
 app.use("/api/otp", otpRouter);
-//ADMIN-ROUTE
 app.use("/api/admin", adminRouter);
-//CATEGORY-ROUTE
 app.use("/api/category", categoryRouter);
-//PRODUCT-ROUTE
 app.use("/api/product", productRouter);
-//ADDRESS-ROUTE
 app.use("/api/address", addressRouter);
-//BAG-ROUTE
 app.use("/api/bag", bagRouter);
-//WISHLIST-ROUTE
 app.use("/api/wishlist", wishlistRouter);
-//ORDER-ROUTE
 app.use("/api/order", orderRouter);
-//PAYMENT-ROUTE
 app.use("/api/payment", paymentRouter);
-//COUPON-ROUTE
 app.use("/api/coupon", couponRouter);
-//OFFER-ROUTE
 app.use("/api/offer", offerRouter);
-//WALLET-ROUTE
 app.use("/api/wallet", walletRouter);
-//REVIEW-ROUTE
 app.use("/api/review", reviewRoutes);
 
-//DATABASE--CONNECTION
+// Database connection
 connectDB();
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on port : ${PORT}`);
 });

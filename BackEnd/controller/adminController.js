@@ -45,8 +45,8 @@ const login = async (req, res) => {
   }
 };
 
-//GET--USERS
-const fetchUsers = async (req, res) => {
+//GET--USERS--PAGINATED
+const fetchUsersPagination = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 5;
@@ -60,6 +60,18 @@ const fetchUsers = async (req, res) => {
     const totalUsers = await users.countDocuments();
 
     res.json({ allUsers, totalUsers });
+  } catch (error) {
+    res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: "Error fetching users", error });
+  }
+};
+
+//FETCH USERS
+const fetchUsers = async (req, res) => {
+  try {
+    const allUsers = await users.find().select("-password");
+    res.json(allUsers);
   } catch (error) {
     res
       .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -129,7 +141,8 @@ const searchUsers = async (req, res) => {
       ],
     };
 
-    const allUsers = await users.find(query)
+    const allUsers = await users
+      .find(query)
       .select("-password")
       .skip(skip)
       .limit(limit);
@@ -157,9 +170,7 @@ const searchProducts = async (req, res) => {
       ],
     };
 
-    const products = await Product.find(query)
-      .skip(skip)
-      .limit(limit);
+    const products = await Product.find(query).skip(skip).limit(limit);
     const totalProducts = await Product.countDocuments(query);
 
     res.json({ products, totalProducts });
@@ -170,4 +181,12 @@ const searchProducts = async (req, res) => {
   }
 };
 
-export { login, fetchUsers, blockUser, unBlockUser, searchUsers, searchProducts };
+export {
+  login,
+  fetchUsers,
+  blockUser,
+  unBlockUser,
+  searchUsers,
+  searchProducts,
+  fetchUsersPagination,
+};

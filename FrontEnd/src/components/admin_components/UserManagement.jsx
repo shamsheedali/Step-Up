@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import {
-  fetchUsers,
   blockUser,
   unblockUser,
   searchUsers,
+  fetchUsersPagination,
 } from "../../api/admin";
 import { logoutUser } from "../../features/users/UserSlice";
 import { useDispatch } from "react-redux";
@@ -30,7 +30,7 @@ const UserManagement = () => {
       setLoading(true);
       const response = debouncedSearchTerm
         ? await searchUsers(debouncedSearchTerm, currentPage, entriesPerPage)
-        : await fetchUsers(currentPage, entriesPerPage);
+        : await fetchUsersPagination(currentPage, entriesPerPage);
       setUsers(response.allUsers);
       setTotalUsers(response.totalUsers);
       setLoading(false);

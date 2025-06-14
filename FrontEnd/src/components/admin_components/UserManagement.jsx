@@ -1,13 +1,18 @@
 import { useEffect, useState } from "react";
-import { fetchUsers, blockUser, unblockUser } from "../../api/admin";
+import {
+  fetchUsers,
+  blockUser,
+  unblockUser,
+  searchUsers,
+} from "../../api/admin";
 import { logoutUser } from "../../features/users/UserSlice";
 import { useDispatch } from "react-redux";
 import { persistor } from "../../app/Store";
 import Pagination from "../user_components/pagination/Pagination";
+import useDebounce from "../../hooks/useDebounce";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState("");
   const [confirmationModal, setConfirmationModal] = useState(false);
@@ -18,18 +23,20 @@ const UserManagement = () => {
   const [totalUsers, setTotalUsers] = useState(0);
 
   const dispatch = useDispatch();
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   useEffect(() => {
     const getUsers = async () => {
       setLoading(true);
-      const response = await fetchUsers(currentPage, entriesPerPage);
+      const response = debouncedSearchTerm
+        ? await searchUsers(debouncedSearchTerm, currentPage, entriesPerPage)
+        : await fetchUsers(currentPage, entriesPerPage);
       setUsers(response.allUsers);
-      setFilteredUsers(response.allUsers);
       setTotalUsers(response.totalUsers);
       setLoading(false);
     };
     getUsers();
-  }, [currentPage]);
+  }, [currentPage, debouncedSearchTerm]);
 
   const handleBlockUser = async (uid) => {
     const updatedUser = await blockUser(uid);
@@ -44,11 +51,6 @@ const UserManagement = () => {
           user._id === updatedUser._id ? updatedUser : user
         )
       );
-      setFilteredUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user._id === updatedUser._id ? updatedUser : user
-        )
-      );
     }
   };
 
@@ -56,11 +58,6 @@ const UserManagement = () => {
     const updatedUser = await unblockUser(uid);
     if (updatedUser) {
       setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user._id === updatedUser._id ? updatedUser : user
-        )
-      );
-      setFilteredUsers((prevUsers) =>
         prevUsers.map((user) =>
           user._id === updatedUser._id ? updatedUser : user
         )
@@ -77,15 +74,8 @@ const UserManagement = () => {
 
   // Search Handler
   const handleSearch = (e) => {
-    const value = e.target.value.toLowerCase();
-    setSearchTerm(value);
-    setFilteredUsers(
-      users.filter(
-        (user) =>
-          user.username.toLowerCase().includes(value) ||
-          user.email.toLowerCase().includes(value)
-      )
-    );
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page on new search
   };
 
   return (
@@ -132,7 +122,8 @@ const UserManagement = () => {
                 </td>
               </tr>
             ) : (
-              filteredUsers && filteredUsers.map((user) => (
+              users &&
+              users.map((user) => (
                 <tr
                   key={user._id}
                   className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"

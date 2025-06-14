@@ -9,13 +9,13 @@ const adminlogin = async (userData) => {
     const response = await axios.post(`${API_URL}/admin-login`, userData);
     if (response.status === 200 && response.data.token) {
       localStorage.setItem("adminToken", response.data.token);
-      return true; 
+      return true;
     } else {
-      return false; 
+      return false;
     }
   } catch (error) {
     console.error("Error While Admin login:", error);
-    return false; 
+    return false;
   }
 };
 
@@ -23,15 +23,18 @@ const adminlogin = async (userData) => {
 const fetchUsers = async (page, limit) => {
   try {
     const token = localStorage.getItem("adminToken");
-    const response = await axios.get(`${API_URL}/all-users?page=${page}&limit=${limit}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await axios.get(
+      `${API_URL}/all-users?page=${page}&limit=${limit}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     return response.data;
   } catch (error) {
     console.error("Error fetching users:", error);
-    return { users: [], totalUsers: 0 };
+    return { allUsers: [], totalUsers: 0 };
   }
 };
 
@@ -39,11 +42,15 @@ const fetchUsers = async (page, limit) => {
 const blockUser = async (userId) => {
   try {
     const token = localStorage.getItem("adminToken");
-    const response = await axios.patch(`${API_URL}/${userId}/block`, {}, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await axios.patch(
+      `${API_URL}/${userId}/block`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     return response.data;
   } catch (error) {
     console.error("Error blocking user:", error);
@@ -54,21 +61,46 @@ const blockUser = async (userId) => {
 const unblockUser = async (userId) => {
   try {
     const token = localStorage.getItem("adminToken");
-    const response = await axios.patch(`${API_URL}/${userId}/unblock`, {}, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await axios.patch(
+      `${API_URL}/${userId}/unblock`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     return response.data;
   } catch (error) {
     console.error("Error unblocking user:", error);
   }
 };
 
+//SEARCH USER
+const searchUsers = async (searchKey, page, limit) => {
+  try {
+    const token = localStorage.getItem("adminToken");
+    const response = await axios.get(
+      `${API_URL}/search-users?searchKey=${encodeURIComponent(
+        searchKey
+      )}&page=${page}&limit=${limit}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { allUsers: response.data.allUsers, totalUsers: response.data.totalUsers };
+  } catch (error) {
+    console.error("Error searching users:", error);
+    return { allUsers: [], totalUsers: 0 };
+  }
+};
+
 //ADMIN LOGOUT
 const adminLogoutFunction = async () => {
-  localStorage.removeItem('adminToken');
+  localStorage.removeItem("adminToken");
   toast.success("You have successfully logged out!");
-}
+};
 
-export { adminlogin, fetchUsers, blockUser, unblockUser, adminLogoutFunction };
+export { adminlogin, fetchUsers, blockUser, unblockUser, adminLogoutFunction, searchUsers };

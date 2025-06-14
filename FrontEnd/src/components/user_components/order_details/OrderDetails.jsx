@@ -65,12 +65,7 @@ const OrderDetails = ({ id }) => {
   }, [uid, reRender]);
 
   //Cancel Order
-  const handleCancelOrder = async (
-    orderId,
-    totalAmount,
-    paymentMethod,
-    paymentStatus
-  ) => {
+  const handleCancelOrder = async (orderId, totalAmount) => {
     if (order.status === "Delivered") {
       toast.success("Requested to Return Order");
       closeModal();
@@ -267,7 +262,9 @@ const OrderDetails = ({ id }) => {
             {order.status}
           </h1>
 
-          {!order.isCancelled && (order.paymentStatus === "Completed" || order.paymentStatus === "Refunded") ? (
+          {!order.isCancelled &&
+          (order.paymentStatus === "Completed" ||
+            order.paymentStatus === "Refunded") ? (
             <button
               className="btn py-2 absolute bottom-5 w-[80%] text-white bg-black"
               onClick={() => handleDownloadInvoice(order._id)}
@@ -275,7 +272,9 @@ const OrderDetails = ({ id }) => {
               <IoMdDownload /> Invoice
             </button>
           ) : (
-            <h2 className="absolute bottom-5 text-red-500 text-md">Complete the payment to download invoice.</h2>
+            <h2 className="absolute bottom-5 text-red-500 text-md">
+              Complete the payment to download invoice.
+            </h2>
           )}
         </div>
 
@@ -285,7 +284,7 @@ const OrderDetails = ({ id }) => {
         {/* Right section */}
         <div className="bg-[#c4c4c4] w-[50%] h-[450px] pt-10 p-4 relative rounded-e-lg">
           <h1 className="text-2xl mb-3">Product Details</h1>
-          <div className="h-[250px] px-[12px] overflow-y-auto border-b border-black">
+          <div className="h-[217px] px-[12px] overflow-y-auto border-b border-black">
             {order.items.map((item) => (
               <div
                 key={item._id}
@@ -318,9 +317,24 @@ const OrderDetails = ({ id }) => {
               </div>
             ))}
           </div>
-          <div className="flex justify-between px-4 pt-3">
-            <h1>Grand Total :</h1>
-            <h1 className="font-bold">₹{order.totalAmount}</h1>
+
+          <div className="px-4 pt-3">
+            <div className="flex justify-between">
+              <h1>Estimated Delivery & Handling :</h1>
+              <h1 className="font-bold">₹100</h1>
+            </div>
+
+            {order.discountApplied > 0 && (
+              <div className="flex justify-between">
+                <h1>Coupon Discount :</h1>
+                <h1 className="font-bold">- ₹{order.discountApplied}</h1>
+              </div>
+            )}
+
+            <div className="flex justify-between">
+              <h1>Grand Total :</h1>
+              <h1 className="font-bold">₹{order.totalAmount}</h1>
+            </div>
           </div>
 
           <button

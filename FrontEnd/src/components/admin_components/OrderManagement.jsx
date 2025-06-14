@@ -516,9 +516,27 @@ const OrderManagement = () => {
                           <p>No products found.</p>
                         )}
                       </div>
-                      <div className="flex justify-between px-4 pt-3">
-                        <h1>Grand Total :</h1>
-                        <h1 className="font-bold">₹{order.totalAmount}</h1>
+                      <div className="px-4 pt-3">
+                        <div className="px-4 pt-3">
+                          <div className="flex justify-between">
+                            <h1>Estimated Delivery & Handling :</h1>
+                            <h1 className="font-bold">₹100</h1>
+                          </div>
+
+                          {order.discountApplied > 0 && (
+                            <div className="flex justify-between">
+                              <h1>Coupon Discount :</h1>
+                              <h1 className="font-bold">
+                                - ₹{order.discountApplied}
+                              </h1>
+                            </div>
+                          )}
+
+                          <div className="flex justify-between">
+                            <h1>Grand Total :</h1>
+                            <h1 className="font-bold">₹{order.totalAmount}</h1>
+                          </div>
+                        </div>
                       </div>
 
                       <button

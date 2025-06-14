@@ -11,7 +11,6 @@ const fetchCategories = async () => {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error('Error fetching categories:', error);
@@ -73,7 +72,6 @@ const getTopSellingCategories = async() => {
   try {
     const response = await axios.get(`${API_URL}/top-selling/categories`);
 
-    console.log(response);
     return response.data;
   } catch (error) {
     console.log(error);

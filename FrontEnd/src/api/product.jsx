@@ -102,15 +102,13 @@ const uploadImageToStorage = async (file) => {
     const formData = new FormData();
     formData.append("file", file);
 
-    // Assuming you have an endpoint to handle file uploads
     const response = await axios.post(`${API_URL}/upload`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
     });
 
-    console.log(response);
-    return response.data.url; // Assuming the server returns the URL of the uploaded image
+    return response.data.url;
   } catch (error) {
     console.error("Error uploading image:", error);
     throw new Error("Image upload failed");
@@ -133,7 +131,6 @@ const toggleProductState = async (id) => {
 
     if (response.data) {
       toast.success(response.data.message);
-      console.log(response.data);
       return response.data;
     }
   } catch (error) {
@@ -156,7 +153,6 @@ const productCheckout = async (productIds) => {
       }
     );
 
-    console.log("prodcts response", response);
     return response.data;
   } catch (error) {
     console.log(error);
@@ -168,7 +164,6 @@ const getTopSellingProducts = async () => {
   try {
     const response = await axios.get(`${API_URL}/top-selling/products`);
 
-    console.log(response);
     return response.data;
   } catch (error) {
     console.log(error);
@@ -179,7 +174,6 @@ const getTopSellingProducts = async () => {
 const fetchThreeNewArrivals = async () => {
   try {
     const response = await axios.get(`${API_URL}/three/new-arrivals`);
-    console.log(response)
     return response.data;
   } catch (error) {
     console.error("Error fetching new arrival products:", error);

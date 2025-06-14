@@ -90,10 +90,37 @@ const searchUsers = async (searchKey, page, limit) => {
         },
       }
     );
-    return { allUsers: response.data.allUsers, totalUsers: response.data.totalUsers };
+    return {
+      allUsers: response.data.allUsers,
+      totalUsers: response.data.totalUsers,
+    };
   } catch (error) {
     console.error("Error searching users:", error);
     return { allUsers: [], totalUsers: 0 };
+  }
+};
+
+//SEARCH PRODUCTS
+const searchProducts = async (searchKey, page, limit) => {
+  try {
+    const token = localStorage.getItem("adminToken");
+    const response = await axios.get(
+      `${API_URL}/search-products?searchKey=${encodeURIComponent(
+        searchKey
+      )}&page=${page}&limit=${limit}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return {
+      products: response.data.products,
+      totalProducts: response.data.totalProducts,
+    };
+  } catch (error) {
+    console.error("Error searching products:", error);
+    return { products: [], totalProducts: 0 };
   }
 };
 
@@ -103,4 +130,12 @@ const adminLogoutFunction = async () => {
   toast.success("You have successfully logged out!");
 };
 
-export { adminlogin, fetchUsers, blockUser, unblockUser, adminLogoutFunction, searchUsers };
+export {
+  adminlogin,
+  fetchUsers,
+  blockUser,
+  unblockUser,
+  adminLogoutFunction,
+  searchUsers,
+  searchProducts,
+};

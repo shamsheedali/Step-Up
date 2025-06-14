@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -17,7 +17,7 @@ const sendOtp = async (userData) => {
       userData
     );
     if (otpResponse.status === 200) {
-      toast.success("OTP Shared Successful");
+      toast.success("OTP Shared");
     }
   } catch (error) {
     console.log("Error while giving otp", error);

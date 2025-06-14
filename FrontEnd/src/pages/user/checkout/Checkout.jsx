@@ -50,7 +50,7 @@ const Checkout = () => {
                   </div>
                   <div className="flex justify-between">
                     <h1>Coupon Discount</h1>
-                    <h1>₹{discountApplied.toFixed(2)}</h1>
+                    <h1>-₹{discountApplied.toFixed(2)}</h1>
                   </div>
                 </>
               ) : (

@@ -1,7 +1,5 @@
-import React from "react";
 import Navbar from "../../../components/user_components/navbar/Navbar";
 import ProfileNavbar from "../../../components/user_components/profile_navbar/ProfileNavbar";
-import BreadCrumb from "../../../components/user_components/breadcrumb/BreadCrumb";
 import OrderDetails from "../../../components/user_components/order_details/OrderDetails";
 import { useParams } from "react-router-dom";
 

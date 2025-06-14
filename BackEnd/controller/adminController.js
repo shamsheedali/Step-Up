@@ -11,12 +11,16 @@ const login = async (req, res) => {
     const admin = await admins.findOne({ email });
 
     if (!admin) {
-      return res.status(HttpStatus.UNAUTHORIZED).json({ message: "Invalid credentials" });
+      return res
+        .status(HttpStatus.UNAUTHORIZED)
+        .json({ message: "Invalid credentials" });
     }
 
     const isPasswordValid = await bcrypt.compare(password, admin.password);
     if (!isPasswordValid) {
-      return res.status(HttpStatus.UNAUTHORIZED).json({ message: "Invalid Password" });
+      return res
+        .status(HttpStatus.UNAUTHORIZED)
+        .json({ message: "Invalid Password" });
     }
 
     const token = jwt.sign(
@@ -29,20 +33,32 @@ const login = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    return res.status(HttpStatus.OK).json({ message: "Admin Login Successful", token });
+    return res
+      .status(HttpStatus.OK)
+      .json({ message: "Admin Login Successful", token });
   } catch (error) {
     console.error(error);
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Error While Admin Login" });
+    res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: "Error While Admin Login" });
   }
 };
 
 //GET--USERS
 const fetchUsers = async (req, res) => {
   try {
-    const allUsers = await users.find().select('-password');
-    res.json(allUsers);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
+
+    const allUsers = await users.find().select("-password").skip(skip).limit(limit);
+    const totalUsers = await users.countDocuments();
+
+    res.json({ allUsers, totalUsers });
   } catch (error) {
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Error fetching users", error });
+    res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: "Error fetching users", error });
   }
 };
 
@@ -53,16 +69,20 @@ const blockUser = async (req, res) => {
     const updatedUser = await users.findByIdAndUpdate(
       userId,
       { status: "blocked" },
-      { new: true } 
+      { new: true }
     );
 
     if (!updatedUser) {
-      return res.status(HttpStatus.NOT_FOUND).json({ message: "User not found" });
+      return res
+        .status(HttpStatus.NOT_FOUND)
+        .json({ message: "User not found" });
     }
 
     res.json(updatedUser);
   } catch (error) {
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message });
+    res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: error.message });
   }
 };
 
@@ -72,17 +92,21 @@ const unBlockUser = async (req, res) => {
     const userId = req.params.id;
     const updatedUser = await users.findByIdAndUpdate(
       userId,
-      { status: "active" }, 
+      { status: "active" },
       { new: true }
     );
 
     if (!updatedUser) {
-      return res.status(HttpStatus.NOT_FOUND).json({ message: "User not found" });
+      return res
+        .status(HttpStatus.NOT_FOUND)
+        .json({ message: "User not found" });
     }
 
     res.json(updatedUser);
   } catch (error) {
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message });
+    res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: error.message });
   }
 };
 

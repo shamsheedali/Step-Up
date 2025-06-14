@@ -1,8 +1,7 @@
 import express from 'express'
-import { signUp, login, storeGoogleUser, updateUserData, changePassword, forgotPassword, forgotPasswordVerify } from '../controller/userController.js';
+import { signUp, login, storeGoogleUser, updateUserData, changePassword, forgotPassword, forgotPasswordVerify, fetchUsers } from '../controller/userController.js';
 import verifyToken from '../middleware/middleware.js';
 import requireRole from '../middleware/requireRole.js';
-import { fetchUsers } from '../controller/adminController.js';
 
 const router = express.Router();
 

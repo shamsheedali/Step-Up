@@ -20,10 +20,10 @@ const adminlogin = async (userData) => {
 };
 
 // FETCH--ALL-USERS
-const fetchUsers = async () => {
+const fetchUsers = async (page, limit) => {
   try {
     const token = localStorage.getItem("adminToken");
-    const response = await axios.get(`${API_URL}/all-users`, {
+    const response = await axios.get(`${API_URL}/all-users?page=${page}&limit=${limit}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -31,6 +31,7 @@ const fetchUsers = async () => {
     return response.data;
   } catch (error) {
     console.error("Error fetching users:", error);
+    return { users: [], totalUsers: 0 };
   }
 };
 

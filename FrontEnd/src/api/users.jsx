@@ -57,7 +57,7 @@ const storeGoogleInfo = async(userData) => {
 const updateUserData = async(userData) => {
   const token = localStorage.getItem('userToken');
   try {
-    const response = await axios.post(`${API_URL}/update-userdata`, userData, {
+    const response = await axios.patch(`${API_URL}/`, userData, {
       headers:{
         Authorization: `Bearer ${token}`, 
       }
@@ -73,7 +73,7 @@ const changePassword = async(data) => {
   const token = localStorage.getItem('userToken');
   try {
     console.log("data frontend", data)
-    const response = await axios.post(`${API_URL}/change-password`, data, {
+    const response = await axios.put(`${API_URL}/change-password`, data, {
       headers:{
         Authorization: `Bearer ${token}`, 
       }
@@ -116,9 +116,24 @@ const forgotPasswordVerify = async (email, code, password) => {
   }
 }
 
+// FETCH--ALL-USERS
+const fetchUsers = async () => {
+  try {
+    const token = localStorage.getItem("userToken");
+    const response = await axios.get(`${API_URL}/users`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching users:", error);
+  }
+};
+
 const logout = () => {
   localStorage.removeItem('userToken');
   toast.success("You have successfully logged out!");
 }
 
-export { signUp, login, logout, storeGoogleInfo, updateUserData, changePassword, forgotPassword, forgotPasswordVerify };
+export { signUp, login, logout, storeGoogleInfo, updateUserData, changePassword, forgotPassword, forgotPasswordVerify, fetchUsers };

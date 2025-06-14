@@ -120,7 +120,6 @@ const storeGoogleUser = async (req, res) => {
           .status(HttpStatus.FORBIDDEN)
           .json({ message: "Your Account is Blocked!" });
       }
-      console.log("Existing user logged in:", user);
       //New User Token While Login
       const token = jwt.sign(
         {
@@ -362,6 +361,16 @@ const forgotPasswordVerify = async (req, res) => {
   }
 };
 
+//GET--USERS
+const fetchUsers = async (req, res) => {
+  try {
+    const allUsers = await users.find().select('-password');
+    res.json(allUsers);
+  } catch (error) {
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Error fetching users", error });
+  }
+};
+
 export {
   signUp,
   login,
@@ -370,4 +379,5 @@ export {
   changePassword,
   forgotPassword,
   forgotPasswordVerify,
+  fetchUsers,
 };

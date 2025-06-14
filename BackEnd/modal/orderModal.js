@@ -1,10 +1,16 @@
-  import mongoose from "mongoose";
+import mongoose from "mongoose";
 
-  const orderSchema = new mongoose.Schema({
+const orderSchema = new mongoose.Schema(
+  {
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "users",
       required: true,
+    },
+    uniqueOrderId: {
+      type: String,
+      unique: true,
+      sparse: true, // Allows null/undefined for existing orders
     },
     items: [
       {
@@ -13,7 +19,7 @@
           ref: "Product",
           required: true,
         },
-        price : {
+        price: {
           type: Number,
           required: true,
         },
@@ -51,18 +57,20 @@
       default: "Processing",
     },
     razorpayPaymentId: {
-      type : String,
+      type: String,
     },
     placedAt: {
       type: Date,
       default: Date.now,
     },
     discountApplied: { type: Number, default: 0 },
-    isCancelled: {type: Boolean, default: false},
-    isReturned: {type: Boolean, default: false},
-  }, {
-      timestamps: true,
-  });
+    isCancelled: { type: Boolean, default: false },
+    isReturned: { type: Boolean, default: false },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-  const Order = mongoose.model("Order", orderSchema);
-  export default Order;
+const Order = mongoose.model("Order", orderSchema);
+export default Order;

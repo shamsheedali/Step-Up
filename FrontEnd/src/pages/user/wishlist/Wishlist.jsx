@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { fetchWishlist, removeProduct } from "../../../api/wishlist";
 import Navbar from "../../../components/user_components/navbar/Navbar";
 import { HiOutlineShoppingBag } from "react-icons/hi2";
@@ -6,7 +6,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { addToBag } from "../../../api/bag";
 import { useNavigate } from "react-router-dom";
-import { GoHeartFill } from "react-icons/go";
 import { RiDeleteBinLine } from "react-icons/ri";
 import { addToBagQty } from "../../../features/bag/BagSlice";
 
@@ -150,7 +149,7 @@ const Wishlist = () => {
                   <div onClick={() => handleCardClick(product.productId)}>
                     <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-h-8 xl:aspect-w-7">
                       <img
-                        src={product.productImage}
+                        src={product.productImage?.url}
                         alt={product.productName}
                         className="h-full w-full object-cover object-center group-hover:opacity-75"
                       />

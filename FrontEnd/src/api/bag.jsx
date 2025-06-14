@@ -6,10 +6,10 @@ const API_URL = `${import.meta.env.VITE_API_URL}/bag`;
 //Add product to bag
 const addToBag = async (data) => {
   try {
-    const response = await axios.post(`${API_URL}/addto-bag`, data);
+    await axios.post(`${API_URL}/`, data);
   } catch (error) {
-    if (response.status === 404) {
-      toast.error(response.data.message);
+    if (error.response.status === 404) {
+      toast.error(error.response.data.message);
     } else {
       toast.error("Error adding product to bag");
     }

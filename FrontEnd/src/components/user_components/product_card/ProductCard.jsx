@@ -18,7 +18,7 @@ const ProductCard = ({ product }) => {
       <div>
         {product.images ? (
           <img
-            src={product.images[0]}
+            src={product.images[0]?.url}
             alt=""
             className="w-[290px] relative bottom-[10px] rounded-lg"
           />

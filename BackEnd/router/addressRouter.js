@@ -5,10 +5,10 @@ import requireRole from '../middleware/requireRole.js';
 
 const router = express.Router();
 
-router.get('/get-alladdress/:id', verifyToken, requireRole("user"), fetchAddress);
-router.post('/add-address/:id', verifyToken, requireRole("user"), addAddress);
-router.post('/edit-address/:id', verifyToken, requireRole("user"), editAddress);
-router.get('/delete-address/:id', verifyToken, requireRole("user"), deleteAddress);
-router.get('/get-default/:id', verifyToken, requireRole("user"), getDefault);
+router.get('/address/:id', verifyToken, requireRole("user"), fetchAddress);
+router.post('/address/:id', verifyToken, requireRole("user"), addAddress);
+router.put('/address/:id', verifyToken, requireRole("user"), editAddress);
+router.delete('/address/:id', verifyToken, requireRole("user"), deleteAddress);
+router.get('/default-address/:id', verifyToken, requireRole("user"), getDefault);
 
 export default router;

@@ -5,7 +5,7 @@ import requireRole from "../middleware/requireRole.js";
 
 const router = express.Router();
 
-router.post("/addReview", verifyToken, requireRole("user"), addReview);
+router.post("/", verifyToken, requireRole("user"), addReview);
 router.get("/:productId", fetchReviews);
 
 export default router;

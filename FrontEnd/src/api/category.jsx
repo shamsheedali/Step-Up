@@ -7,11 +7,10 @@ const API_URL = `${import.meta.env.VITE_API_URL}/category`;
 const fetchCategories = async () => {
   const token = localStorage.getItem('adminToken');
   try {
-    const response = await axios.get(`${API_URL}/get_categories`, {
+    const response = await axios.get(`${API_URL}/`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error('Error fetching categories:', error);
@@ -22,7 +21,7 @@ const fetchCategories = async () => {
 const addCategory = async (categoryData) => {
   const token = localStorage.getItem('adminToken');
   try {
-    const response = await axios.post(`${API_URL}/add`, categoryData, {
+    const response = await axios.post(`${API_URL}/`, categoryData, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;
@@ -73,7 +72,6 @@ const getTopSellingCategories = async() => {
   try {
     const response = await axios.get(`${API_URL}/top-selling/categories`);
 
-    console.log(response);
     return response.data;
   } catch (error) {
     console.log(error);

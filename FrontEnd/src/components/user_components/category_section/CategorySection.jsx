@@ -3,7 +3,7 @@ import sneakersCategoryImg from "../../../assets/images/homepage/Sneakers Catego
 import footballCategoryImg from "../../../assets/images/homepage/Football Category img.jpg";
 import basketballCategoryImg from "../../../assets/images/homepage/Basketball Category img.jpg";
 import { fetchCategories } from "../../../api/category";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const CategorySection = () => {
   const [categories, setCategories] = useState([]);
@@ -56,9 +56,11 @@ const CategorySection = () => {
             style={{ boxShadow: "5px 4px 8px #00000099" }}
           />
         </div>
-        <button className="btn mx-auto mt-[3.75rem] px-14 bg-black text-white rounded-3xl">
-          Show All
-        </button>
+        <Link to="/categories">
+          <button className="btn mx-auto mt-[3.75rem] px-14 bg-black text-white rounded-3xl">
+            Show All
+          </button>
+        </Link>
       </div>
     </div>
   );

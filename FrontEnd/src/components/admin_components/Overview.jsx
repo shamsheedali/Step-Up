@@ -293,7 +293,7 @@ const Overview = () => {
                 <div className="flex items-center gap-4">
                   <img
                     src={
-                      product.images[0]||
+                      product.images[0]?.url||
                       "https://via.placeholder.com/150"
                     }
                     className="w-20 h-20 object-cover rounded-lg"

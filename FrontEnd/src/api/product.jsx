@@ -11,29 +11,28 @@ const addProduct = async (formData) => {
   }
 
   try {
-    const response = await axios.post(`${API_URL}/add_product`, formData, {
+    const response = await axios.post(`${API_URL}/`, formData, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    toast.success(response.data.message)
+    toast.success(response.data.message);
     return response.data;
   } catch (error) {
     console.error("Error Adding Product", error);
+    toast.error("Error adding product");
   }
 };
 
 const fetchProducts = async () => {
   try {
-    const response = await axios.get(`${API_URL}/fetchProducts`);
-    console.log("product response", `${API_URL}/fetchProducts`);
+    const response = await axios.get(`${API_URL}/`);
     return response.data;
   } catch (error) {
     console.error("Error fetching products:", error);
   }
 };
 
-//fetch product with limit (pagination)
 const fetchProductsLimit = async (page, limit) => {
   try {
     const response = await axios.get(`${API_URL}/productLimit`, {
@@ -42,32 +41,22 @@ const fetchProductsLimit = async (page, limit) => {
         limit,
       },
     });
-
     return response.data;
   } catch (error) {
     console.log(error);
   }
 };
 
-//Advanced fetch
 const advancedFetch = async (filters) => {
   try {
-    const {
-      categories = [],
-      sort,
-      currentPage,
-      entriesPerPage,
-      search,
-    } = filters;
+    const { categories = [], sort, currentPage, entriesPerPage, search } = filters;
     const params = new URLSearchParams();
 
-    if (categories.length > 0)
-      params.append("categories", categories.join(","));
+    if (categories.length > 0) params.append("categories", categories.join(","));
 
     const response = await axios.get(
-      `${API_URL}/filter_products?${params.toString()}&sortBy=${sort}&page=${currentPage}&limit=${entriesPerPage}&search=${search}`
+      `${API_URL}/filter-products?${params.toString()}&sortBy=${sort}&page=${currentPage}&limit=${entriesPerPage}&search=${search}`
     );
-
     return response.data;
   } catch (error) {
     console.log(error);
@@ -83,42 +72,46 @@ const getProduct = async (id) => {
   }
 };
 
-//EDIT--PRODUCT
 const editProduct = async (id, data) => {
   const token = localStorage.getItem("adminToken");
   try {
-    const response = await axios.put(`${API_URL}/${id}`, data, {
+    await axios.put(`${API_URL}/${id}`, data, {
       headers: { Authorization: `Bearer ${token}` },
     });
     toast.success("Product Updated");
-  } catch ({ error }) {
+  } catch (error) {
     console.log(error);
     toast.error("Error Updating Product");
   }
 };
 
-//STORE EDITED IMAGE IN S3
-const uploadImageToStorage = async (file) => {
+const uploadImageToStorage = async (file, oldImageUrl, oldPublicId) => {
   try {
     const formData = new FormData();
     formData.append("file", file);
+    if (oldImageUrl) {
+      formData.append("oldImageUrl", oldImageUrl);
+    }
+    if (oldPublicId) {
+      formData.append("oldPublicId", oldPublicId);
+    }
 
-    // Assuming you have an endpoint to handle file uploads
+    const token = localStorage.getItem("adminToken");
     const response = await axios.post(`${API_URL}/upload`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
       },
     });
 
-    console.log(response);
-    return response.data.url; // Assuming the server returns the URL of the uploaded image
+    return response.data.image; // Return { url, public_id }
   } catch (error) {
     console.error("Error uploading image:", error);
+    toast.error("Image upload failed");
     throw new Error("Image upload failed");
   }
 };
 
-//TOGGLE--PRODUCT--ISDELETED
 const toggleProductState = async (id) => {
   const token = localStorage.getItem("adminToken");
   try {
@@ -134,7 +127,6 @@ const toggleProductState = async (id) => {
 
     if (response.data) {
       toast.success(response.data.message);
-      console.log(response.data);
       return response.data;
     }
   } catch (error) {
@@ -157,30 +149,24 @@ const productCheckout = async (productIds) => {
       }
     );
 
-    console.log("prodcts response", response);
     return response.data;
   } catch (error) {
     console.log(error);
   }
 };
 
-//Top selling products
 const getTopSellingProducts = async () => {
   try {
     const response = await axios.get(`${API_URL}/top-selling/products`);
-
-    console.log(response);
     return response.data;
   } catch (error) {
     console.log(error);
   }
 };
 
-//Three new arrival products
 const fetchThreeNewArrivals = async () => {
   try {
     const response = await axios.get(`${API_URL}/three/new-arrivals`);
-    console.log(response)
     return response.data;
   } catch (error) {
     console.error("Error fetching new arrival products:", error);

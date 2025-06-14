@@ -3,6 +3,93 @@ import Order from "../modal/orderModal.js";
 import HttpStatus from "../utils/httpStatus.js";
 import uploadImageToS3 from "../aws/awsConfig.js";
 import mongoose from "mongoose";
+import { cloudinary } from "../cloudinary/config.js";
+
+// Helper to extract public_id from Cloudinary URL (fallback)
+const getPublicIdFromUrl = (url) => {
+  if (!url) return null;
+  const regex = /\/step-up\/(.+)\.\w+$/;
+  const match = url.match(regex);
+  return match ? match[1] : null;
+};
+
+const addProduct = async (req, res) => {
+  try {
+    const {
+      name,
+      description,
+      price,
+      category,
+      brand,
+      sizes,
+      newArrival,
+      stock,
+      variants,
+    } = req.body;
+
+    if (!name || !price || !category || !brand || !stock) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ error: "Missing required fields" });
+    }
+
+    if (!req.files || req.files.length === 0) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ error: "No images uploaded" });
+    }
+
+    // Get Cloudinary URLs and public_ids
+    const uploadedImages = req.files.map((file) => ({
+      url: file.path,
+      public_id: file.filename,
+    }));
+
+    const parsedSizes = JSON.parse(sizes);
+    let parsedVariants = variants ? JSON.parse(variants) : [];
+
+    // Handle variant images if provided
+    if (parsedVariants.length > 0) {
+      parsedVariants = parsedVariants.map((variant, index) => ({
+        ...variant,
+        images: variant.images
+          ? variant.images.map((img, imgIndex) => ({
+              url:
+                req.files[index * variant.images.length + imgIndex]?.path ||
+                img,
+              public_id:
+                req.files[index * variant.images.length + imgIndex]?.filename ||
+                getPublicIdFromUrl(img),
+            }))
+          : [],
+      }));
+    }
+
+    const newProduct = new Product({
+      productName: name,
+      description,
+      price,
+      category,
+      brand,
+      sizes: parsedSizes,
+      newArrival: newArrival === "true",
+      stock,
+      images: uploadedImages,
+      variants: parsedVariants,
+    });
+
+    await newProduct.save();
+
+    res
+      .status(HttpStatus.CREATED)
+      .json({ message: "Product uploaded successfully!", product: newProduct });
+  } catch (err) {
+    console.error(err);
+    res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json({ error: "Error uploading product: " + err.message });
+  }
+};
 
 // const addProduct = async (req, res) => {
 //   try {
@@ -63,61 +150,6 @@ import mongoose from "mongoose";
 //       .json({ error: "Error uploading product: " + err.message });
 //   }
 // };
-
-const addProduct = async (req, res) => {
-  try {
-    const {
-      name,
-      description,
-      price,
-      category,
-      brand,
-      sizes,
-      newArrival,
-      stock,
-    } = req.body;
-
-    if (!name || !price || !category || !brand || !stock) {
-      return res
-        .status(HttpStatus.BAD_REQUEST)
-        .json({ error: "Missing required fields" });
-    }
-
-    if (!req.files || req.files.length === 0) {
-      return res
-        .status(HttpStatus.BAD_REQUEST)
-        .json({ error: "No images uploaded" });
-    }
-
-    // Get Cloudinary URLs from req.files
-    const uploadedImagesUrls = req.files.map((file) => file.path); // `path` contains the Cloudinary URL
-
-    const parsedSizes = JSON.parse(sizes);
-
-    const newProduct = new Product({
-      productName: name,
-      description,
-      price,
-      category,
-      brand,
-      sizes: parsedSizes,
-      newArrival: newArrival === "true",
-      stock,
-      images: uploadedImagesUrls, // Cloudinary URLs
-    });
-
-    await newProduct.save();
-
-    res
-      .status(201)
-      .json({ message: "Product uploaded successfully!", product: newProduct });
-  } catch (err) {
-    console.error(err);
-    res
-      .status(HttpStatus.INTERNAL_SERVER_ERROR)
-      .json({ error: "Error uploading product: " + err.message });
-  }
-};
 
 const fetchProducts = async (req, res) => {
   try {
@@ -266,12 +298,26 @@ const uploadEditImage = async (req, res) => {
         .json({ error: "No image uploaded" });
     }
 
-    // Get the Cloudinary URL from req.file
-    const uploadedImageUrl = req.file.path; // Cloudinary URL
+    const { oldImageUrl, oldPublicId } = req.body;
+
+    // Delete old image from Cloudinary
+    if (oldPublicId || oldImageUrl) {
+      const public_id = oldPublicId || getPublicIdFromUrl(oldImageUrl);
+      if (public_id) {
+        await cloudinary.uploader.destroy(`step-up/${public_id}`);
+        console.log(`Deleted image: step-up/${public_id}`);
+      }
+    }
+
+    // Get the Cloudinary URL and public_id
+    const uploadedImage = {
+      url: req.file.path,
+      public_id: req.file.filename.split("/").pop(),
+    };
 
     res.status(HttpStatus.OK).json({
       message: "Image uploaded successfully",
-      url: uploadedImageUrl,
+      image: uploadedImage,
     });
   } catch (err) {
     console.error(err);

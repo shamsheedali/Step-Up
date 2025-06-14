@@ -226,7 +226,7 @@ const ListOrders = () => {
                         <div className="flex items-center gap-4">
                           <img
                             src={
-                              item.product?.images[0] ||
+                              item.product?.images[0]?.url ||
                               "https://via.placeholder.com/150"
                             }
                             alt={item.product?.productName || "Product Image"}

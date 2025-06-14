@@ -7,7 +7,7 @@ const API_URL = `${import.meta.env.VITE_API_URL}/review`;
 const addReview = async (data) => {
   const token = localStorage.getItem("userToken");
   try {
-    const response = await axios.post(`${API_URL}/addReview`, data, {
+    const response = await axios.post(`${API_URL}/`, data, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

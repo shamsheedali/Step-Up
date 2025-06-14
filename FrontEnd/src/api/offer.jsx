@@ -5,7 +5,7 @@ const API_URL = `${import.meta.env.VITE_API_URL}/offer`;
 
 const getAllOffers = async () => {
   try {
-    const response = await axios.get(`${API_URL}/get-offers`);
+    const response = await axios.get(`${API_URL}/`);
 
     return response.data;
   } catch (error) {
@@ -16,7 +16,7 @@ const getAllOffers = async () => {
 const createOffer = async(offerData) => {
     const token = localStorage.getItem('adminToken');
     try {
-        const response = await axios.post(`${API_URL}/create`, offerData, {
+        const response = await axios.post(`${API_URL}/`, offerData, {
             headers: {
                 Authorization: `Bearer, ${token}`
             }
@@ -36,7 +36,7 @@ const createOffer = async(offerData) => {
 const updateOffer = async(offerId, offerData) => {
   const token = localStorage.getItem('adminToken');
   try {
-    const response = await axios.put(`${API_URL}/editOffer/${offerId}`, offerData, {
+    await axios.put(`${API_URL}/${offerId}`, offerData, {
       headers: {Authorization : `Bearer ${token}`}
     });
 
@@ -51,7 +51,7 @@ const updateOffer = async(offerId, offerData) => {
 const deleteOffer = async (offerId) => {
   const token = localStorage.getItem('adminToken');
   try {
-    const response = await axios.delete(`${API_URL}/deleteOffer/${offerId}`, {
+    await axios.delete(`${API_URL}/${offerId}`, {
       headers: {Authorization: `Bearer ${token}`}
     });
 
@@ -65,7 +65,7 @@ const deleteOffer = async (offerId) => {
 //GET ACTIVE OFFER (USER);
 const getActiveOffer = async() => {
   try {
-    const response = await axios.get(`${API_URL}/get-activeOffer`);
+    const response = await axios.get(`${API_URL}/activeOffer`);
 
     return response.data;
   } catch (error) {

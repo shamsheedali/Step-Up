@@ -1,47 +1,41 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   cancelOrder,
   changeStatus,
-  getOrderProducts,
-  getOrders,
   orderLimit,
   returnOrder,
+  searchOrders,
 } from "../../api/order";
 import { fetchProducts } from "../../api/product";
-import { fetchUsers } from "../../api/admin";
 import Pagination from "../user_components/pagination/Pagination";
-import { toast } from "react-toastify";
 import { fetchCategories } from "../../api/category";
-import { IoMdDownload, IoMdRefresh } from "react-icons/io";
 import { BiTimeFive } from "react-icons/bi";
 import { IoIosCheckmarkCircle } from "react-icons/io";
+import useDebounce from "../../hooks/useDebounce";
 
 const OrderManagement = () => {
   const [loading, setLoading] = useState(false);
-  const [reRender, setReRender] = useState(false);
   const [orders, setOrders] = useState([]);
-  const [users, setUsers] = useState([]);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [openDropdowns, setOpenDropdowns] = useState({});
 
   const [confirmationModal, setConfirmationModal] = useState(false);
-  // Function to open the modal
-  const openModal = () => {
-    setConfirmationModal(true);
-  };
-
-  // Function to close the modal
+  const openModal = () => setConfirmationModal(true);
   const closeModal = () => setConfirmationModal(false);
 
-  //pagination
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const entriesPerPage = 5;
   const [totalOrders, setTotalOrders] = useState(0);
 
+  // Search
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+
   const [selectedOrderProducts, setSelectedOrderProducts] = useState([]);
 
-  //ids
+  // IDs
   const [orderId, setOrderId] = useState("");
   const [userId, setUserId] = useState("");
 
@@ -64,37 +58,48 @@ const OrderManagement = () => {
     setDetailsModal(true);
   };
 
-  // Function to close the modal
   const closeDetailsModal = () => setDetailsModal(false);
+
+  // Search Handler
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1); // Reset to first page on new search
+  };
 
   useEffect(() => {
     const getAllOrders = async () => {
       setLoading(true);
-      const { allOrders, totalOrders } = await orderLimit(
-        currentPage,
-        entriesPerPage
-      );
-      const allUsers = await fetchUsers();
-      setUsers(allUsers);
-      setOrders(allOrders);
-      setTotalOrders(totalOrders);
+      try {
+        const response = debouncedSearchQuery
+          ? await searchOrders(debouncedSearchQuery, currentPage, entriesPerPage)
+          : await orderLimit(currentPage, entriesPerPage);
+        setOrders(response.allOrders || []);
+        setTotalOrders(response.totalOrders || 0);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+        setOrders([]);
+        setTotalOrders(0);
+      }
       setLoading(false);
     };
     getAllOrders();
-    setReRender(false);
-  }, [reRender, currentPage]);
+  }, [currentPage, debouncedSearchQuery]);
 
   useEffect(() => {
     const getAllProducts = async () => {
-      const { allProducts } = await fetchProducts();
-      const { data } = await fetchCategories();
-      setCategories(data);
-      setProducts(allProducts);
+      try {
+        const { allProducts } = await fetchProducts();
+        const { data } = await fetchCategories();
+        setCategories(data || []);
+        setProducts(allProducts || []);
+      } catch (error) {
+        console.error("Error fetching products/categories:", error);
+      }
     };
     getAllProducts();
   }, []);
 
-  //get details of order
+  // Get details of order
   const handleShowDetails = (order) => {
     const orderProductIds = order.items.map((item) => item.product);
     const orderProducts = products.filter((product) =>
@@ -118,26 +123,51 @@ const OrderManagement = () => {
     }));
   };
 
-  //change status
+  // Change status
   const handleStatusChange = async (orderId, status) => {
-    await changeStatus(orderId, status);
+    // Optimistically update the order status in state
+    const previousOrders = [...orders];
+    const updatedOrders = orders.map((order) =>
+      order._id === orderId ? { ...order, status } : order
+    );
+    setOrders(updatedOrders);
     toggleDropdown(orderId);
-    setReRender(true);
+
+    try {
+      await changeStatus(orderId, status);
+    } catch (error) {
+      // Revert on error
+      setOrders(previousOrders);
+      console.error("Error updating status:", error);
+    }
   };
 
-  //cancel order
+  // Cancel order
   const handleCancelOrder = async (orderId, userId, orderStatus) => {
-    if (orderStatus === "Delivered") {
-      await returnOrder(orderId, userId);
+    try {
+      if (orderStatus === "Delivered") {
+        await returnOrder(orderId, userId);
+      } else {
+        await cancelOrder(orderId, userId);
+      }
       closeModal();
       closeDetailsModal();
-      setReRender(true);
-      return;
+      // Update state to reflect cancellation/return
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order._id === orderId
+            ? {
+                ...order,
+                status: orderStatus === "Delivered" ? "Returned" : "Cancelled",
+                isCancelled: orderStatus !== "Delivered",
+                isReturned: orderStatus === "Delivered",
+              }
+            : order
+        )
+      );
+    } catch (error) {
+      console.error("Error canceling/returning order:", error);
     }
-    await cancelOrder(orderId, userId);
-    closeModal();
-    closeDetailsModal();
-    setReRender(true);
   };
 
   return (
@@ -145,17 +175,19 @@ const OrderManagement = () => {
       <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
         <div className="flex items-center justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 py-4 px-5 bg-white dark:bg-[#1f2937]">
           <h1 className="text-white text-2xl">Orders</h1>
-          {/* <label htmlFor="table-search" className="sr-only">
+          <label htmlFor="table-search" className="sr-only">
             Search
           </label>
           <div className="relative">
             <input
               type="text"
               id="table-search-orders"
+              value={searchQuery}
+              onChange={handleSearch}
               className="block p-2 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
               placeholder="Search for orders"
             />
-          </div> */}
+          </div>
         </div>
         <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -192,16 +224,14 @@ const OrderManagement = () => {
               </tr>
             ) : (
               orders.map((order) => {
-                const username =
-                  users.find((user) => user._id === order.user)?.username ||
-                  "User not found";
+                const username = order.user?.username || "User not found";
 
                 return (
                   <tr
                     key={order._id}
                     className={`border-b ${
                       order.isCancelled ? "bg-[#853c3c]" : "bg-gray-800"
-                    }  dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600`}
+                    } dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600`}
                   >
                     <th
                       scope="row"
@@ -212,12 +242,14 @@ const OrderManagement = () => {
                           {username}
                         </div>
                         <div className="font-normal text-gray-500">
-                          {order._id}
+                          {order.uniqueOrderId || order._id}
                         </div>
                       </div>
                     </th>
                     <td className="px-6 py-4">
-                      {new Date(order.placedAt).toDateString()}
+                      {order.placedAt
+                        ? new Date(order.placedAt).toDateString()
+                        : "Invalid Date"}
                     </td>
                     <td className="px-6 py-4">
                       {order.totalAmount.toFixed(2)}
@@ -258,7 +290,7 @@ const OrderManagement = () => {
                         onClick={() => {
                           openDetailsModal(
                             order._id,
-                            order.user,
+                            order.user?._id || order.user,
                             order.isCancelled,
                             order.isReturned,
                             order.status
@@ -371,7 +403,7 @@ const OrderManagement = () => {
         />
       </div>
 
-      {/* New Modal */}
+      {/* Details Modal */}
       {detailsModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
           <div
@@ -379,18 +411,18 @@ const OrderManagement = () => {
             style={{ width: "75%" }}
           >
             <div className="flex h-full">
-              {/* Left section */}
-
               {(() => {
                 const order = orders.find((order) => order._id === orderId);
                 return (
                   <>
                     <div className="bg-gray-700 text-[#cccccc] w-[50%] h-full p-10 text-md relative rounded-s-lg overflow-auto">
                       <h1 className="text-2xl mb-3">Order Details</h1>
-                      <h1>OrderId: {order._id}</h1>
+                      <h1>OrderId: {order.uniqueOrderId ? order.uniqueOrderId : order._id}</h1>
                       <h1>
                         Order Date:{" "}
-                        {new Date(order.placedAt).toLocaleDateString()}
+                        {order.placedAt
+                          ? new Date(order.placedAt).toLocaleDateString()
+                          : "Invalid Date"}
                       </h1>
                       <div>
                         <h1>Delivery Address:</h1>
@@ -490,7 +522,7 @@ const OrderManagement = () => {
                               <div className="flex items-center gap-4">
                                 <img
                                   src={
-                                    item.images[0] ||
+                                    item.images[0]?.url ||
                                     "https://via.placeholder.com/150"
                                   }
                                   alt={item.productName || "Product Image"}
@@ -520,9 +552,27 @@ const OrderManagement = () => {
                           <p>No products found.</p>
                         )}
                       </div>
-                      <div className="flex justify-between px-4 pt-3">
-                        <h1>Grand Total :</h1>
-                        <h1 className="font-bold">₹{order.totalAmount}</h1>
+                      <div className="px-4 pt-3">
+                        <div className="px-4 pt-3">
+                          <div className="flex justify-between">
+                            <h1>Estimated Delivery & Handling :</h1>
+                            <h1 className="font-bold">₹100</h1>
+                          </div>
+
+                          {order.discountApplied > 0 && (
+                            <div className="flex justify-between">
+                              <h1>Coupon Discount :</h1>
+                              <h1 className="font-bold">
+                                - ₹{order.discountApplied}
+                              </h1>
+                            </div>
+                          )}
+
+                          <div className="flex justify-between">
+                            <h1>Grand Total :</h1>
+                            <h1 className="font-bold">₹{order.totalAmount}</h1>
+                          </div>
+                        </div>
                       </div>
 
                       <button

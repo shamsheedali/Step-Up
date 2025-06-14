@@ -241,7 +241,7 @@ const SingleProductPage = () => {
                   <Zoom>
                     <img
                       alt={product.productName}
-                      src={product.images[0]}
+                      src={product.images[0]?.url}
                       className="h-full w-full object-cover object-center"
                     />
                   </Zoom>
@@ -253,7 +253,7 @@ const SingleProductPage = () => {
                     <Zoom>
                       <img
                         alt={product.productName}
-                        src={product.images[1]}
+                        src={product.images[1]?.url}
                         className="h-full w-full object-cover object-center"
                       />
                     </Zoom>
@@ -264,7 +264,7 @@ const SingleProductPage = () => {
                     <Zoom>
                       <img
                         alt={product.productName}
-                        src={product.images[2]}
+                        src={product.images[2]?.url}
                         className="h-full w-full object-cover object-center"
                       />
                     </Zoom>
@@ -276,7 +276,7 @@ const SingleProductPage = () => {
                   <Zoom>
                     <img
                       alt={product.productName}
-                      src={product.images[3]}
+                      src={product.images[3]?.url}
                       className="h-full w-full object-cover object-center"
                     />
                   </Zoom>
@@ -581,7 +581,7 @@ const SingleProductPage = () => {
                 <div onClick={() => handleCardClick(relatedProduct._id)}>
                   <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-h-8 xl:aspect-w-7">
                     <img
-                      src={relatedProduct.images[0]}
+                      src={relatedProduct.images[0]?.url}
                       alt={relatedProduct.productName}
                       className="h-full w-full object-cover object-center group-hover:opacity-75"
                     />

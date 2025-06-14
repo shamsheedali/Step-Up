@@ -522,7 +522,7 @@ const OrderManagement = () => {
                               <div className="flex items-center gap-4">
                                 <img
                                   src={
-                                    item.images[0] ||
+                                    item.images[0]?.url ||
                                     "https://via.placeholder.com/150"
                                   }
                                   alt={item.productName || "Product Image"}

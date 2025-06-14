@@ -62,6 +62,7 @@ const ProductManagement = () => {
       images: [],
     });
     setSelectedImages([]);
+    setPreviewImages([]);
   };
 
   // Edit image preview function
@@ -85,11 +86,7 @@ const ProductManagement = () => {
     try {
       setLoading(true);
       const response = debouncedSearchQuery
-        ? await searchProducts(
-            debouncedSearchQuery,
-            currentPage,
-            entriesPerPage
-          )
+        ? await searchProducts(debouncedSearchQuery, currentPage, entriesPerPage)
         : await fetchProductsLimit(currentPage, entriesPerPage);
       if (response.products) {
         setProducts(response.products);
@@ -134,6 +131,7 @@ const ProductManagement = () => {
   // Function to toggle add Product modal
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
+    if (isModalOpen) resetForm();
   };
 
   // Function to toggle add variant modal
@@ -155,23 +153,15 @@ const ProductManagement = () => {
         stock: productToEdit.stock,
         category: productToEdit.category,
         brand: productToEdit.brand,
-        size: productToEdit.size === true ? true : false,
-        newArrival: productToEdit.newArrival === true ? true : false,
+        sizes: productToEdit.sizes || [],
+        newArrival: productToEdit.newArrival || false,
         images: productToEdit.images,
       });
-      setPreviewImages(productToEdit.images);
+      setPreviewImages(
+        productToEdit.images.map((img) => (typeof img === "string" ? img : img.url))
+      );
     } else {
-      setAddProductData({
-        name: "",
-        description: "",
-        price: "",
-        stock: "",
-        category: "",
-        brand: "",
-        sizes: [],
-        newArrival: false,
-        images: [],
-      });
+      resetForm();
     }
   };
 
@@ -222,9 +212,7 @@ const ProductManagement = () => {
   // Function to remove an image from preview
   const removeImage = (indexToRemove) => {
     setSelectedImages((prevImages) => {
-      const newImages = prevImages.filter(
-        (_, index) => index !== indexToRemove
-      );
+      const newImages = prevImages.filter((_, index) => index !== indexToRemove);
 
       // Update addProductData.images as well
       setAddProductData((prevData) => ({
@@ -293,7 +281,7 @@ const ProductManagement = () => {
     });
 
     if (validate()) {
-      if (selectedImages.length < 3 || selectedImages.length > 4) {
+      if (selectedImages.length < 3 || selectedImages.length > 5) {
         toast.error("Minimum 3 images, Maximum 5 images");
         setLoading(false);
         return false;
@@ -331,26 +319,37 @@ const ProductManagement = () => {
       try {
         const updatedImages = [];
 
-        for (const img of previewImages) {
+        for (let i = 0; i < previewImages.length; i++) {
+          const img = previewImages[i];
           if (img.startsWith("data:image/")) {
             const file = dataURLtoFile(img);
-            const uploadedUrl = await uploadImageToStorage(file);
-            updatedImages.push(uploadedUrl);
+            const oldImage = i < addProductData.images.length ? addProductData.images[i] : null;
+            const oldPublicId = oldImage ? oldImage.public_id : null;
+            const uploadedImage = await uploadImageToStorage(file, null, oldPublicId);
+            updatedImages.push(uploadedImage);
           } else {
-            updatedImages.push(img);
+            const existingImage = addProductData.images.find(
+              (image) => image.url === img || image === img
+            ) || { url: img, public_id: "" };
+            updatedImages.push(existingImage);
           }
         }
 
-        addProductData.images = updatedImages;
-        addProductData.productName = addProductData.name;
-        delete addProductData.name;
+        const updatedProductData = {
+          ...addProductData,
+          images: updatedImages,
+          productName: addProductData.name,
+        };
+        delete updatedProductData.name;
 
-        await editProduct(productID, addProductData);
+        await editProduct(productID, updatedProductData);
         resetForm();
         toggleEditModal();
         setIsChanged(!isChanged);
+        toast.success("Product updated successfully");
       } catch (error) {
         console.error("Error editing product:", error);
+        toast.error("Error updating product");
       }
     }
   };
@@ -458,7 +457,9 @@ const ProductManagement = () => {
                         className="w-10 h-10 rounded-full"
                         src={
                           product.images.length > 0
-                            ? `${product.images[0]}`
+                            ? typeof product.images[0] === "string"
+                              ? product.images[0]
+                              : product.images[0].url
                             : ""
                         }
                         alt={product.productName}
@@ -564,10 +565,7 @@ const ProductManagement = () => {
                     </button>
                   </div>
                   {/* Modal body */}
-                  <form
-                    className="p-4 md:p-5"
-                    onSubmit={handleAddProductSubmit}
-                  >
+                  <form className="p-4 md:p-5" onSubmit={handleAddProductSubmit}>
                     <div className="grid gap-4 mb-4 grid-cols-2">
                       <div className="col-span-2">
                         <label
@@ -687,53 +685,12 @@ const ProductManagement = () => {
                         />
                       </div>
 
-                      {/* SIZE */}
-                      {/* Add Sizes Selection */}
-                      {/* <div className="col-span-2">
-                        <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                          Sizes
-                        </label>
-                        <div className="grid grid-cols-3 gap-4">
-                          {[
-                            "UK 6",
-                            "UK 6.5",
-                            "UK 7",
-                            "UK 7.5",
-                            "UK 8",
-                            "UK 8.5",
-                            "UK 9",
-                            "UK 9.5",
-                            "UK 10",
-                            "UK 11",
-                            "UK 12",
-                          ].map((size, index) => (
-                            <div key={index} className="flex items-center">
-                              <input
-                                type="checkbox"
-                                name="sizes"
-                                value={size}
-                                onChange={handleSizeChange}
-                                id={`size-${size}`}
-                                className="mr-2"
-                              />
-                              <label
-                                htmlFor={`size-${size}`}
-                                className="text-sm font-medium text-gray-900 dark:text-white"
-                              >
-                                {size}
-                              </label>
-                            </div>
-                          ))}
-                        </div>
-                      </div> */}
-
-                      {/* <hr /> */}
                       <div className="col-span-2">
                         <label className="flex items-center mb-2 text-sm font-medium text-gray-900 dark:text-white">
                           <input
                             type="checkbox"
                             name="newArrival"
-                            value={addProductData.newArrival}
+                            checked={addProductData.newArrival}
                             onChange={handleChange}
                             id="newArrival"
                             className="mr-2"
@@ -760,9 +717,7 @@ const ProductManagement = () => {
                         />
                         {/* Preview images */}
                         {selectedImages.length >= 5 ? (
-                          <h1 className="text-red-300">
-                            Only 5 Images Are Allowed
-                          </h1>
+                          <h1 className="text-red-300">Only 5 Images Are Allowed</h1>
                         ) : (
                           <div className="mt-4 flex flex-wrap gap-2">
                             {selectedImages.map((image, index) => (
@@ -836,10 +791,7 @@ const ProductManagement = () => {
                     </button>
                   </div>
                   {/* Modal body */}
-                  <form
-                    className="p-4 md:p-5"
-                    onSubmit={handleEditProductSubmit}
-                  >
+                  <form className="p-4 md:p-5" onSubmit={handleEditProductSubmit}>
                     <div className="grid gap-4 mb-4 grid-cols-2">
                       <div className="col-span-2">
                         <label
@@ -965,11 +917,10 @@ const ProductManagement = () => {
                           <input
                             type="checkbox"
                             name="newArrival"
-                            value={addProductData.newArrival}
+                            checked={addProductData.newArrival}
                             onChange={handleChange}
                             id="newArrival"
                             className="mr-2"
-                            checked={addProductData.newArrival}
                           />
                           New Arrival
                         </label>

@@ -1,5 +1,6 @@
 import admins from "../modal/adminModal.js";
 import users from "../modal/userModal.js";
+import Product from "../modal/productModal.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import HttpStatus from "../utils/httpStatus.js";
@@ -142,4 +143,31 @@ const searchUsers = async (req, res) => {
   }
 };
 
-export { login, fetchUsers, blockUser, unBlockUser, searchUsers };
+const searchProducts = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
+    const searchKey = req.query.searchKey || "";
+
+    const query = {
+      $or: [
+        { name: { $regex: searchKey, $options: "i" } },
+        { description: { $regex: searchKey, $options: "i" } },
+      ],
+    };
+
+    const products = await Product.find(query)
+      .skip(skip)
+      .limit(limit);
+    const totalProducts = await Product.countDocuments(query);
+
+    res.json({ products, totalProducts });
+  } catch (error) {
+    res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: "Error searching products", error });
+  }
+};
+
+export { login, fetchUsers, blockUser, unBlockUser, searchUsers, searchProducts };

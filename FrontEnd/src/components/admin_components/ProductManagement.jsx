@@ -9,17 +9,19 @@ import {
 import { fetchCategories } from "../../api/category";
 import { toast } from "react-toastify";
 import Pagination from "../user_components/pagination/Pagination";
+import useDebounce from "../../hooks/useDebounce";
+import { searchProducts } from "../../api/admin";
 
 const ProductManagement = () => {
   const wordLength = 3;
-  //pagination
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const entriesPerPage = 5;
   const [totalProducts, setTotalProducts] = useState(0);
 
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
-  //edit product images
+  // Edit product images
   const [previewImages, setPreviewImages] = useState([]);
 
   const [categories, setCategories] = useState([]);
@@ -42,6 +44,10 @@ const ProductManagement = () => {
     images: [],
   });
 
+  // Search query
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+
   // Function to reset the form data
   const resetForm = () => {
     setAddProductData({
@@ -58,7 +64,7 @@ const ProductManagement = () => {
     setSelectedImages([]);
   };
 
-  //edit image preview function
+  // Edit image preview function
   const handlePreviewChange = (e, index) => {
     const file = e.target.files[0];
     if (file) {
@@ -74,44 +80,43 @@ const ProductManagement = () => {
     }
   };
 
+  // Fetch products or search results
   const getProducts = async () => {
     try {
       setLoading(true);
-      const allProducts = await fetchProductsLimit(currentPage, entriesPerPage);
-      setLoading(false);
-      if (allProducts.products) {
-        setProducts(allProducts.products);
-        setTotalProducts(allProducts.totalProducts);
-        setFilteredProducts(allProducts.products);
-        setLoading(false);
+      const response = debouncedSearchQuery
+        ? await searchProducts(
+            debouncedSearchQuery,
+            currentPage,
+            entriesPerPage
+          )
+        : await fetchProductsLimit(currentPage, entriesPerPage);
+      if (response.products) {
+        setProducts(response.products);
+        setFilteredProducts(response.products); // Use backend results directly
+        setTotalProducts(response.totalProducts);
       } else {
         console.log("No data found");
+        setProducts([]);
+        setFilteredProducts([]);
+        setTotalProducts(0);
       }
-    } catch (error) {
-      console.error("Error fetching Products", error);
       setLoading(false);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      setLoading(false);
+      setProducts([]);
+      setFilteredProducts([]);
+      setTotalProducts(0);
     }
   };
 
-  //fetching products
+  // Fetching products
   useEffect(() => {
     getProducts();
-  }, [isChanged, currentPage]);
+  }, [isChanged, currentPage, debouncedSearchQuery]);
 
-  //search query
-  const [searchQuery, setSearchQuery] = useState("");
-  useEffect(() => {
-    if (searchQuery) {
-      const filtered = products.filter((product) =>
-        product.productName.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredProducts(filtered);
-    } else {
-      setFilteredProducts(products);
-    }
-  }, [searchQuery, products]);
-
-  //fetching categories
+  // Fetching categories
   useEffect(() => {
     const getCategories = async () => {
       const { data } = await fetchCategories();
@@ -120,17 +125,23 @@ const ProductManagement = () => {
     getCategories();
   }, []);
 
-  // Function to toggle add Product the modal
+  // Search Handler
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1); // Reset to first page on new search
+  };
+
+  // Function to toggle add Product modal
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
   };
 
-  // Function to toggle add variant the modal
+  // Function to toggle add variant modal
   const toggleVariantModal = () => {
     setVariantIsModalOpen(!isVariantModalOpen);
   };
 
-  //Function to toggle edit modal
+  // Function to toggle edit modal
   const toggleEditModal = (id) => {
     setEditModalOpen(!isEditModalOpen);
     setProductID(id);
@@ -164,7 +175,7 @@ const ProductManagement = () => {
     }
   };
 
-  //size changes
+  // Size changes
   const handleSizeChange = (event) => {
     const { value, checked } = event.target;
     const newSize = { name: value, inStock: checked };
@@ -225,7 +236,7 @@ const ProductManagement = () => {
     });
   };
 
-  //Add product validate
+  // Add product validate
   const validate = () => {
     if (addProductData.name.trim() === "") {
       toast.error("Give Proper Product Name");
@@ -237,32 +248,32 @@ const ProductManagement = () => {
       return false;
     }
     if (addProductData.price <= 500) {
-      toast.error("price should be greater than 500");
+      toast.error("Price should be greater than 500");
       return false;
     } else if (addProductData.stock <= 0) {
-      toast.error("invalid stock");
+      toast.error("Invalid stock");
       return false;
     }
     return true;
   };
 
-  //Edit product validate
+  // Edit product validate
   const editValidate = () => {
     if (addProductData.name.trim() === "") {
       toast.error("Give Proper Product Name");
       return false;
     }
     if (addProductData.price <= 500) {
-      toast.error("price should be greater than 500");
+      toast.error("Price should be greater than 500");
       return false;
     } else if (addProductData.stock <= 0) {
-      toast.error("invalid stock");
+      toast.error("Invalid stock");
       return false;
     }
     return true;
   };
 
-  //Adding Product
+  // Adding Product
   const handleAddProductSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -281,11 +292,9 @@ const ProductManagement = () => {
       formData.append("images", image);
     });
 
-    console.log("formData", formData);
-
     if (validate()) {
       if (selectedImages.length < 3 || selectedImages.length > 4) {
-        toast.error("Minimum 3 image Maximum 5 image");
+        toast.error("Minimum 3 images, Maximum 5 images");
         setLoading(false);
         return false;
       }
@@ -314,7 +323,7 @@ const ProductManagement = () => {
     return new File([u8arr], "image.jpg", { type: mime });
   };
 
-  //edit Product
+  // Edit Product
   const handleEditProductSubmit = async (e) => {
     e.preventDefault();
 
@@ -346,7 +355,7 @@ const ProductManagement = () => {
     }
   };
 
-  //Delete Product
+  // Delete Product
   const handleProductDelete = async (productID) => {
     const { updatedProduct } = await toggleProductState(productID);
     setProducts((prev) => [...prev, updatedProduct]);
@@ -384,7 +393,7 @@ const ProductManagement = () => {
                 type="text"
                 id="table-search-users"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearch}
                 className="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder="Search for products"
               />

@@ -205,7 +205,7 @@ const OrderDetails = ({ id }) => {
         {/* Left section */}
         <div className="bg-[#c4c4c4] w-[50%] h-[450px] p-10 text-md relative rounded-s-lg">
           <h1 className="text-2xl mb-3">Order Details</h1>
-          <h1>OrderId: {order._id}</h1>
+          <h1>OrderId: {order.uniqueOrderId ? order.uniqueOrderId : order._id}</h1>
           <h1>Order Date: {new Date(order.placedAt).toLocaleDateString()}</h1>
           <div>
             <h1>Delivery Address:</h1>

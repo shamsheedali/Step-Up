@@ -2,9 +2,21 @@ import Orders from "../modal/orderModal.js";
 import Product from "../modal/productModal.js";
 import Coupons from "../modal/couponModal.js";
 import Wallet from "../modal/walletModal.js";
+import Users from "../modal/userModal.js"; // Added import
 import HttpStatus from "../utils/httpStatus.js";
+import mongoose from "mongoose";
 
-//Creating order
+// Generate random 8-character alphanumeric ID
+const generateUniqueOrderId = () => {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let result = "";
+  for (let i = 0; i < 8; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+};
+
+// Creating order
 const createOrder = async (req, res) => {
   try {
     const {
@@ -19,15 +31,65 @@ const createOrder = async (req, res) => {
       promo,
     } = req.body;
 
+    // Validate required fields
+    if (!user || !items?.length || !totalAmount || !paymentMethod || !shippingAddress) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: "Missing required fields" });
+    }
+
+    // Validate items
+    for (const item of items) {
+      if (!item.product || !item.price || !item.quantity || item.quantity < 1) {
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .json({ message: "Invalid item data: product, price, and quantity are required" });
+      }
+    }
+
+    // Validate shippingAddress
+    if (
+      !shippingAddress.street ||
+      !shippingAddress.village ||
+      !shippingAddress.town ||
+      !shippingAddress.postcode ||
+      !shippingAddress.phonenumber
+    ) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: "Incomplete shipping address" });
+    }
+
+    // Validate paymentMethod and paymentStatus
+    const validPaymentMethods = ["cashOnDelivery", "razorPay", "Wallet"];
+    const validPaymentStatuses = ["Pending", "Completed", "Refunded"];
+    if (!validPaymentMethods.includes(paymentMethod)) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: "Invalid payment method" });
+    }
+    if (paymentStatus && !validPaymentStatuses.includes(paymentStatus)) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: "Invalid payment status" });
+    }
+
+    // Generate uniqueOrderId for new orders
+    let uniqueOrderId = await generateUniqueOrderId();
+    while (await Orders.findOne({ uniqueOrderId })) {
+      uniqueOrderId = await generateUniqueOrderId();
+    }
+
     const newOrder = new Orders({
       user,
       items,
       totalAmount,
       paymentMethod,
-      paymentStatus,
+      paymentStatus: paymentStatus || "Pending",
       shippingAddress,
-      discountApplied,
+      discountApplied: discountApplied || 0,
       razorpayPaymentId,
+      uniqueOrderId,
     });
 
     for (const item of items) {
@@ -35,8 +97,15 @@ const createOrder = async (req, res) => {
 
       if (isNaN(quantity)) {
         throw new Error(
-          `Invalid quantity for product ${item.product}: quantity must be a number.`
+          `Invalid quantity for product ${item.product}: quantity must be a number`
         );
+      }
+
+      const product = await Product.findById(item.product);
+      if (!product) {
+        return res
+          .status(HttpStatus.NOT_FOUND)
+          .json({ message: `Product not found: ${item.product}` });
       }
 
       await Product.findByIdAndUpdate(
@@ -48,14 +117,22 @@ const createOrder = async (req, res) => {
 
     const savedOrder = await newOrder.save();
 
-    //coupon used by user
-    await Coupons.findOneAndUpdate(
-      { code: promo },
-      {
-        $push: { usedBy: user },
-        $inc: { usedCount: 1 },
+    // Coupon used by user
+    if (promo) {
+      const coupon = await Coupons.findOneAndUpdate(
+        { code: promo },
+        {
+          $push: { usedBy: user },
+          $inc: { usedCount: 1 },
+        },
+        { new: true }
+      );
+      if (!coupon) {
+        return res
+          .status(HttpStatus.NOT_FOUND)
+          .json({ message: "Invalid coupon code" });
       }
-    );
+    }
 
     if (newOrder.paymentMethod === "Wallet") {
       const transaction = {
@@ -78,24 +155,33 @@ const createOrder = async (req, res) => {
     console.error("Error creating order:", error);
     res
       .status(HttpStatus.INTERNAL_SERVER_ERROR)
-      .json({ message: "Failed to create order" });
+      .json({ message: "Failed to create order", error: error.message });
   }
 };
 
-//Get specific user's order
+// Get specific user's order
 const getUserOrders = async (req, res) => {
   try {
     const userId = req.params.id;
 
-    const limit = req.query.limit || 5;
-    const page = req.query.page || 1;
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: "Invalid user ID" });
+    }
+
+    const limit = parseInt(req.query.limit) || 5;
+    const page = parseInt(req.query.page) || 1;
     const skip = (page - 1) * limit;
 
     const orders = await Orders.find({ user: userId })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate("items totalAmount status paymentMethod createdAt")
+      .populate({
+        path: "items.product",
+        select: "productName price category images",
+      })
       .exec();
 
     if (orders.length === 0) {
@@ -115,10 +201,17 @@ const getUserOrders = async (req, res) => {
   }
 };
 
-//Get ordered Products of order
+// Get ordered products of order
 const getOrderProducts = async (req, res) => {
   try {
     const { orderId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: "Invalid order ID" });
+    }
+
     const order = await Orders.findById(orderId)
       .populate({
         path: "items.product",
@@ -142,11 +235,17 @@ const getOrderProducts = async (req, res) => {
   }
 };
 
-//Canceling order
+// Canceling order
 const cancelOrder = async (req, res) => {
   try {
     const orderId = req.params.id;
     const uid = req.params.uid;
+
+    if (!mongoose.Types.ObjectId.isValid(orderId) || !mongoose.Types.ObjectId.isValid(uid)) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: "Invalid order or user ID" });
+    }
 
     const order = await Orders.findByIdAndUpdate(
       orderId,
@@ -154,12 +253,18 @@ const cancelOrder = async (req, res) => {
       { new: true }
     );
 
+    if (!order) {
+      return res
+        .status(HttpStatus.NOT_FOUND)
+        .json({ message: "Order not found" });
+    }
+
     for (const item of order.items) {
       const quantity = Number(item.quantity);
 
       if (isNaN(quantity)) {
         throw new Error(
-          `Invalid quantity for product ${item.product}: quantity must be a number.`
+          `Invalid quantity for product ${item.product}: quantity must be a number`
         );
       }
 
@@ -193,18 +298,24 @@ const cancelOrder = async (req, res) => {
 
     res.status(HttpStatus.OK).json({ message: "Order Deleted!" });
   } catch (error) {
-    console.log(error);
+    console.error("Error canceling order:", error);
     res
       .status(HttpStatus.INTERNAL_SERVER_ERROR)
-      .json({ message: "Error While Deleting order" });
+      .json({ message: "Error while deleting order" });
   }
 };
 
-//RETURN ORDER
+// Return order
 const returnOrder = async (req, res) => {
   try {
     const orderId = req.params.id;
     const uid = req.params.uid;
+
+    if (!mongoose.Types.ObjectId.isValid(orderId) || !mongoose.Types.ObjectId.isValid(uid)) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: "Invalid order or user ID" });
+    }
 
     const order = await Orders.findByIdAndUpdate(
       orderId,
@@ -212,12 +323,18 @@ const returnOrder = async (req, res) => {
       { new: true }
     );
 
+    if (!order) {
+      return res
+        .status(HttpStatus.NOT_FOUND)
+        .json({ message: "Order not found" });
+    }
+
     for (const item of order.items) {
       const quantity = Number(item.quantity);
 
       if (isNaN(quantity)) {
         throw new Error(
-          `Invalid quantity for product ${item.product}: quantity must be a number.`
+          `Invalid quantity for product ${item.product}: quantity must be a number`
         );
       }
 
@@ -251,28 +368,28 @@ const returnOrder = async (req, res) => {
 
     res.status(HttpStatus.OK).json({ message: "Order Returned!" });
   } catch (error) {
-    console.log(error);
+    console.error("Error returning order:", error);
     res
       .status(HttpStatus.INTERNAL_SERVER_ERROR)
-      .json({ message: "Error While Returning order" });
+      .json({ message: "Error while returning order" });
   }
 };
 
-//Fetching all orders
+// Fetching all orders
 const getAllOrders = async (req, res) => {
   try {
     const allOrders = await Orders.find();
 
     res.status(HttpStatus.OK).json({ allOrders });
   } catch (error) {
-    console.log(error);
+    console.error("Error fetching orders:", error);
     res
       .status(HttpStatus.INTERNAL_SERVER_ERROR)
       .json({ message: "Error while fetching orders" });
   }
 };
 
-//orders with pagination (Admin)
+// Orders with pagination (Admin)
 const getOrdersPagination = async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 5;
@@ -281,29 +398,95 @@ const getOrdersPagination = async (req, res) => {
 
     const totalOrders = await Orders.countDocuments({});
     const allOrders = await Orders.find({})
+      .populate("user", "username _id") // Added population
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
     res.status(HttpStatus.OK).json({ allOrders, totalOrders });
   } catch (error) {
-    console.log(error);
+    console.error("Error fetching orders:", error);
     res
       .status(HttpStatus.INTERNAL_SERVER_ERROR)
       .json({ message: "Error while fetching orders" });
   }
 };
 
-//change order status
+// Search orders by order ID or username
+const searchOrders = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 5;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * limit;
+    const searchKey = req.query.searchKey?.trim() || "";
+
+    let query = {};
+
+    if (searchKey) {
+      // Build query conditions
+      const conditions = [];
+
+      // Search by uniqueOrderId
+      conditions.push({ uniqueOrderId: { $regex: searchKey, $options: "i" } });
+
+      // Search by _id if valid ObjectId
+      if (mongoose.Types.ObjectId.isValid(searchKey)) {
+        conditions.push({ _id: new mongoose.Types.ObjectId(searchKey) });
+      }
+
+      // Search by username
+      const users = await Users.find(
+        { username: { $regex: searchKey, $options: "i" } },
+        "_id"
+      );
+      if (users.length > 0) {
+        const userIds = users.map((user) => user._id);
+        conditions.push({ user: { $in: userIds } });
+      }
+
+      query = { $or: conditions };
+    }
+
+    const allOrders = await Orders.find(query)
+      .populate("user", "username _id")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const totalOrders = await Orders.countDocuments(query);
+
+    res.status(HttpStatus.OK).json({ allOrders, totalOrders });
+  } catch (error) {
+    console.error("Error searching orders:", error);
+    res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: "Error while searching orders" });
+  }
+};
+
+// Change order status
 const changeStatus = async (req, res) => {
   const { orderId, status } = req.query;
 
   try {
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: "Invalid order ID" });
+    }
+
+    const validStatuses = ["Processing", "Shipped", "Delivered", "Cancelled", "Returned"];
+    if (!validStatuses.includes(status)) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: "Invalid status" });
+    }
+
     const updatedOrder = await Orders.findByIdAndUpdate(
       orderId,
       { status },
       { new: true }
-    );
+    ).populate("user", "username _id");
 
     if (updatedOrder) {
       res
@@ -313,16 +496,31 @@ const changeStatus = async (req, res) => {
       res.status(HttpStatus.NOT_FOUND).json({ message: "Order not found" });
     }
   } catch (error) {
+    console.error("Error updating status:", error);
     res
       .status(HttpStatus.INTERNAL_SERVER_ERROR)
-      .json({ message: "Error updating order status", error });
+      .json({ message: "Error updating order status" });
   }
 };
 
-//CHANGE PAYMENT STATUS
+// Change payment status
 const changePaymentStatus = async (req, res) => {
   const { orderId, paymentStatus } = req.query;
+
   try {
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: "Invalid order ID" });
+    }
+
+    const validPaymentStatuses = ["Pending", "Completed", "Refunded"];
+    if (!validPaymentStatuses.includes(paymentStatus)) {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: "Invalid payment status" });
+    }
+
     const updatedOrder = await Orders.findByIdAndUpdate(
       orderId,
       { paymentStatus },
@@ -332,18 +530,19 @@ const changePaymentStatus = async (req, res) => {
     if (updatedOrder) {
       res
         .status(HttpStatus.OK)
-        .json({ message: "Payment Completed", updatedOrder });
+        .json({ message: "Payment status updated", updatedOrder });
     } else {
       res.status(HttpStatus.NOT_FOUND).json({ message: "Order not found" });
     }
   } catch (error) {
+    console.error("Error updating payment status:", error);
     res
       .status(HttpStatus.INTERNAL_SERVER_ERROR)
-      .json({ message: "Error updating payment status", error });
+      .json({ message: "Error updating payment status" });
   }
 };
 
-//SALES-REPORT
+// Sales report
 const salesReport = async (req, res) => {
   try {
     let { startDate, endDate, period } = req.body;
@@ -419,13 +618,12 @@ const salesReport = async (req, res) => {
   }
 };
 
-//function for type of sorting
+// Function for type of sorting
 const getDailyRange = () => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const endOfDay = new Date(today);
   endOfDay.setHours(23, 59, 59, 999);
-  console.log("this", today, endOfDay);
   return { startDate: today, endDate: endOfDay };
 };
 
@@ -458,4 +656,5 @@ export {
   changePaymentStatus,
   getOrdersPagination,
   returnOrder,
+  searchOrders,
 };
